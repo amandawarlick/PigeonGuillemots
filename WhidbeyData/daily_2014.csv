@@ -1,0 +1,277 @@
+site,date,start_time,end_time,PG_count,nest_count,burrow_visit,sculpin,gunnell,other,Disturbances
+Cliffside,6/16/14,8:00,9:00,39,3,3,,,,"2BE, GBH"
+Cliffside,6/23/14,7:30,8:30,13,3,,,,,"BE, Crow, Runner"
+Cliffside,6/30/14,7:45,8:45,6,4,4,,,,"2BE, Sea Otter"
+Cliffside,7/7/14,7:10,8:10,14,6,5,,3,,BE
+Cliffside,7/14/14,7:40,8:40,15,6,6,,5,,
+Cliffside,7/21/14,7:30,8:30,16,7,7,,1,,
+Cliffside,7/28/14,7:45,8:45,12,7,,,,,"ME, 10 minutes"
+Cliffside,8/4/14,7:10,8:10,5,7,,,1,,
+Cliffside,8/11/14,7:25,8:25,13,7,,,1,,"2 runners, dog"
+Cliffside,8/18/14,7:10,8:10,4,7,,,,,
+Cliffside,8/26/14,7:45,8:45,0,7,,,,,
+Double Bluff North,6/20/14,8:25,9:31,52,10,26,,,,
+Double Bluff North,6/27/14,8:28,9:35,25,12,1,2,1,,GBH
+Double Bluff North,7/3/14,7:40,8:47,63,15,3,6,4,1,
+Double Bluff North,7/11/14,8:10,9:20,19,15,,,,,Osprey
+Double Bluff North,7/18/14,8:15,9:24,71,18,12,6,4,,"2BE, Osprey"
+Double Bluff North,7/25/14,8:14,8:15,19,18,,3,2,1,BE
+Double Bluff North,8/1/14,8:10,9:22,80,18,5,1,2,,"Osprey, 3 people, 3 dogs, GBH"
+Double Bluff North,8/7/14,8:15,9:25,16,19,,2,1,,"People, Gull chased PG with prey"
+Double Bluff North,8/14/14,8:20,9:28,63,19,,,,,
+Double Bluff North,8/21/14,8:15,9:22,1,19,,,,,
+Double Bluff South,6/19/14,8:00,9:00,6,0,,,,,
+Double Bluff South,6/28/14,7:45,8:45,5,0,,,,,
+Double Bluff South,7/4/14,8:00,9:00,8,1,,1,,,kayak
+Double Bluff South,7/9/14,8:30,9:30,7,2,1,,1,,
+Double Bluff South,7/16/14,7:45,9:05,13,2,,,,,
+Double Bluff South,7/23/14,8:15,9:30,16,3,,1,3,,
+Double Bluff South,7/30/14,7:45,9:15,13,3,1,3,1,,
+Double Bluff South,8/6/14,8:30,9:30,13,3,,1,,,
+Double Bluff South,8/15/14,8:00,9:00,7,3,,,,,
+Forbes Point,7/21/14,8:27,9:27,18,3,1,,2,,
+Forbes Point,7/30/14,8:38,9:38,13,5,1,1,2,,
+Forbes Point,8/4/14,8:35,9:35,20,5,,,,,
+Forbes Point,8/14/14,8:33,9:33,19,5,1,,,,
+Forbes Point,8/19/14,8:30,9:30,1,5,,,,,
+Ft. Casey North,6/20/14,8:40,9:45,40,0,,,,,
+Ft. Casey North,6/27/14,8:45,9:45,35,1,,,,1,
+Ft. Casey North,7/4/14,9:45,10:00,36,3,,2,1,1,
+Ft. Casey North,7/13/14,,,26,5,,2,2,1,
+Ft. Casey North,7/18/14,8:35,9:40,32,8,4,1,,,BE
+Ft. Casey North,7/24/14,9:00,10:00,35,10,,,2,2,
+Ft. Casey North,8/3/14,8:45,9:45,40,11,2,,1,1,
+Ft. Casey North,8/8/14,8:40,9:43,44,15,2,,1,3,
+Ft. Casey North,8/15/14,8:05,9:05,36,15,1,,,,
+Ft. Casey North,8/23/14,8:50,9:50,4,15,,,,,
+Harrington North,6/18/14,7:15,8:15,26,0,,,,,
+Harrington North,6/24/14,6:45,7:45,12,0,,,,,Motor boat
+Harrington North,7/2/14,8:05,9:10,11,0,,,,,
+Harrington North,7/9/14,7:40,8:40,13,2,,1,1,,
+Harrington North,7/16/14,8:45,9:45,9,2,,1,,,
+Harrington North,7/22/14,7:50,8:50,11,2,,,,,
+Harrington North,7/29/14,7:12,8:12,20,2,,1,1,,"GBH, BE"
+Harrington North,8/6/14,7:49,8:49,11,2,,,1,,
+Harrington North,8/15/14,7:40,8:40,11,2,,,,,
+Harrington North,8/20/14,8:40,9:40,0,2,,,,,
+Harrington South,6/18/14,8:30,9:30,23,2,2,,,,
+Harrington South,6/23/14,8:15,9:15,8,2,,,,,Crab Boats
+Harrington South,7/1/14,7:30,8:30,13,2,3,,,2,
+Harrington South,7/7/14,8:05,9:05,13,3,,,,,BE
+Harrington South,7/13/14,7:50,8:50,15,3,,,,,
+Harrington South,7/22/14,8:05,9:05,11,3,,,1,,
+Harrington South,7/28/14,7:25,8:25,17,6,9,,1,,
+Harrington South,8/4/14,7:45,8:45,18,6,,,,,
+Harrington South,8/12/14,8:05,9:05,14,6,,,,,
+Hastie Lake North,6/18/14,7:30,8:30,21,3,3,,,,
+Hastie Lake North,6/25/14,7:30,8:30,4,3,,,,,
+Hastie Lake North,7/2/14,7:30,8:30,21,3,,,,,
+Hastie Lake North,7/9/14,7:30,8:30,0,3,,,,,
+Hastie Lake North,7/16/14,7:30,8:30,16,3,7,,,,
+Hastie Lake North,7/23/15,7:30,7:45,0,3,,,,,Thunderstorm
+Hastie Lake North,7/30/14,7:30,8:30,10,3,,,,,
+Hastie Lake North,8/6/14,7:30,8:30,2,3,,,,,
+Hastie Lake South,6/18/14,7:10,8:10,18,0,,,,,
+Hastie Lake South,6/26/14,7:45,8:45,8,1,,1,,,
+Hastie Lake South,7/3/14,8:10,9:10,16,2,,2,,,BE
+Hastie Lake South,7/9/14,8:08,9:08,6,7,4,2,2,1,
+Hastie Lake South,7/17/14,8:15,9:15,19,9,7,1,3,6,BE
+Hastie Lake South,7/25/14,8:06,9:06,24,10,,2,7,2,"BE, Crows, Seal"
+Hastie Lake South,7/31/14,8:00,9:00,29,10,1,1,6,0,
+Hastie Lake South,8/5/14,7:55,8:55,22,10,,,4,,
+Hastie Lake South,8/16/14,7:45,8:45,21,10,2,1,,,
+Hastie Lake South,8/21/14,7:50,8:50,11,10,,,,,
+Hastie Lake South,8/28/14,7:55,8:55,5,10,,,,,
+Keystone,6/16/14,8:05,9:05,47,,,,,,"Cormorants,Gulls"
+Keystone,6/24/14,6:35,7:35,46,1,,,,1,"BE, Gulls, Tern"
+Keystone,6/30/14,8:10,9:10,44,1,,,,,"BE, Gulls, Tern"
+Keystone,7/7/14,8:00,9:00,50,2,,,,1,BE 
+Keystone,7/14/14,8:40,9:40,30,4,,,,2,BE
+Keystone,7/21/14,8:10,9:10,33,4,,,1,2,
+Keystone,7/28/14,8:00,9:00,49,4,,,3,2,GBH
+Keystone,8/4/14,8:00,9:00,27,4,,1,,,
+Keystone,8/11/14,8:06,9:05,40,5,,1,1,1,
+Keystone,8/18/14,7:55,8:55,14,5,,,1,2,GBH
+Keystone,8/26/14,8:00,9:00,8,5,,1,,,
+Keystone,9/2/14,8:25,9:25,3,5,,1,,,
+"Lagoon North, #1",6/19/14,8:45,9:45,66,8,14,,,,BE
+"Lagoon North, #1",6/26/14,9:00,10:00,66,8,,1,,,BE's
+"Lagoon North, #1",7/13/14,7:30,9:30,71,8,1,,,,BE's
+"Lagoon North, #1",7/18/14,7:00,8:30,67,10,1,1,1,2,BE 
+"Lagoon North, #1",7/29/14,7:30,8:30,66,10,,1,,,
+"Lagoon North, #1",8/1/14,7:30,9:30,,10,,,2,,BE
+"Lagoon North, #1",8/7/14,7:00,8:30,11,10,,,2,,
+"Lagoon North, #1",8/15/14,7:30,8:30,62,10,,,,,
+"Lagoon North, #1",8/24/14,8:30,9:30,20,10,,,,,
+"Lagoon North, #1",8/31/14,7:30,8:10,0,10,,,,,
+Lagoon Point North #2,6/20/14,8:30,9:30,12,1,1,,,,BE
+Lagoon Point North #2,6/26/14,8:40,9:40,6,1,,,,,
+Lagoon Point North #2,7/3/14,8:20,9:20,14,1,,2,1,,
+Lagoon Point North #2,7/10/14,8:30,9:30,20,1,1,,,,BE
+Lagoon Point North #2,7/17/14,8:45,9:45,5,1,,,,,
+Lagoon Point North #2,7/25/14,8:45,9:45,7,1,,,,,BE
+Lagoon Point North #2,7/30/14,8:00,9:00,5,1,,,,,
+Lagoon Point North #2,8/6/14,,,5,1,,,,,
+Lagoon Point North #2,8/12/14,,,5,1,,,,,
+Lagoon Point North #2,8/20/14,,,5,1,,,,,
+Lagoon Point North #0,6/18/14,8:45,9:05,,1,1,,,,
+Lagoon Point North #0,6/27/14,8:40,10:00,23,4,3,1,,,BE
+Lagoon Point North #0,7/3/14,7:20,8:20,20,8,9,,,,People
+Lagoon Point North #0,7/8/14,7:20,8:20,33,8,,,,,
+Lagoon Point North #0,7/19/14,8:50,9:50,50,8,4,2,,,
+Lagoon Point North #0,7/25/14,7:40,8:45,22,11,12,,,3,
+Lagoon Point North #0,8/1/14,7:30,8:30,21,11,,,,,
+Lagoon Point North #0,8/8/14,7:25,8:25,30,11,,,,,
+Lagoon Point North #0,8/22/14,7:45,8:45,14,11,,,,,
+Lagoon Point North #0,8/28/14,7:40,8:10,1,11,,,,,
+Lagoon Point South,6/20/14,8:40,9:10,35,0,,,,,"GBH, BE"
+Lagoon Point South,6/27/14,8:45,10:00,8,1,,1,,,"GBH, BE"
+Lagoon Point South,7/4/14,8:45,10:15,29,15,57,,1,,BE
+Lagoon Point South,7/11/14,8:45,10:05,8,15,,1,,,BE's
+Lagoon Point South,7/18/14,8:45,10:10,38,15,4,1,4,1,
+Lagoon Point South,7/25/14,8:45,10:05,20,15,1,,1,,
+Lagoon Point South,8/1/14,8:40,10:10,41,17,21,1,1,,
+Lagoon Point South,8/8/14,8:45,10:00,10,17,,,,,BE
+Lagoon Point South,8/15/14,8:40,10:00,25,17,,,,,
+Ledgewood,6/19/14,8:05,9:10,47,2,3,,,,
+Ledgewood,6/25/14,8:10,9:10,47,6,4,,1,2,
+Ledgewood,7/4/14,7:48,8:48,38,7,3,,4,1,
+Ledgewood,7/8/14,8:00,9:00,21,9,2,,2,2,BE
+Ledgewood,7/14/14,7:45,8:45,45,9,9,1,3,,BE
+Ledgewood,7/25/14,8:15,9:15,27,12,3,,3,,
+Ledgewood,7/29/14,7:30,8:30,47,12,4,,1,1,
+Ledgewood,8/5/14,7:30,8:30,47,13,8,,1,,BE
+Ledgewood,8/16/14,7:45,8:45,33,13,,,,,
+Ledgewood,8/21/14,7:45,8:45,29,13,,,,,BE
+Ledgewood,8/28/14,8:35,9:35,12,13,,,,,
+Hancock North,6/18/14,8:00,9:00,63,,,,,,
+Hancock North,6/24/14,8:00,9:00,60,,,,,,
+Hancock North,7/8/14,8:43,9:43,32,5,5,,1,,BE
+Hancock North,7/11/14,8:39,9:30,42,7,5,,,,
+Hancock North,7/18/14,7:39,8:39,67,12,42,3,,,BE
+Hancock North,7/25/14,8:32,9:32,57,12,5,2,4,,BE
+Hancock North,8/3/14,7:38,8:38,67,13,29,3,3,,
+Hancock North,8/9/14,7:55,8:55,70,13,,,,,BE
+Hancock North,8/17/14,8:15,9:15,28,13,,,,,
+Hancock South,7/9/14,7:45,8:45,21,1,,1,1,,
+Hancock South,7/16/14,8:30,9:30,21,2,4,,,,
+Hancock South,7/26/14,7:45,8:45,15,3,1,,1,,
+Hancock South,7/31/14,8:00,9:00,9,4,,,1,,BE
+Hancock South,8/7/14,8:00,9:00,6,4,1,,1,,
+Hancock South,8/13/14,8:00,9:00,0,4,,,,,
+Hancock South,8/14/14,8:00,9:00,0,4,,,,,
+Malmo Bluff,6/19/14,8:40,9:40,35,4,2,,1,2,BE
+Malmo Bluff,6/24/14,8:20,9:20,24,12,15,1,,,
+Malmo Bluff,6/30/14,8:30,9:30,34,15,12,,3,3,
+Malmo Bluff,7/10/14,8:15,9:15,27,20,32,1,4,,Hedge trimming
+Malmo Bluff,7/15/14,8:30,9:30,27,21,8,1,5,,Lawn Mowing
+Malmo Bluff,7/24/14,8:15,9:15,39,21,35,,1,,Peregrine Falcon
+Malmo Bluff,7/30/14,8:15,9:15,39,21,2,,3,1,Crows
+Malmo Bluff,8/7/14,8:15,9:15,16,21,,,,,N. Harriers
+Malmo Bluff,8/14/14,8:18,9:18,39,21,,,1,,BE
+Malmo Bluff,8/21/14,8:10,9:10,10,21,,,,,Harrier & Ospreys
+Malmo Bluff,8/20/14,8:00,9:00,0,21,,,,,
+Maylor Point,6/27/14,7:29,8:29,9,3,1,4,2,,BE
+Maylor Point,7/1/14,7:29,8:29,25,3,,,,,kayaker
+Maylor Point,7/7/14,7:17,8:17,17,3,,,,,BE
+Maylor Point,7/14/14,7:24,8:24,22,5,6,2,3,,BE
+Maylor Point,7/21/14,6:50,7:50,17,5,,1,1,1,"BE, Jet"
+Maylor Point,7/30/14,6:50,7:50,26,5,,1,1,,
+Maylor Point,8/4/14,6:56,7:56,20,6,,,2,,
+Maylor Point,8/14/14,6:54,7:54,4,6,,,,,
+Maylor Point,8/19/14,7:02,8:02,2,6,,,,,
+Monroe Landing,6/20/14,7:30,8:30,5,1,1,,,,
+Monroe Landing,6/24/14,7:15,8:15,8,1,,,,,
+Monroe Landing,6/27/14,7:40,8:40,5,1,,,,,
+Monroe Landing,7/10/14,8:02,9:02,7,1,,,1,,
+Monroe Landing,7/16/14,8:00,9:00,8,1,,,,,
+Monroe Landing,7/25/14,8:40,9:40,11,1,,,1,,
+Monroe Landing,7/31/14,8:35,9:35,11,1,,1,1,1,BE
+Monroe Landing,8/5/14,8:25,9:25,11,1,,,,,
+Monroe Landing,8/19/14,7:55,9:00,11,1,,,,,
+Mutiny Sands,6/19/14,8:15,9:15,34,1,1,,,,
+Mutiny Sands,6/25/14,8:05,9:05,11,3,2,,1,,
+Mutiny Sands,7/3/14,8:10,9:10,44,4,2,,,,People
+Mutiny Sands,7/10/14,8:00,9:00,7,5,2,,4,,"GBH, kayakers, wake, walker, power boad"
+Mutiny Sands,7/17/14,8:00,9:00,41,11,5,8,3,,BE
+Mutiny Sands,7/24/14,8:05,9:05,30,11,1,1,7,,
+Mutiny Sands,7/31/14,8:00,9:00,56,13,24,,5,,"Walker, runner, crabber, power boat"
+Mutiny Sands,8/7/14,7:50,8:50,4,13,1,1,3,,
+Mutiny Sands,8/14/14,8:05,9:05,46,13,1,,4,,
+Mutiny Sands,8/21/14,7:54,8:54,2,13,,,,,
+Mutiny Sands,8/28/14,7:40,8:40,1,13,,,,,Man & dog
+Mutiny Sands,9/4/14,7:49,8:15,0,13,,,,,
+Possession Point,6/20/14,7:37,8:37,24,,,,,,
+Possession Point,6/27/14,7:40,8:40,24,2,2,,,,
+Possession Point,7/4/14,7:32,8:40,22,3,5,,,,
+Possession Point,7/11/14,7:45,8:45,10,3,1,3,,,
+Possession Point,7/18/14,7:52,8:52,24,3,,,3,,
+Possession Point,7/25/14,7:20,8:29,16,3,1,4,,,
+Possession Point,8/1/14,7:42,8:47,21,3,,2,,,
+Possession Point,8/8/14,7:51,8:51,7,3,,,,,"kayakers, beach surveyors"
+Possession Point,8/15/14,7:40,8:40,21,3,,,1,1,
+Possession Point,8/30/14,7:48,8:48,2,3,,,,3,
+Possession Point,8/22/14,7:45,8:45,4,3,,,,2,
+Possession Point,9/5/14,7:33,8:33,0,,,,,,
+Pratts Bluff,6/20/14,8:15,9:15,26,2,,1,,1,
+Pratts Bluff,6/26/14,7:49,8:49,13,11,23,,1,,"Boat, people & dogs`"
+Pratts Bluff,7/3/14,7:44,8:44,22,15,35,2,2,,
+Pratts Bluff,7/10/14,7:48,8:48,,15,1,,3,,
+Pratts Bluff,7/17/14,7:40,8:40,18,15,2,,10,,
+Pratts Bluff,7/24/14,7:45,8:45,15,15,1,1,7,,
+Pratts Bluff,7/31/14,7:40,8:40,26,15,,1,1,,BE
+Pratts Bluff,8/7/14,7:34,8:40,25,15,,,,,
+Pratts Bluff,8/14/14,7:35,8:35,25,15,,,,,
+Rolling Hills #1,6/18/14,8:15,9:15,50,10,20,,2,,dog
+Rolling Hills #1,6/25/14,8:00,9:00,21,11,5,,,,
+Rolling Hills #1,7/2/14,8:13,9:13,38,11,18,,4,,
+Rolling Hills #1,7/9/14,8:18,9:18,26,11,,1,7,,"GBH, BE"
+Rolling Hills #1,7/16/14,8:18,9:18,43,11,11,1,1,2,"Gull, crows"
+Rolling Hills #1,7/23/14,8:15,9:15,16,12,2,2,6,2,
+Rolling Hills #1,7/30/14,8:00,9:00,40,14,63,2,1,,
+Rolling Hills #1,8/6/14,8:06,9:06,20,14,,1,2,,
+Rolling Hills #1,8/13/14,8:15,9:15,47,14,17,,1,,
+Rolling Hills #1,8/20/14,8:20,9:20,7,14,,,1,,
+Rolling Hills #1,8/27/14,8:10,9:10,2,14,,,,,
+Rolling Hills #2,6/17/14,7:40,8:40,52,0,,,,,
+Rolling Hills #2,6/23/14,7:05,8:05,28,0,,,,,
+Rolling Hills #2,6/30/14,7:50,8:50,56,1,,,1,1,
+Rolling Hills #2,7/7/14,8:35,9:25,46,1,,,1,,
+Rolling Hills #2,7/14/14,7:40,8:40,49,8,13,2,,,
+Rolling Hills #2,7/21/14,8:45,9:45,39,8,,4,,2,Gulls
+Rolling Hills #2,7/28/14,7:35,8:35,54,8,2,1,5,,
+Rolling Hills #2,8/11/14,7:00,8:00,55,8,9,,2,2,
+Rolling Hills #2,8/22/14,7:42,8:42,44,8,,,,,
+Rolling Hills #2,8/25/14,6:05,7:05,22,8,,,,,
+Rolling Hills #2,9/1/14,7:45,8:45,0,8,,,,,
+Rolling Hills #3,6/23/14,8:20,9:45,28,1,,,,1,BE
+Rolling Hills #3,6/30/14,8:35,9:50,38,3,,2,2,,
+Rolling Hills #3,7/7/14,8:30,9:35,40,3,,1,1,,
+Rolling Hills #3,7/15/14,8:45,9:45,60,3,,,,,
+Rolling Hills #3,7/21/14,8:01,9:02,25,3,,,,1,
+Rolling Hills #3,8/5/14,8:25,9:25,45,3,,,,,
+Rolling Hills #3,8/11/14,8:10,9:10,44,3,,,,,
+Rolling Hills #3,8/18/14,8:45,9:45,51,3,,,,,
+Shore Meadow,6/20/14,7:05,8:05,71,13,26,,,,BE
+Shore Meadow,6/29/14,7:15,8:15,64,28,53,,,,
+Shore Meadow,7/6/14,7:05,8:05,52,28,13,,,,BE's
+Shore Meadow,7/13/14,6:58,7:58,60,30,58,,,,
+Shore Meadow,7/20/14,6:55,7:55,92,32,25,,1,1,
+Shore Meadow,7/27/14,7:00,8:00,80,32,10,3,,1,BE's
+Shore Meadow,8/3/14,7:00,8:00,96,36,43,3,2,2,
+Shore Meadow,8/10/14,7:23,8:23,60,37,3,1,2,1,Hawk
+Shore Meadow,8/17/14,6:40,7:40,76,37,,1,2,,
+Shore Meadow,8/24/14,7:10,8:10,22,37,,,2,,
+Shore Meadow,8/31/14,7:05,8:05,1,37,,,1,,
+Swantown,6/21/14,8:37,9:37,11,0,,,,,BE's
+Swantown,6/26/14,8:30,9:30,8,0,,,,,BE's
+Swantown,7/1/14,8:15,9:15,7,3,,,1,4,
+Swantown,7/10/14,8:12,9:12,13,4,,,2,1,
+Swantown,7/15/14,8:10,9:10,14,4,,,1,,BE
+Swantown,7/25/14,8:13,9:13,11,4,,,4,,Crow
+Swantown,7/29/14,8:10,9:10,21,4,,,2,2,BE
+Swantown,8/7/14,8:05,9:05,3,6,,,1,1,
+Swantown,8/12/14,8:35,9:35,15,9,,,1,1,BE
+Swantown,8/21/14,8:00,9:00,10,7,,2,3,1,
+Swantown,8/26/14,8:10,9:15,5,7,,2,,2,
+Swantown,9/5/14,8:10,9:10,0,7,,,,,
