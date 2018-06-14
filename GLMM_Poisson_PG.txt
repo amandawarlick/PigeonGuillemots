@@ -1,0 +1,16 @@
+model
+{
+    alpha ~ dunif(-20, 20)
+    beta1 ~ dunif(-10, 10)
+    beta2 ~ dunif(-10, 10)
+    beta3 ~ dunif(-10, 10)
+    tau <- 1/(sd * sd)
+    sd ~ dunif(0.00000E+00, 3)
+    for (i in 1:n) {
+        C[i] ~ dpois(lambda[i])
+        log(lambda[i]) <- log.lambda[i]
+        log.lambda[i] <- alpha + beta1 * year[i] + beta2 * pow(year[i], 
+            2) + beta3 * pow(year[i], 3) + eps[i]
+        eps[i] ~ dnorm(0.00000E+00, tau)
+    }
+}

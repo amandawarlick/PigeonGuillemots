@@ -1,13 +1,16 @@
 ---
-title: "PigeonGuillemot - Whidbey"
-output: word_document
+title: "Pigeon Guillemot Data Exploration - Whidbey"
+output:
+  word_document:
+    reference_docx: mytemplate.docx
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = F, error = F, messages = F)
+knitr::opts_chunk$set(echo = F, warning = F, error = F, messages = F, results = 'asis', fig.width = 11, fig.height = 8)
 ```
 
-```{r}
+```{r, results = 'hide'}
+
 library(tidyr)
 #library(ggmap)
 library(data.table)
@@ -26,7 +29,6 @@ library(stats)
 library(zoo)
 library(sciplot) #se()
 library(gvlma) #universal assumptions test gvlma(mod)
-#library(PMCMR) 
 
 fig_theme <- function(...) {
   theme(text = element_text(family = 'Times'),
@@ -46,13 +48,34 @@ fig_theme <- function(...) {
     legend.text = element_text(size = 8),
     ...)
 }
+
+fig_theme_1 <- function(...) {
+  theme(text = element_text(family = 'Times'),
+    #text = element_text(size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 11),
+    axis.text.y = element_text(vjust = 0.5, color = "black", size = 11), 
+    axis.title = element_text(size = 12),
+    axis.line.y = element_line(colour = "black"), 
+    axis.line.x = element_line(colour = "black"), 
+    plot.background = element_rect(), 
+    strip.text = element_text(size = 10),
+    #strip.background = element_blank(),
+    panel.background = element_blank(), 
+    panel.grid = element_blank(), 
+    legend.title = element_blank(),
+    legend.key = element_blank(),
+    legend.text = element_text(size = 10),
+    ...)
+}
+
 color3 <- c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c")
+
 ```
 
 
-```{r data}
+```{r data, results = 'hide', message = FALSE}
 
-#read in and tidy data
+#read in data, created needed columns
 
 setwd("~/Documents/R/SAFS/PigeonGuillemots/WhidbeyData")
 
@@ -64,7 +87,7 @@ data_burrow <- read.csv("burrow_08_15.csv", stringsAsFactors = F) %>%
   mutate(Other = coalesce(as.numeric(Other), 0)) %>%
   mutate(burrow_visit = coalesce(as.numeric(burrow_visit), 0)) %>%
   mutate(burrow_name = gsub("-","", burrow_name)) 
-data_PG <- read.csv("PGdata_08_15.csv", stringsAsFactors = F) %>%
+data_PG <- read.csv("PGdata_08_17.csv", stringsAsFactors = F) %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
   transform(year = format(date, "%Y")) %>%
   mutate(PG_count = as.numeric(PG_count), burrow_count = as.numeric(burrow_count), burrow_visit = as.numeric(burrow_visit)) 
@@ -72,19 +95,47 @@ data_PG <- read.csv("PGdata_08_15.csv", stringsAsFactors = F) %>%
 data_PG[is.na(data_PG)] <- 0
 
 data <- data_PG %>%
-  merge(data_burrow, by = c("site", "date", "year"), all = T) %>%
+  merge(data_burrow, by = c("site", "date", "year", "intern_data"), all = T) %>%
   rename(burrow_visits_day = burrow_visit.x, burrow_visit = burrow_visit.y) %>%
   transform(tot_prey = Gunnel + Sculpin + Other) %>%
   transform(week_year = strftime(date, format = "%V")) %>%
   transform(week_study = as.numeric(week_year)) %>%
   transform(week_year = as.numeric(as.character(week_year))) %>%
   select(site, year, date, PG_count, burrow_name, burrow_count, burrow_visits_day, burrow_visit,
-         Gunnel, Sculpin, Other, tot_prey, week_year, week_study)
+         Gunnel, Sculpin, Other, tot_prey, week_year, week_study, intern_data)
 
+#write.csv(data, "PG_data_all.csv", row.names = F)
 
 ```
 
-```{r}
+#Data Availability and Status
+
+###Adult counts  
++ 2008-2016 Whidbey; still need to compile 2017 by hand (Ryan)
++ Have added intern counts for 2010, 2011, 2012 at Rolling Hills (multiple counts/day, once/week); 
++ Still need to compile same years at Mutiny Sands and Harrington N/S and Shore Meadows
++ Intern data are different depending on the intern/year. 2010-2012 is timed counts for 4-5 hours, more recent years are one count per day but multiple survey days per week. Can these be combined for multiple counts per week?  
+
++ South Sound: Terence's intern is working on it.
++ Sequim: spoke with Ed and Jeff - must be pulled from website (Ryan)
+
+###Prey deliveries/nest survival  
++ 2008-2014: needs a lot of checking  
++ 2015-2017: must be compiled by hand (Ryan)
++ Intern data 2010-2012 does not contain non-prey visits (VB), which means it is hard to confirm the survey started before prey were being delivered. Apparently they use the 3-week delivery criteria for a successful fledge. I'm thinking we can improve on that, because they probably don't exclude weeks where deliveries have already started.
+
+###Quality control  
++ (mis)matching site-date combinations  
++ Prey deliveries when PG_count = 0
++ 10% of cases where day-level total visits doesn't match summed burrow-level visits
+
+###Questions for Frances  
++ Why do some colonies have so few observation days (Coupeville Wharf)
++ Why wouldn't a colony have data for a given year (Hancock South, 2016)
+
+
+
+```{r, results = 'hide', message = FALSE}
 ##Questions to answer and issues to fix
 
 #Just under 500 cases where data$burrow_name is NA, which means there was no site-date combo in burrow_data csv to match a site-date combo in PG_data
@@ -95,16 +146,6 @@ mismatches <- data %>% filter(is.na(burrow_name))
 mystery_prey <- data %>%
   filter(PG_count == 0 & burrow_visits_day > 0)
 
-
-  
-```
-
-```{r }
-
-##data exploration
-
-#checking burrow visit sums
-
 #~330 instances where the count of VB at the burrow-level does not equal 
 #what is noted at the site level for a given day
 ##are certain years (or sites) the culprits?
@@ -114,19 +155,26 @@ bsums <- data %>%
   filter(burrow_visits_day != cnt) %>%
   nrow()/nrow(data)
 
+```
+
+```{r, results = 'hide', message = FALSE}
+
+##data exploration
+
 #check duplicate site-date-burrow: no burrow_name has more than one row per date - no duplictes
 dups <- data %>%
   group_by(site, date, burrow_name) %>%
   summarize(cnt = n_distinct(date)) %>%
   filter(cnt > 1) %>% nrow()
 
-#check consistency in number of week observations per site per season?
-weeks <- data %>%
+#consistency in number of week observations per site per season
+weeks <- data %>% 
+  filter(intern_data != "Y") %>%
   group_by(site, year) %>%
   summarize(start_week = min(week_study), end_week = max(week_study)) %>%
   transform(study_length = end_week - start_week)
 
-weeks_plot_data <- weeks %>%
+weeks_plot_data <- weeks %>% 
   group_by(site) %>%
   summarize(ymin = min(study_length), ymax = max(study_length), 
             mean = mean(study_length), se = se(study_length)) %>%
@@ -145,7 +193,7 @@ weeks_plot <- ggplot(weeks_plot_data, aes(as.numeric(as.character(year)), study_
 
 weeks_range <- ggplot(weeks_plot_data, aes(as.numeric(as.character(year)), study_length)) +
   geom_linerange(aes(ymin = ymin, ymax = ymax)) + geom_point() +
-  xlab("") + ylab("Number of Weeks") +
+  xlab("") + ylab("Number of Weeks") + scale_x_continuous(breaks = c(2008, 2010, 2012, 2014, 2016)) +
   facet_wrap(~site) + fig_theme()
 
 #differences in start weeks over years?
@@ -153,9 +201,15 @@ weeks_range <- ggplot(weeks_plot_data, aes(as.numeric(as.character(year)), study
 #start in 2008 in a few sites and a very late start in 2009
 
 #check number of burrows per site across years: looks fairly consistent with the exception of shore meadows (2010) and double bluff north/south (2010)
-burrow_count <- data %>%
+burrow_count <- data %>% 
+  filter(intern_data != 'Y') %>%
   group_by(site, year) %>%
   summarize(cnt = n_distinct(burrow_name))
+
+burrow_count_plot <- ggplot(burrow_count, aes(as.numeric(as.character(year)), cnt)) +
+  geom_line() + geom_point() +
+  xlab("") + ylab("Number of Burrows") +
+  facet_wrap(~site) + fig_theme()
 
 #number of years of data per site: 30 of the 40 unique site names have more than two years of data
 site_yrs <- data %>%
@@ -166,11 +220,23 @@ site_yrs <- data %>%
 
 ```
 
-```{r}
+###Burrow counts and study length  
+
+Number of burrows identified per site per year seems reasonably consistent (ignore year > 2014). Some sites range more than others in terms of how long the study was conducted each year.  Not all sites can be used for looking at nest fate.
+```{r, results = 'hide', message = FALSE}
+burrow_count_plot
+
+weeks_range
+
+```
+
+
+```{r, results = 'hide', message = FALSE}
 
 ##colony-level counts over the season - mean per week across years
 
-col_count_week_data <- data %>% 
+col_count_week_data <- data %>%
+  filter(intern_data != "Y") %>%
   select(site, week_study, year, PG_count) %>%
   group_by(site, week_study) %>%
   summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T))
@@ -187,76 +253,127 @@ col_count_week <- ggplot(col_count_week_data %>% filter(se > 0), #filtering for 
 #island-level total; sum of season average across colony sites
 
 island_count_yr <- data %>% 
+  filter(intern_data != "Y") %>%
   group_by(year, site) %>% #first get mean season count per each site
   summarize(PG_count_mean = mean(PG_count, na.rm = T)) %>%
   group_by(year) %>% #sum across sites
   summarize(PG_count = sum(PG_count_mean, na.rm = T))
 
-ggplot(island_count_yr, aes(as.numeric(as.character(year)), PG_count)) +
+isl_tot <- ggplot(island_count_yr, aes(as.numeric(as.character(year)), PG_count)) +
   geom_point() + xlab("") + ylab("Sum of Season Averages across All Sites") +
-  geom_line() +
-  fig_theme(legend.position = 'none')
+  geom_line() + 
+  scale_x_continuous(breaks = 2008:2017) +
+  fig_theme_1(legend.position = 'none')
 
 #island-level average; averages across dates and across colony sites - more consistent than I expected?
 #should zeros be included here?
 island_mean <- data %>% 
+  filter(intern_data != "Y") %>%
   group_by(year) %>%
   summarize(mean_cnt = mean(PG_count, na.rm = T), 
             se = se(PG_count, na.rm = T))
 
-ggplot(island_mean, aes(as.numeric(as.character(year)), mean_cnt)) +
+isl_mean <- ggplot(island_mean, aes(as.numeric(as.character(year)), mean_cnt)) +
   geom_line() +
   geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
-  xlab("") + ylab("Mean Daily Site Count") +
-  fig_theme()
+  xlab("") + ylab("Mean Daily Site Count") + scale_x_continuous(breaks = 2008:2017) +
+  fig_theme_1()
 
 
 ```
+
+
+###Adult counts  
+
+Many sites show relative consistency in the average number of adults counted per week across years. This consistency is also reflected at the island-level. Counts dropped in 2015?
+```{r, results = 'hide', message = FALSE}
+col_count_week
+isl_mean
+isl_tot
+```
+
+####Multiple counts - intern data  
+
+We have multiple counts for ~5 colonies. For 2010-2012, we have 10-11 counts per week. For 2015-2017, we have 2-3 counts per week. Variation is less in earlier years because there are 10 counts on the same day, and so are less affected by anything that could be different throughout the week - some days may just be quieter than others (weather/ocean conditions, feeding opportunities, beach disturbance), so probably best not to combine the two types?  
+
+The group made a point to estimate fledgling success in 2013 for 2009-2013.  
+```{r, results = 'hide', message = FALSE}
+intern_counts <- data_PG %>%
+  filter(intern_data == 'Y') %>%
+  transform(week_year = strftime(date, format = "%V")) %>%
+  transform(week_study = as.numeric(week_year)) 
+
+intern_week_counts <- intern_counts %>%
+  transform(id = 1:nrow(intern_counts)) %>%
+  group_by(site, year, week_study) %>%
+  summarize(cnt = n_distinct(id))
+
+int_count_data <- intern_counts %>%
+  group_by(site, year, week_study) %>%
+  summarize(mean_cnt = mean(PG_count), se = se(PG_count))
+
+int_count <- ggplot(int_count_data, aes(week_study, mean_cnt)) +
+  geom_line() + geom_point() +
+  geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
+  xlab("") + ylab("Mean Weekly Site Count") +
+  facet_wrap(~site + year) +
+  scale_x_continuous(limit = c(0,15), breaks = c(3,6,9,12), labels = c(3,6,9,12)) +
+  fig_theme()
+
+int_count
+
+```
+
 
 ```{r}
 
 #assumptions testing
 
+#daily counts at island level
+# island_counts_daily <- data %>%
+#   select(year, date, week_study, PG_count) %>%
+#   filter(!is.na(PG_count)) %>% distinct()
+# 
+# mod <- lm(PG_count ~ year + week_study, data = island_counts_daily)
+# gvlma(mod)
+
 #daily counts at colony level
-site_counts_daily <- data %>%
-  select(year, date, site, PG_count) %>% 
+site_counts_daily <- data %>% 
+  filter(intern_data != 'Y') %>%
+  select(year, date, week_study, site, PG_count) %>% 
   filter(!is.na(PG_count)) %>% distinct()
 
 mod <- lm(PG_count ~ year + site, data = site_counts_daily)
-mod <- lm(PG_count ~ year, data = site_counts_daily)
+#mod <- lm(PG_count ~ year + site + week_study, data = site_counts_daily)
 par(mfrow = c(2, 2))
-plot(model)
-
-mod <- lm(PG_count ~ year + site, data = site_counts_daily)
+plot(mod)
 gvlma(mod)
 
 #yearly counts at colony level
 site_counts_yearly <- data %>% 
-  group_by(site, year) %>%
+  group_by(site, year, week_study) %>%
   summarize(mean_cnt = mean(PG_count, na.rm = T), 
             se = se(PG_count, na.rm = T))
 
-mod <- lm(PG_count ~ year + site, data = site_counts_yearly)
-gvlma(mod)
+mod_1<- lm(mean_cnt ~ year + site, data = site_counts_yearly)
+# summary(mod_1)
+# gvlma(mod_1)
+# plot(mod_1)
 
-#daily counts at island level
-island_counts_daily <- data %>%
-  select(year, date, PG_count) %>% 
-  filter(!is.na(PG_count)) %>% distinct()
 
-mod <- lm(PG_count ~ year, data = island_counts_daily)
-gvlma(mod)
-
-  
 ```
 
-```{r}
+###Prey deliveries
+
+My suspicion is that the seasonal deliveries pattern/peak is smoothed out across years, which is why it is more evident in the island-level figure than at each site.  
+```{r, results = 'hide', message = FALSE}
 #prey delivery timing
 
 #all prey deliveries - colony level
-prey_dels_daily <- data %>% filter(year != 2015) %>%
+prey_dels_daily <- data %>% filter(as.numeric(year) < 8) %>%
   group_by(week_study, site) %>% 
-  summarize(mean_dels = mean(tot_prey, na.rm = T), se = se(tot_prey, na.rm = T))  #week averages across years
+  summarize(mean_dels = mean(tot_prey, na.rm = T), se = se(tot_prey, na.rm = T)) %>% #week averages across years
+  filter(!is.na(mean_dels)) #taking out single-year rows, I think
 ggplot(prey_dels_daily, 
        aes(week_study, mean_dels, group = site, color = site)) +
   geom_line() + geom_point() + scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
@@ -265,10 +382,10 @@ ggplot(prey_dels_daily,
   xlab("Study Week") + ylab("Mean Weekly Prey Deliveries") +
   facet_wrap(~site) + 
   #scale_color_brewer(values = color3) +
-  fig_theme(legend.position = 'none')
+  fig_theme_1(legend.position = 'none')
 
 #all prey deliveries - island level
-isl_prey_dels_weekly <- data %>% filter(year != 2015) %>%
+isl_prey_dels_weekly <- data %>% filter(as.numeric(year) < 8) %>%
   group_by(week_study, year) %>% 
   summarize(tot_dels = sum(tot_prey, na.rm = T)) %>% #first sum all sites
   group_by(week_study) %>%
@@ -279,21 +396,21 @@ ggplot(isl_prey_dels_weekly,
                                                 labels = c(3,6,9,12,15)) +
   geom_ribbon(aes(ymin = mean_dels - se, ymax = mean_dels + se), alpha = 0.4, linetype = 'blank') +
   xlab("Study Week") + ylab("Mean Weekly Prey Deliveries") +
-  fig_theme(legend.position = 'none') 
+  fig_theme_1(legend.position = 'none') 
 
 ```
 
-```{r}
+```{r, results = 'hide', message = FALSE}
   
 #all visits (prey and no prey) according to counts df (rather than burrow level); not sure if this is meaningful
 
 #island-level
-isl_burrow_visits_weekly <- data %>% 
+isl_tot_visits_weekly <- data %>% 
   group_by(week_study, year) %>%
   summarize(tot_visits = sum(burrow_visits_day), na.rm = T) %>% #first sum all sites
   group_by(week_study) %>%
   summarize(mean_visits = mean(tot_visits, na.rm = T), se = se(tot_visits, na.rm = T))
-ggplot(isl_burrow_visits_weekly, 
+ggplot(isl_tot_visits_weekly, 
        aes(week_study, mean_visits)) +
   geom_line() + geom_point() + scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
                                                 labels = c(3,6,9,12,15)) +
@@ -305,7 +422,7 @@ ggplot(isl_burrow_visits_weekly,
 tot_visits_weekly <- data %>%
   group_by(week_study, site) %>% 
   summarize(mean_BV = mean(burrow_visits_day, na.rm = T), se = se(burrow_visits_day, na.rm = T)) #week averages across years
-ggplot(tot_visits_daily, 
+ggplot(tot_visits_weekly, 
        aes(week_study, mean_BV, group = site, color = site)) +
   geom_line() + geom_point() + scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12),
                                                 labels = c(3,6,9,12)) +
@@ -317,7 +434,10 @@ ggplot(tot_visits_daily,
 
 ```
 
-```{r}
+###Prey composition
+
+Not sure we have a use for this, but I was mainly interested in looking for (in)consistencies and general patterns.
+```{r, results = 'hide', message = FALSE}
 #prey delivery composition
 
 #prey composition over the season - island level
@@ -331,7 +451,7 @@ isl_prey_comp <- data %>%
 ggplot(isl_prey_comp, aes(week_study, value, group = variable, fill = variable)) +
   geom_bar(stat = 'identity', position = 'dodge') +
   xlab("Study Week") + ylab("Mean Prey Deliveries") + 
-  fig_theme() + scale_fill_manual(values = color3) 
+  fig_theme_1(legend.position = 'top') + scale_fill_manual(values = color3) 
 
 #density plot
 isl_prey_comp_dens <- data %>%
@@ -339,15 +459,15 @@ isl_prey_comp_dens <- data %>%
   melt(id.vars = "date") %>%
   filter(value > 0) %>%
   transform(yday = yday(date))
-ggplot(isl_prey_comp_dens, aes(yday, color = variable)) +
-  geom_line(stat = 'density') + 
-  geom_rug(sides = "b", aes(y = 0), position = 'jitter', alpha = 0.25) +
-  xlab("") + ylab("Density") + 
-  fig_theme() + scale_color_manual(values = color3) +
-  scale_fill_manual(values = color3) +
-  scale_y_continuous(limit = c(0, 0.03)) +
-  scale_x_continuous(limit = c(150, 270), breaks = c(150, 180, 210, 240, 270),
-                     labels = c('Jun', 'Jul', 'Aug', 'Sep', 'Oct'))
+# ggplot(isl_prey_comp_dens, aes(yday, color = variable)) +
+#   geom_line(stat = 'density') + 
+#   geom_rug(sides = "b", aes(y = 0), position = 'jitter', alpha = 0.25) +
+#   xlab("") + ylab("Density") + 
+#   fig_theme() + scale_color_manual(values = color3) +
+#   scale_fill_manual(values = color3) +
+#   scale_y_continuous(limit = c(0, 0.03)) +
+#   scale_x_continuous(limit = c(150, 270), breaks = c(150, 180, 210, 240, 270),
+#                      labels = c('Jun', 'Jul', 'Aug', 'Sep', 'Oct'))
 
 #prey composition over the season - colony level
 col_prey_comp <- data %>%

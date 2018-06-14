@@ -1,0 +1,17 @@
+model
+{
+    for (j in 1:nsite) {
+        alpha[j] ~ dnorm(0.00000E+00, 0.01)
+    }
+    for (i in 2:nyear) {
+        eps[i] ~ dnorm(0.00000E+00, 0.01)
+    }
+    eps[1] <- 0.00000E+00
+    for (i in 1:nyear) {
+        for (j in 1:nsite) {
+            C[i, j] ~ dpois(lambda[i, j])
+            lambda[i, j] <- exp(log.lambda[i, j])
+            log.lambda[i, j] <- alpha[j] + eps[i]
+        }
+    }
+}
