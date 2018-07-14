@@ -1,0 +1,9 @@
+model
+{
+    alpha ~ dnorm(0.00000E+00, 1.00000E-04)
+    beta1 ~ dnorm(0.00000E+00, 1.00000E-04)
+    for (i in 1:nyears) {
+        C[i] ~ dbin(p[i], N[i])
+        logit(p[i]) <- alpha + beta1 * year[i]
+    }
+}

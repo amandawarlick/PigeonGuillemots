@@ -1,13 +1,11 @@
 model
 {
-    alpha ~ dunif(-20, 20)
-    beta1 ~ dunif(-10, 10)
-    beta2 ~ dunif(-10, 10)
-    beta3 ~ dunif(-10, 10)
+    alpha ~ dnorm(0.00000E+00, 1.00000E-04)
+    beta1 ~ dnorm(0.00000E+00, 1.00000E-04)
     for (i in 1:n) {
         C[i] ~ dpois(lambda[i])
         log(lambda[i]) <- log.lambda[i]
-        log.lambda[i] <- alpha + beta1 * year[i] + beta2 * pow(year[i], 
-            2) + beta3 * pow(year[i], 3)
+        log.lambda[i] <- alpha + beta1 * year[i]
+        resi[i] <- (C[i] - lambda[i])/(sqrt(lambda[i]) + e)
     }
 }

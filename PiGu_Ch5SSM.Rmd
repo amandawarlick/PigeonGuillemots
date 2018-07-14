@@ -1,0 +1,160 @@
+---
+title: "Ch. 5 SSM"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(data.table)
+library(ggfortify)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(scales)
+library(reshape2)
+library(broom) #tidy() augment()
+# library(stringr)
+# library(magrittr) 
+#library(ggTimeSeries)
+library(stats) 
+library(zoo)
+library(sciplot)
+library(R2OpenBUGS)
+WINE="/usr/local/Cellar/wine/3.0_1/bin/wine"
+WINEPATH="/usr/local/Cellar/wine/3.0_1/bin/winepath"
+OpenBUGS.pgm="/Users/amandawarlick/.wine/drive_c/Program\ Files/OpenBUGS/OpenBUGS323/OpenBUGS.exe"
+setwd("~/Documents/R/SAFS/PigeonGuillemots")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+#PiGu data
+PG_data_BUGS <- read.csv("PG_data_all.csv", header = T) %>%
+  select(year, date, site, week_study, PG_count, intern_data) %>%
+  #filter(intern_data != 'Y') %>%
+  distinct() #%>%
+  #filter(site %in% c("Cliffside", "Double Bluff North", "Double Bluff South", "Forbes Point", "Fort Casey",
+                     # "Harrington North", "Harrington South", "Hastie Lake South", "Keystone", "Lagoon North #1",
+                     # "Lagoon North #2", "Lagoon North #3", "Lagoon South", "Ledgewood", "Malmo Bluff", 
+                     # "Maylor Point", "Monroe Landing", "Mutiny Sands", "Possession Point", "Pratts Bluff",
+                     # "Rolling Hills #1", "Rolling Hills #2", "Shore Meadows", "Swantown"))
+
+PG_weekly_trim_isl <- read.csv("weekly_count_isl_trim.csv", header = T)
+PG_weekly_trim_col <- read.csv("weekly_count_col_trim.csv", header = T)
+
+PG_yearly_island <- PG_data_BUGS %>%
+  filter(intern_data != 'Y') %>%
+  filter(!is.na(PG_count)) %>%
+  group_by(week_study, year) %>%
+  summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
+  group_by(year) %>%
+  summarize(PG_count = mean(cnt, na.rm = T)) #mean of weeks
+
+##Why is this different from above?! Funky site names sneaking in??
+# test <- PG_data_BUGS %>%
+#   filter(intern_data != 'Y') %>%
+#   filter(!is.na(PG_count)) %>%
+#   select(site, week_study, year, PG_count) %>%
+#   distinct() %>%
+#   group_by(site, year) %>%
+#   summarize(mean_cnt = mean(PG_count, na.rm = T)) %>%
+#   group_by(year) %>%
+#   summarize(PG_count = sum(mean_cnt, na.rm = T))
+
+PG_yearly_isl_trim <- PG_weekly_trim_isl %>%
+  group_by(year) %>%
+  summarize(PG_count = mean(cnt))
+
+
+
+```
+
+```{r}
+
+ssm <- function() {
+  
+  # Priors and constraints
+         logN.est[1] ~ dnorm(5.6, 0.01)       # Prior for initial population size
+         mean.r ~ dnorm(1, 0.001)             # Prior for mean growth rate
+         sigma.proc ~ dunif(0, 1)             # Prior for sd of state process
+         sigma2.proc <- pow(sigma.proc, 2)
+         tau.proc <- pow(sigma.proc, -2)
+         sigma.obs ~ dunif(0, 1)              # Prior for sd of observation process
+         sigma2.obs <- pow(sigma.obs, 2)
+         tau.obs <- pow(sigma.obs, -2)
+         
+         # Likelihood
+         # State process
+         for (t in 1:(T-1)){
+         r[t] ~ dnorm(mean.r, tau.proc)
+         logN.est[t+1] <- logN.est[t] + r[t]
+         }
+         # Observation process
+         for (t in 1:T) {
+         y[t] ~ dnorm(logN.est[t], tau.obs)
+         }
+         
+         # Population sizes on real scale
+         for (t in 1:T) {
+         N.est[t] <- exp(logN.est[t])
+         }
+}
+
+write.model(ssm, "ssm.txt")
+model.file = paste(getwd(),"ssm.txt", sep="/")
+
+pyears <- 4
+PG <- c(PG_yearly_isl_trim$PG_count, rep(NA, pyears))
+year <- 2008:(2017 + pyears)
+
+#bundle data
+bugs.data <- list(y = log(PG), T = length(year))
+
+#inits
+inits <- function() {list(sigma.proc = runif(1, 0, 1), 
+                          mean.r = rnorm(1), 
+                          sigma.obs = runif(1, 0, 1), 
+                          logN.est = c(rnorm(1, 5.6, 0.1), rep(NA, (length(year)-1))))}
+#parameters
+params <- c("r", "mean.r", "sigma2.obs", "sigma2.proc", "N.est")
+
+#MCMC
+ni <- 10000
+nt <- 6
+nb <- 1000
+nc <- 3
+
+out <- bugs(bugs.data, inits, params, model.file, n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, 
+            OpenBUGS.pgm=OpenBUGS.pgm,
+            WINE=WINE,
+            WINEPATH=WINEPATH,
+            useWINE=TRUE, debug = T)
+print(out, 3)
+
+# Draw figure
+# VERY interesting how different it looks with the trimmed data - seems to remove the high 2008 value, must check
+     fitted <- lower <- upper <- numeric()
+     year <- 2008:2021
+     n.years <- length(PG)
+     for (i in 1:n.years){
+       fitted[i] <- mean(out$sims.list$N.est[,i])
+       lower[i] <- quantile(out$sims.list$N.est[,i], 0.025)
+       upper[i] <- quantile(out$sims.list$N.est[,i], 0.975)}
+     m1 <- min(c(fitted, PG, lower), na.rm = TRUE)
+     m2 <- max(c(fitted, PG, upper), na.rm = TRUE)
+     par(mar = c(4.5, 4, 1, 1))
+     plot(0, 0, ylim = c(m1, m2), xlim = c(1, n.years), ylab = "Population size", xlab = "Year", col = "black", type = "l", lwd = 2, axes = FALSE, frame = FALSE)
+     axis(2, las = 1)
+     axis(1, at = 1:n.years, labels = year)
+     polygon(x = c(1:n.years, n.years:1), y = c(lower, upper[n.years:1]), col = "gray90", border = "gray90")
+     points(PG, type = "l", col = "black", lwd = 2)
+     points(fitted, type = "l", lty = 3, col = "black", lwd = 2)
+     legend(x = 1, y = 150, legend = c("Counts", "Estimates"), lty = c(1, 1), lwd = c(2, 2), col = c("black", "blue"), bty = "n", cex = 1)
+     
+     # Probability of N(2021) < N(2017) looks at the number of simulations that are less I think? 63%
+     mean(out$sims.list$N.est[,14] < out$mean$N.est[10])
+
+```
+

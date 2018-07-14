@@ -1,0 +1,14 @@
+model
+{
+    alpha ~ dnorm(0.00000E+00, 1.00000E-04)
+    beta1 ~ dnorm(0.00000E+00, 1.00000E-04)
+    tau <- pow(sd, -2)
+    sd ~ dunif(0.00000E+00, 1000)
+    for (i in 1:n) {
+        C[i] ~ dnorm(lambda[i], tau)
+        lambda[i] <- alpha + beta1 * year[i]
+    }
+    for (i in 1:n) {
+        resi[i] <- C[i] - lambda[i]
+    }
+}

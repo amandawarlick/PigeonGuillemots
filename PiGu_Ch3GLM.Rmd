@@ -1,0 +1,322 @@
+---
+  title: "Ch. 3 GLM"
+output: word_document
+---
+  
+```{r setup, include=FALSE}
+library(tidyr)
+library(broom) #tidy() augment()
+library(data.table)
+library(ggfortify)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(scales)
+library(reshape2)
+library(lme4)
+# library(stringr)
+# library(magrittr) 
+#library(ggTimeSeries)
+library(stats) 
+library(zoo)
+library(sciplot)
+#library(R2OpenBUGS)
+library(jagsUI)
+# WINE="/usr/local/Cellar/wine/3.0_1/bin/wine"
+# WINEPATH="/usr/local/Cellar/wine/3.0_1/bin/winepath"
+# OpenBUGS.pgm="/Users/amandawarlick/.wine/drive_c/Program\ Files/OpenBUGS/OpenBUGS323/OpenBUGS.exe"
+setwd("~/Documents/R/SAFS/PigeonGuillemots")
+#knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+#PiGu data
+PG_data_BUGS <- read.csv("PG_data_all.csv", header = T) %>%
+  select(year, date, site, week_study, PG_count, intern_data) %>%
+  filter(intern_data != 'Y') %>%
+  distinct() #%>%
+# filter(site %in% c("Cliffside", "Double Bluff North", "Double Bluff South", "Forbes Point", "Fort Casey",
+#                    "Harrington North", "Harrington South", "Hastie Lake South", "Keystone", "Lagoon North #1",
+#                    "Lagoon North #2", "Lagoon North #3", "Lagoon South", "Ledgewood", "Malmo Bluff", 
+#                    "Maylor Point", "Monroe Landing", "Mutiny Sands", "Possession Point", "Pratts Bluff",
+#                    "Rolling Hills #1", "Rolling Hills #2", "Shore Meadows", "Swantown"))
+
+PG_weekly_trim_isl <- read.csv("weekly_count_isl_trim.csv", header = T, stringsAsFactors = F)
+PG_weekly_trim_col <- read.csv("weekly_count_col_trim.csv", header = T, stringsAsFactors = F)
+prey_weeks <- read.csv("prey_weeks.csv", header = T, stringsAsFactors = F)
+
+perc_suc_col <- read.csv("perc_suc_col.csv", header = T, stringsAsFactors = F)
+perc_suc_isl <- read.csv("perc_suc_isl.csv", header = T, stringsAsFactors = F)
+
+fledge_col <- prey_weeks %>%
+  filter(prey_week_range > 2) %>%
+  group_by(year, site) %>%
+  summarize(cnt = n_distinct(burrow_name)) %>%
+  transform(year = as.numeric(as.character(year)))
+
+fledge_isl <- prey_weeks %>%
+  filter(prey_week_range > 2) %>%
+  group_by(year) %>%
+  summarize(cnt = n_distinct(burrow_name)) %>%
+  transform(year = as.numeric(as.character(year)))
+
+#untrimmed
+# PG_yearly_island <- PG_data_BUGS %>%
+#   filter(intern_data != 'Y') %>%
+#   filter(!is.na(PG_count)) %>%
+#   group_by(week_study, year) %>%
+#   summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
+#   group_by(year) %>%
+#   summarize(PG_count = mean(cnt, na.rm = T)) #mean of weeks
+
+PG_yearly_trim_isl <- PG_weekly_trim_isl %>%
+  group_by(year) %>%
+  summarize(cnt_mean = round(mean(cnt),0))
+
+PG_yearly_trim_col <- PG_weekly_trim_col %>%
+  group_by(year, site) %>%
+  summarize(cnt_mean = round(mean(PG_count), 0))
+
+
+```
+
+
+##################### Use real data ##################
+
+Basic Poisson GLM for (a) adult counts, (b) fecundity (successful fledglings), and 
+(c) binomial GLM for proportion of successful nesting pairs
+```{r}
+
+### (a): poisson GLM for adult counts
+
+#bundle up the data
+#attach(PG_yearly_trim_isl)
+mean.year <- mean(1:n_distinct(PG_yearly_trim_isl$year))
+sd.year <- sd(1:n_distinct(PG_yearly_trim_isl$year))
+jags.data <- list(C = PG_yearly_trim_isl$cnt_mean, n = length(PG_yearly_trim_isl$cnt_mean),
+                  year = (1:n_distinct(PG_yearly_trim_isl$year) - mean.year)/sd.year, e = 0.0001) #center/standardize year covariate
+
+#run model in R/MLE
+summary(out_ML <- glm(cnt_mean ~ year, data = PG_yearly_trim_isl, family = poisson))
+
+#specify model in BUGS
+GLM_Poisson_PG <- function() {
+  
+  #priors
+  alpha ~ dnorm(0, 0.0001)
+  beta1 ~ dnorm(0, 0.0001)
+  
+  #likelihood
+  for(i in 1:n) {
+    C[i] ~ dpois(lambda[i]) #distribution of random element
+    log(lambda[i]) <- log.lambda[i] #link function
+    log.lambda[i] <- alpha + beta1*year[i]  #linear predictor
+    resi[i] <- (C[i]-lambda[i]) / (sqrt(lambda[i])+e)
+  }
+}
+
+write.model(GLM_Poisson_PG, "GLM_Poisson_PG.txt")
+model.file = paste(getwd(),"GLM_Poisson_PG.txt", sep="/")
+
+#initial values 
+inits <- function () list(alpha = runif(1, 0, 20),
+                          beta1 = runif(1, 0, 30))
+
+#parameters
+params <- c("alpha", "beta1", "lambda", "sd", "resi")
+
+#MCMC
+ni <- 10000
+nt <- 2
+nb <- 500
+nc <- 3
+
+
+out <- jags(data = jags.data, parameters.to.save = params, 
+            #inits = inits,
+            model.file = model.file, parallel = T,
+            n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+
+
+print(out, dig = 3)
+
+predictions <- out_pois$mean$lambda
+plot(PG_yearly_trim_isl$year, PG_yearly_trim_isl$cnt_mean, 
+     type = "b", lwd = 1, xlab = "", ylab = "Adult Count", pch = 20)
+lines(PG_yearly_trim_isl$year, predictions, type = "l", lwd = 1, lty = 2)
+
+#in R
+summary(fm <- glm(cnt_mean ~ year, family = "poisson", data = PG_yearly_trim_isl))
+
+par(mfrow = c(1, 3), mar = c(5,5,3,2), cex = .7)
+hist(out$summary[13:22, 1], xlab = "Pearson residuals", col = "grey", breaks = 10, main = "", freq = F, xlim = c(-3, 3), ylim = c(0, 0.77))
+abline(v = 0, col = "red", lwd = 2)
+
+plot(1:10, out$summary[13:22, 1], main = "", xlab = "Order of data", ylab = "Pearson residual", frame.plot = F)
+abline(h = 0, col = "red", lwd = 2)
+#text(8, 4, "B", cex = 1.5)
+
+plot(out$summary[3:12, 1], out$summary[13:22, 1], main = "", xlab = "Predicted values", ylab = "Pearson residual", frame.plot = F)
+abline(h = 0, col = "red", lwd = 2)
+
+```
+
+```{r}
+
+## (b) modeling fecundity - poisson GLM
+
+#bundle up the data
+#attach(fledge_isl)
+mean.year <- mean(1:n_distinct(fledge_isl$year))
+sd.year <- sd(1:n_distinct(fledge_isl$year))
+jags.data <- list(C = fledge_isl$cnt, n = length(fledge_isl$cnt),
+                  year = (1:n_distinct(fledge_isl$year) - mean.year)/sd.year) #center/standardize year covariate
+
+#run model in R/MLE
+summary(out1_ML <- glm(cnt ~ year, data = fledge_isl, family = poisson))
+
+#specify model in BUGS - same as above
+# GLM_Poisson_PG <- function() {
+#   
+#   #priors
+#   alpha ~ dnorm(0, 0.0001)
+#   beta1 ~ dnorm(0, 0.0001)
+#   
+#   #likelihood
+#   for(i in 1:n) {
+#     C[i] ~ dpois(lambda[i]) #distribution of random element
+#     log(lambda[i]) <- log.lambda[i] #link function
+#     log.lambda[i] <- alpha + beta1*year[i]  #linear predictor
+#   }
+# }
+# 
+# write.model(GLM_Poisson_PG, "GLM_Poisson_PG.txt")
+# model.filePG = paste(getwd(),"GLM_Poisson_PG.txt", sep="/")
+
+#initial values 
+# inits <- function () list(alpha = runif(1, 0, 20),
+#                           beta1 = runif(1, 0, 30))
+
+#parameters
+params <- c("alpha", "beta1", "lambda")
+
+#MCMC
+ni <- 10000
+nt <- 2
+nb <- 500
+nc <- 3
+
+out1 <- jags(data = jags.data, parameters.to.save = params, 
+            #inits = inits,
+            model.file = model.filePG, parallel = T,
+            n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+
+
+print(out1, dig = 3)
+
+predictions <- out1$mean$lambda
+plot(fledge_isl$year, fledge_isl$cnt, 
+     type = "b", lwd = 1, xlab = "", ylab = "Fledglings", pch = 20)
+lines(fledge_isl$year, predictions, type = "l", lwd = 1, lty = 2)
+
+
+```
+
+```{r}
+
+## (c) modeling binomial nesting success
+
+#perc_suc_isl
+
+#bundle up the data
+#attach(fledge_isl)
+mean.year <- mean(1:n_distinct(perc_suc_isl$year))
+sd.year <- sd(1:n_distinct(perc_suc_isl$year))
+jags.data <- list(C = perc_suc_isl$cnt, N = perc_suc_isl$tot,
+                  nyears = length(perc_suc_isl$cnt),
+                  year = (1:n_distinct(perc_suc_isl$year) - mean.year)/sd.year) #center/standardize year covariate
+
+#run model in R/MLE
+#summary(out2_ML <- glm(cnt ~ year, data = perc_suc_isl, family = binomial))
+
+#specify model in BUGS - 
+GLM_Bin_PG <- function() {
+  
+  #priors
+  alpha ~ dnorm(0, 0.0001)
+  beta1 ~ dnorm(0, 0.0001)
+  
+  #likelihood
+  for(i in 1:nyears) {
+    C[i] ~ dbin(p[i], N[i]) #distribution of random element
+    logit(p[i]) <- alpha + beta1*year[i]  #link and linear predictor
+  }
+}
+
+write.model(GLM_Bin_PG, "GLM_Bin_PG.txt")
+model.filePG = paste(getwd(),"GLM_Bin_PG.txt", sep="/")
+
+#parameters
+params <- c("alpha", "beta1", "p")
+
+#MCMC
+ni <- 10000
+nt <- 2
+nb <- 500
+nc <- 3
+
+out2 <- jags(data = jags.data, parameters.to.save = params, 
+            #inits = inits,
+            model.file = model.filePG, parallel = T,
+            n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+
+
+print(out2, dig = 3)
+
+predictions <- out2$mean$p
+plot(perc_suc_isl$year, perc_suc_isl$perc_suc, 
+     type = "b", lwd = 1, xlab = "", ylab = "Proportion of Nest Success", pch = 20)
+lines(perc_suc_isl$year, predictions, type = "l", lwd = 1, lty = 2)
+
+
+```
+
+
+```{r}
+
+#Ch. 3: Basicl Poisson & Binomial GLM
+
+####### Simulated data ##############
+#linear predictor is cubic binomial function
+#data to go back to if trying to figure out if something works
+
+# data.fn <- function(n = 40, alpha = 3.5576, beta1 = -0.0912, beta2 = 0.0091, beta3 = -0.00014) {
+#   #generating values of time covariate
+#   year <- 1:n 
+#   #signal part of GLM
+#   log.expected.count <- alpha + beta1*year + beta2*year^2 + beta3*year^3 #Q:why is this additive and not just yr^3?
+#   expected.count <- exp(log.expected.count)
+#   #poisson noise around expected counts
+#   C <- rpois(n = n, lambda = expected.count) 
+#   #plot simulated data; Q: dots are supposed to be "observed data", which is the poisson noise C
+#   plot(year, C, type = "b", col = "black", las = 1)
+#   lines(year, expected.count, col = "red")
+#   return(list(n = n, alpha = alpha, beta1 = beta1, beta2 = beta2, beta3 = beta3,
+#               year = year, expected.count = expected.count, C = C))
+# }
+# data <- data.fn()
+
+# mean.year <- mean(1:length(data$year))
+# sd.year <- sd(1:length(data$year))
+# win.data <- list(C = data$C, n = length(data$C), year = (1:length(data$year) - mean.year)/sd.year)
+
+#analyze sim data using R
+
+# fm <- glm(C ~ year + I(year^2) + I(year^3), family = poisson, data = data)
+# summary(fm)
+
+```
+
+
