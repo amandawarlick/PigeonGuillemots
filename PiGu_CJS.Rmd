@@ -55,54 +55,64 @@ setwd("~/Documents/R/SAFS/PigeonGuillemots")
 #   transform(year = as.numeric(as.character(year)))
 
 #load all combined data and then cull to burrow-only data 
+prey_weeks <- read.csv("prey_weeks.csv", header = T, stringsAsFactors = F)
+data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F)
 
-data <- read.csv("data.csv", header = T, stringsAsFactors = F)
-
-burrow <- data %>%
-  filter(!is.na(burrow_name)) %>%
-  select(-c(Gunnel, Sculpin, Other, burrow_visits_day))
-
-#study start day per year per colony
-start_end <- burrow %>%
-  group_by(site, year) %>%
+#study start day per year, island-wide
+start_end_all <- data_burrow_all %>%
+  filter(intern_data != 'Y') %>%
+  group_by(year) %>%
   summarize(start_day = min(yday), end_day = max(yday))
 
-burrow <- burrow %>%
-  merge(start_end, by = c('site', 'year')) %>%
+##CHECK that rows match in data_burrow_all (minus intern) and burrow once get all years in
+burrow <- data_burrow_all %>%
+  filter(intern_data != 'Y') %>%
+  select(-c(Gunnel, Sculpin, Other)) %>%
+  merge(start_end_all, by = c('year'), all = T) %>%
   transform(study_day = yday - start_day + 1)
-
-prey_weeks <- read.csv("prey_weeks.csv", header = T, stringsAsFactors = F)
-  
 
 ```
 
 ```{r}
-#new data wrangling for Schmidt et al 2010 example
-
-#Need data frame of IDs, burrow_name, capture history length, capture history
-
-all_days <- data.frame(seq(1:75))
-names(all_days) <- 'study_day'
 
 #data frame of burrow-site-year combinations with no prey deliveries and 0 or 1 burrow visit
-#could be failed nest attempts, but could also be mistaken landings?
+#could be failed nest attempts, but could also be mistaken landings? 7/2018 Whidbey visit - Frances guesses these are probably birds going into potential burrows and then not using them, so should be excluded
 exclusions <- burrow %>%
   filter(tot_prey < 1) %>%
+  #filter(tot_prey < 1) %>%
   group_by(burrow_name, year, site) %>%
   summarize(cnt = sum(burrow_visit)) %>%
   filter(cnt < 2) %>%
   transform(exclude = "Y") %>%
   select(-cnt)
 
+#burrow visit and prey visit start stops
 prey_start_end <- burrow %>%
   filter(tot_prey > 0) %>%
   group_by(year, site, burrow_name) %>%
   summarize(prey_start = min(study_day), prey_end = max(study_day))
 
 bv_start_end <- burrow %>%
-  filter(burrow_visit > 0 | tot_prey > 0) %>%
+  filter(burrow_visit > 0) %>%
   group_by(year, site, burrow_name) %>%
   summarize(bv_start = min(study_day), bv_end = max(study_day))
+
+start_end_visits <- prey_start_end %>%
+  merge(bv_start_end, by = c('year', 'site', 'burrow_name'), all = T)
+# no_start <- start_end %>%
+#   filter(prey_start > bv_start | is.na(bv_start)) %>% nrow()/nrow(start_end)
+# no_end <- start_end %>%
+#   filter(prey_end == bv_start) %>% nrow()/nrow(start_end)
+
+#df of all days to merge into actual observations below
+all_days <- data.frame(seq(1:75))
+names(all_days) <- 'study_day'
+
+```
+
+```{r}
+
+#after talking with Sarah, just want to create a capture history column with three observed states and NAs for unobserved 
 
 burrow_1 <- burrow %>%
   select(site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
@@ -114,66 +124,321 @@ burrow_2 <- burrow_1 %>%
 
 burrow_full <- burrow_2 %>%
   merge(burrow_1, by = c('site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
-  merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range), 
-        by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  merge(prey_start_end, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  merge(bv_start_end, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  filter(is.na(exclude)) %>%
-  select(-exclude) %>%
+  # merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range), 
+  #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  merge(start_end_visits, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  #merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  #filter(is.na(exclude)) %>%
+  #select(-exclude) %>%
+  #filter(!is.na(burrow_name)) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) %>%
+  transform(capt_hist = 
+              ifelse(is.na(burrow_visit) & is.na(tot_prey), 'NA', 
+                     ifelse(!is.na(tot_prey) & tot_prey > 0, 2,
+                            ifelse(!is.na(burrow_visit), 1,
+                       100))))
+
+test <- burrow_full %>%
+  #filter(capt_hist == 100) 
+  filter(capt_hist != 'NA')
+  
+```
+
+
+```{r}
+#data wrangling for Schmidt et al 2010 example - 7/17/18
+
+#Need data frame of IDs, burrow_name, capture history length, capture history
+
+burrow_1 <- burrow %>%
+  select(site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
+  select(-c(start_day, end_day, date, yday))  
+
+burrow_2 <- burrow_1 %>%
+  distinct(year, site, burrow_name) %>%
+  merge(all_days, all = T) 
+
+burrow_full <- burrow_2 %>%
+  merge(burrow_1, by = c('site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
+  # merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range), 
+  #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  merge(start_end, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  #merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  #filter(is.na(exclude)) %>%
+  #select(-exclude) %>%
   filter(!is.na(burrow_name)) %>%
-  transform(prey_days = prey_end-prey_start) %>%
-  transform(bv_days = bv_end-bv_start) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) 
+burrow_full <- burrow_full %>%
   transform(catch_hist = 
               ##all nests
+                     
               #pre-nesting period - no burrow visits to that nest yet
               ifelse(study_day < bv_start, -3,
-                     
-              ##Uncertainty cases: no prey but evidence of bv (maybe prey delivery was missed)
-              #already excluded cases where bv < 2, but maybe should exclude all where only seen once in survey?
-              #no prey deliveries and only one week of observations - assume fail
-              ifelse(is.na(prey_days) & bv_days < 1, 0,
-              #cases that might be failed or might be missed, where bv >= 30
-              #assume success for study_days > bv_end/2 (midpoint)
-              ifelse(is.na(tot_prey) & study_day >= (bv_end/2) & bv_days >= 30, 1,
-                   ifelse(tot_prey == 0 & study_day >= (bv_end/2) & bv_days >= 30, 1,
-              #cases that might be failed or might be missed, where bv >= 30,
-              #assume half of bv time period is incubation
-              ifelse(is.na(tot_prey) & study_day < (bv_end/2) & bv_days >= 30, -2,
-                   ifelse(tot_prey == 0 & study_day < (bv_end/2) & bv_days >= 30, -2,
-              #cases that likely failed, where bv days < 30, assume fail after bv_end
-              ifelse(is.na(tot_prey) & study_day >= bv_end & bv_days < 30, 0,
-                   ifelse(tot_prey == 0 & study_day >= bv_end & bv_days < 30, 0,
-              #cases that might be failed or missed, where bv < 30, assume unk between bv_start and bv_end
-              ifelse(is.na(tot_prey) & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1,
-                   ifelse(tot_prey == 0 & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1,
+              
+              #between prey deliveries always survival     
+              ifelse(study_day >= prey_start & study_day <= prey_end, 1,
               
               ##incubation period
               ifelse(study_day < prey_start & study_day >= bv_start, -2, 
-                     
+              
               ##successes - one part
               #survival from beg of prey deliveries for those with 30 prey_days
-              ifelse(study_day >= prey_start & prey_days >= 30, 1, 
-              
+              ifelse(study_day >= prey_start & prey_days >= 30, 1,
+                     
               ##failures - three parts
               #survival period: between prey deliveries
               ifelse(study_day >= prey_start & study_day <= prey_end & prey_days < 30, 1,
                      
               #unknown period: between last prey visit and last burrow visit
               ifelse(study_day >= prey_end & study_day <= bv_end & prey_days < 30, -1,
+              #unknown period: if deliveries and prey ended on same day, all unknown after prey_end
+              #### this changed the distribution dramatically
+              ifelse(study_day >= prey_end & prey_end == bv_end & prey_days < 30, -1,
               
               #failure period: after last bv
-              ifelse(study_day > bv_end & prey_days < 30, 0, 100
-              #if last burrow visit was last prey delivery, could have just missed the rest of the visits?
-              ))))))))))))))))
-            
+              ifelse(study_day > bv_end & prey_days < 30, 0,
+                          100))))))))) %>%
+  transform(catch_hist = 
+              ifelse(!is.na(catch_hist), catch_hist,
+              ###cases with no non-prey visits
+              ##successes
+              ifelse(is.na(bv_days) & prey_days >= 30 & study_day >= prey_start, 1,
+              ifelse(bv_days == 0 & prey_days >= 30 & study_day >= prey_start, 1,
+                     
+              #incubation -> success
+              ifelse(is.na(bv_days) & prey_days >= 30 & study_day < prey_start, -2,
+              ifelse(bv_days == 0 & prey_days >= 30 & study_day < prey_start, -2,
+                     
+              ##fails
+              #hatchling -> fails
+              ifelse(is.na(bv_days) & prey_days < 30 & study_day >= prey_start & study_day <= prey_end, 1,
+              ifelse(is.na(bv_days) & prey_days < 30 & study_day > prey_end, 0,
+              
+              #incubation -> fails
+              ifelse(is.na(bv_days) & prey_days < 30 & study_day < prey_start, -2, 
+              ifelse(tot_prey == 0 & bv_start == bv_end, -1,
+              
+              #exclude exclusions - no prey and only one bv
+              ifelse(burrow_visit == 1 & tot_prey == 0, -4,
+                     200))))))))))) %>%
+    transform(catch_hist = 
+              ifelse(!is.na(catch_hist), catch_hist,
+              ##Uncertainty cases: no prey but evidence of bv (maybe prey delivery was missed)
+              #already excluded cases where bv < 2, but maybe should exclude all where only seen once in survey?
+              #no prey deliveries and only one week of observations - assume fail
+              ifelse(is.na(prey_days) & bv_days < 1, 0,
+              #cases that might be failed or might be missed, where bv >= 30
+              #assume success for study_days > bv_end/2 (midpoint) - this wasn't working, removed midpoint
+              ifelse((is.na(tot_prey) & study_day >= bv_end & bv_days >= 30) | (tot_prey == 0 & study_day >= bv_end & bv_days >= 30), 1,
+              #ifelse(tot_prey == 0 & study_day >= bv_end & bv_days >= 30, 1,
+              #cases that might be failed or might be missed, where bv >= 30,
+              #assume half of bv time period is incubation
+              ifelse(is.na(tot_prey) & study_day >= bv_start & study_day < bv_end & bv_days >= 30, -1,
+                   ifelse(tot_prey == 0 & study_day >= bv_start & study_day < bv_end & bv_days >= 30, -1,
+              #cases that likely failed, where bv days < 30, assume fail after bv_end
+              ifelse(is.na(tot_prey) & study_day >= bv_end & bv_days < 30, 0,
+                   ifelse(tot_prey == 0 & study_day >= bv_end & bv_days < 30, 0,
+              #cases that might be failed or missed, where bv < 30, assume unk between bv_start and bv_end
+              ifelse(is.na(tot_prey) & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1,
+              ifelse(tot_prey == 0 & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1, 
+                          300
+                          )))))))))) %>%
+  transform(catch_hist = 
+              ifelse(!is.na(catch_hist), catch_hist,
+              ifelse(is.na(burrow_visit) & is.na(tot_prey) & is.na(prey_days) & is.na(bv_days), -4, 
+              ifelse(burrow_visit == 0 & tot_prey == 0 & is.na(prey_days) & is.na(bv_days), -4, 400))))
+burrow_full <- burrow_full %>%
+  transform(id = 1:nrow(burrow_full))
+
+# mean_pre <- burrow_full %>%
+#   filter(catch_hist == -3) %>%
+#   summarize(min(study_day), mean(study_day), max(study_day), median(study_day))
+# mean_inc <- burrow_full %>%
+#   filter(catch_hist == -2) %>%
+#   summarize(min(study_day), mean(study_day), max(study_day), median(study_day))
 
 dist <- burrow_full %>%
-  ggplot(aes(x = catch_hist)) + geom_histogram(stat = 'count')
+  ggplot(aes(x = catch_hist)) + geom_histogram(stat = 'count') + 
+  xlab("Catch History") + ylab("Nest Day")
+table(burrow_full$catch_hist)
+burrow_full %>% filter(catch_hist < 10) %>%
+  ggplot(aes(x = catch_hist)) + geom_histogram(stat = 'count') + 
+  xlab("Capt History") + ylab("Nest Day")
+table(burrow_full$catch_hist)
 
+# for checking catch_hist assignments
 burrow.na <- burrow_full %>%
-  filter(is.na(catch_hist)) %>%
-  transform(bv_days = bv_end-bv_start)
+  filter(is.na(catch_hist)) 
+
+test <- burrow_full %>%
+  filter(catch_hist > 10)
+
+# catch history length
+catch_hist_length <- burrow_full %>%
+  select(id, year, site, burrow_name, tot_prey) %>%
+  filter(!is.na(tot_prey)) %>%
+  group_by(year, site, burrow_name) %>%
+  summarize(catch_hist_l = n_distinct(id))
+
+burrow_full <- burrow_full %>%
+  merge(catch_hist_length, by = c('site', 'year', 'burrow_name'))
+
+burrow_catch_hist <- burrow_full %>%
+  select(id, year, site, burrow_name, study_day, catch_hist, catch_hist_l)
 
 ```
 
+```{r}
+#INTERN DATA, same code as above
+#no exclusions df for intern data - no incidences where only one burrow-site-year observation
+
+burrow_int <- data_burrow_all %>%
+  filter(intern_data == 'Y') %>%
+  filter(!is.na(burrow_name)) %>%
+  select(-c(Gunnel, Sculpin, Other))
+
+start_end_int <- burrow_int %>%
+  group_by(site, year) %>% #add burrow_name here if want start date at burrow level
+  summarize(start_day = min(yday), end_day = max(yday))
+
+burrow_int <- burrow_int %>%
+  merge(start_end_int, by = c('site', 'year')) %>%
+  transform(study_day = yday - start_day + 1)
+
+prey_start_end_int <- burrow_int %>%
+  filter(tot_prey > 0) %>%
+  group_by(year, site, burrow_name) %>%
+  summarize(prey_start = min(study_day), prey_end = max(study_day))
+
+bv_start_end_int <- burrow_int %>%
+  filter(burrow_visit > 0 | tot_prey > 0) %>%
+  group_by(year, site, burrow_name) %>%
+  summarize(bv_start = min(study_day), bv_end = max(study_day))
+
+burrow_1_int <- burrow_int %>%
+  select(site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
+  select(-c(start_day, end_day, date, yday))  
+
+burrow_2_int <- burrow_1_int %>%
+  distinct(year, site, burrow_name) %>%
+  merge(all_days, all = T) 
+
+burrow_full_int <- burrow_2_int %>%
+  merge(burrow_1_int, by = c('site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
+  # merge(prey_weeks %>% select(year, site, burrow_name), 
+  #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  merge(prey_start_end_int, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  merge(bv_start_end_int, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  filter(!is.na(burrow_name)) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) 
+sum(is.na(burrow_full_int$tot_prey))
+ 
+burrow_full_int <- burrow_full_int %>%
+  transform(catch_hist = 
+              ##all nests
+              #pre-nesting period - no burrow visits to that nest yet
+              ifelse(study_day < bv_start, -3,
+              
+              #between prey deliveries always survival     
+              ifelse(study_day >= prey_start & study_day <= prey_end, 1,
+              
+              ##incubation period - none for intern data
+              ifelse(study_day < prey_start & study_day >= bv_start, -2,  
+              
+              ##successes - one part
+              #survival from beg of prey deliveries for those with 30 prey_days
+              ifelse(study_day >= prey_start & prey_days >= 30, 1,
+                     
+              ##failures - three parts
+              #survival period: between prey deliveries - already captured above
+              #ifelse(study_day >= prey_start & study_day <= prey_end & prey_days < 30, 1,
+                     
+              #unknown period: between last prey visit and last burrow visit
+              #ifelse(study_day > prey_end & prey_end == bv_end & prey_days < 30, -1,
+                     
+              #failure period: after last bv
+              ifelse(study_day > prey_end & prey_days < 30, 0,
+              
+               100
+              ))))))
+  # transform(catch_hist = 
+  #             ifelse(!is.na(catch_hist), catch_hist,
+  #             ##Uncertainty cases: no prey but evidence of bv (maybe prey delivery was missed)
+  #             #already excluded cases where bv < 2, but maybe should exclude all where only seen once in survey?
+  #             #no prey deliveries and only one week of observations - assume fail
+  #             ifelse(is.na(prey_days) & bv_days <= 1, 0,
+  #             #cases that might be failed or might be missed, where bv >= 30
+  #             #assume success for study_days > bv_end/2 (midpoint)
+  #             ifelse(is.na(tot_prey) & study_day >= (bv_end/2) & bv_days >= 30, 1,
+  #             ifelse(tot_prey == 0 & study_day >= (bv_end/2) & bv_days >= 30, 1,
+  #             #cases that might be failed or might be missed, where bv >= 30,
+  #             #assume half of bv time period is incubation
+  #             ifelse(is.na(tot_prey) & study_day < (bv_end/2) & bv_days >= 30, -2,
+  #                  ifelse(tot_prey == 0 & study_day < (bv_end/2) & bv_days >= 30, -2,
+  #             
+  #              
+  #             #cases that likely failed, where bv days < 30, assume fail 4 d after bv_end       
+  #             ifelse(is.na(tot_prey) & bv_end != prey_end & study_day > bv_end & bv_days < 30, 0,
+  #                  ifelse(tot_prey == 0 & study_day > bv_end & bv_days < 30, 0,
+  #                        
+  #             #cases that might be failed or missed, where bv < 30, assume unk between bv_start and bv_end
+  #             ifelse(is.na(tot_prey) & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1,
+  #                  ifelse(tot_prey == 0 & study_day <= bv_end & study_day >= bv_start & bv_days < 30, -1, 100
+  #                         ))))))))))) 
+burrow_full_int <- burrow_full_int %>%
+  transform(id = 1:nrow(burrow_full_int))
+
+test <- burrow_full_int %>%
+  filter(site == "Mutiny Sands" & burrow_name == '6a' & year == 2010)
+            
+dist_int <- burrow_full_int_test %>%
+  ggplot(aes(x = catch_hist)) + geom_histogram(stat = 'count') + 
+  xlab("Catch History") + ylab("Nest Day")
+
+# for checking catch_hist assignments
+burrow.na_int <- burrow_full_int %>%
+  filter(is.na(catch_hist)) %>%
+  transform(bv_days = bv_end-bv_start)
+
+# catch history length
+catch_hist_length_int <- burrow_full_int %>%
+  select(id, year, site, burrow_name, tot_prey) %>%
+  filter(!is.na(tot_prey)) %>%
+  group_by(year, site, burrow_name) %>%
+  summarize(catch_hist_l = n_distinct(id))
+
+burrow_full_int <- burrow_full_int %>%
+  merge(catch_hist_length_int, by = c('site', 'year', 'burrow_name'))
+
+burrow_catch_hist_int <- burrow_full_int %>%
+  select(id, year, site, burrow_name, study_day, catch_hist, catch_hist_l)
+
+```
+
+```{r}
+#comparing intern and volunteer catch histories
+
+visit_perc_int <- (sum(!is.na(burrow_full_int$tot_prey)))/nrow(burrow_full_int)
+
+visit_perc <- (sum(!is.na(burrow_full$tot_prey)))/nrow(burrow_full)
+
+```
+
+Questions
+- What to do when see one prey delivery and no other visits?
+  - Maybe give a few 1's surrounding visit day? And then put -1 for a few days after? 
+  
+- Excluded single burrow visits, but included single date burrow visits where bv > 1
+
+- The catch history length = number of visits, right?
+
+- Haven't trimmed total "study length" to nest level (currently colony level)
+
+- If last burrow visit was last prey delivery, could have just missed the rest of the visits?
+
+- Fix burrow summing for burrow_int
+
+- No prey burrow visits in intern data?!

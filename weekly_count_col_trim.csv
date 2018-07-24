@@ -1,1637 +1,1565 @@
-"year","site","week_study","PG_count"
-"2008","Cliffside",5,47
-"2008","Cliffside",7,41
-"2008","Cliffside",9,51
-"2008","Crescent Harbor",5,14
-"2008","Crescent Harbor",6,11
-"2008","Crescent Harbor",8,12
-"2008","Crescent Harbor",8,8
-"2008","Crescent Harbor",10,10
-"2008","Crescent Harbor",11,12
-"2008","Double Bluff North",5,66
-"2008","Double Bluff North",7,101
-"2008","Double Bluff North",8,67
-"2008","Double Bluff North",9,95
-"2008","Double Bluff North",10,84
-"2008","Double Bluff North",11,93
-"2008","Double Bluff South",5,20
-"2008","Double Bluff South",7,23
-"2008","Double Bluff South",8,16
-"2008","Double Bluff South",9,24
-"2008","Forbes Point",5,18
-"2008","Forbes Point",7,17
-"2008","Forbes Point",9,16
-"2008","Forbes Point",11,28
-"2008","Forbes Point",11,21
-"2008","Fort Casey",5,30
-"2008","Fort Casey",7,25
-"2008","Fort Casey",9,48
-"2008","Fort Casey",9,30
-"2008","Hancock Lake",5,44
-"2008","Hancock Lake",6,46
-"2008","Hancock Lake",7,32
-"2008","Hancock Lake",8,32
-"2008","Hancock Lake",9,29
-"2008","Hancock Lake",11,50
-"2008","Harrington North",6,21
-"2008","Harrington North",7,30
-"2008","Harrington North",8,25
-"2008","Harrington North",9,40
-"2008","Harrington South",9,33
-"2008","Harrington South",10,38
-"2008","Hastie Lake",5,29
-"2008","Hastie Lake",6,30
-"2008","Hastie Lake",7,31
-"2008","Hastie Lake",8,26
-"2008","Hastie Lake",9,31
-"2008","Hastie Lake",11,16
-"2008","Keystone",4,32
-"2008","Keystone",6,41
-"2008","Keystone",9,22
-"2008","Keystone",10,28
-"2008","Keystone",12,35
-"2008","Lagoon North #1",5,55
-"2008","Lagoon North #1",8,58
-"2008","Lagoon North #1",8,54
-"2008","Lagoon North #1",9,44
-"2008","Lagoon North #1",10,70
-"2008","Lagoon North #1",11,44
-"2008","Lagoon North #2",5,38
-"2008","Lagoon North #2",8,54
-"2008","Lagoon North #2",11,42
-"2008","Lagoon North #3",8,26
-"2008","Lagoon North #3",9,26
-"2008","Lagoon North #3",10,26
-"2008","Lagoon North #3",11,18
-"2008","Lagoon South",5,35
-"2008","Lagoon South",7,38
-"2008","Lagoon South",8,35
-"2008","Lagoon South",9,41
-"2008","Lagoon South",10,45
-"2008","Lagoon South",11,42
-"2008","Ledgewood",3,28
-"2008","Ledgewood",5,18
-"2008","Ledgewood",6,22
-"2008","Ledgewood",8,23
-"2008","Ledgewood",9,30
-"2008","Ledgewood",10,29
-"2008","Ledgewood",10,25
-"2008","Ledgewood",11,27
-"2008","Ledgewood",12,28
-"2008","Limpet Lane",5,38
-"2008","Limpet Lane",9,45
-"2008","Limpet Lane",11,37
-"2008","Malmo Bluff",5,26
-"2008","Malmo Bluff",7,22
-"2008","Malmo Bluff",8,22
-"2008","Malmo Bluff",9,18
-"2008","Malmo Bluff",11,16
-"2008","Maylor Point",5,15
-"2008","Maylor Point",8,17
-"2008","Maylor Point",8,15
-"2008","Maylor Point",10,17
-"2008","Maylor Point",11,19
-"2008","Monroe Landing",5,9
-"2008","Monroe Landing",6,11
-"2008","Monroe Landing",7,13
-"2008","Monroe Landing",8,10
-"2008","Monroe Landing",10,11
-"2008","Monroe Landing",11,7
-"2008","Mutiny Sands",5,40
-"2008","Mutiny Sands",7,40
-"2008","Mutiny Sands",8,33
-"2008","Mutiny Sands",9,50
-"2008","Possession Point",5,18
-"2008","Possession Point",7,22
-"2008","Possession Point",8,21
-"2008","Possession Point",9,20
-"2008","Possession Point",11,24
-"2008","Pratts Bluff",5,18
-"2008","Pratts Bluff",6,17
-"2008","Pratts Bluff",6,30
-"2008","Pratts Bluff",8,21
-"2008","Pratts Bluff",9,15
-"2008","Pratts Bluff",10,19
-"2008","Rolling Hills #1",5,21
-"2008","Rolling Hills #1",6,31
-"2008","Rolling Hills #1",7,33
-"2008","Rolling Hills #1",7,28
-"2008","Rolling Hills #1",8,31
-"2008","Rolling Hills #1",9,35
-"2008","Rolling Hills #1",9,34
-"2008","Rolling Hills #1",11,28
-"2008","Shore Meadows",5,81
-"2008","Shore Meadows",6,52
-"2008","Shore Meadows",7,46
-"2008","Shore Meadows",9,47
-"2008","Shore Meadows",10,53
-"2008","Swantown",7,30
-"2008","Swantown",9,34
-"2008","Swantown",10,27
-"2008","Swantown",11,39
-"2009","Cliffside",5,35
-"2009","Cliffside",8,41
-"2009","Cliffside",9,30
-"2009","Cliffside",12,48
-"2009","Crescent Harbor",6,10
-"2009","Crescent Harbor",8,18
-"2009","Crescent Harbor",9,10
-"2009","Crescent Harbor",10,15
-"2009","Crescent Harbor",13,9
-"2009","Double Bluff North",6,72
-"2009","Double Bluff North",7,93
-"2009","Double Bluff North",8,117
-"2009","Double Bluff North",9,65
-"2009","Double Bluff North",10,110
-"2009","Double Bluff North",12,118
-"2009","Double Bluff South",8,15
-"2009","Double Bluff South",9,18
-"2009","Double Bluff South",10,20
-"2009","Double Bluff South",11,18
-"2009","Fort Casey",6,30
-"2009","Fort Casey",7,35
-"2009","Fort Casey",8,30
-"2009","Fort Casey",10,32
-"2009","Fort Casey",11,44
-"2009","Fort Casey",12,55
-"2009","Hancock Lake",6,65
-"2009","Hancock Lake",7,69
-"2009","Hancock Lake",8,42
-"2009","Hancock Lake",9,63
-"2009","Hancock Lake",10,50
-"2009","Hancock Lake",11,73
-"2009","Hastie Lake",6,36
-"2009","Hastie Lake",8,26
-"2009","Hastie Lake",9,30
-"2009","Hastie Lake",10,33
-"2009","Hastie Lake",12,39
-"2009","Keystone",6,27
-"2009","Keystone",7,28
-"2009","Keystone",9,39
-"2009","Keystone",10,34
-"2009","Keystone",11,32
-"2009","Keystone",13,28
-"2009","Lagoon North #1",5,46
-"2009","Lagoon North #1",6,40
-"2009","Lagoon North #1",8,36
-"2009","Lagoon North #1",8,42
-"2009","Lagoon North #1",9,57
-"2009","Lagoon North #1",10,37
-"2009","Lagoon North #1",11,64
-"2009","Lagoon North #2",8,14
-"2009","Lagoon North #2",10,15
-"2009","Lagoon North #2",11,18
-"2009","Lagoon North #3",9,26
-"2009","Lagoon North #3",10,16
-"2009","Lagoon North #3",10,22
-"2009","Lagoon North #3",11,26
-"2009","Lagoon South",6,35
-"2009","Lagoon South",6,57
-"2009","Lagoon South",7,52
-"2009","Lagoon South",8,46
-"2009","Lagoon South",9,56
-"2009","Lagoon South",10,35
-"2009","Lagoon South",10,33
-"2009","Lagoon South",11,45
-"2009","Lagoon South",12,43
-"2009","Ledgewood",6,26
-"2009","Ledgewood",7,25
-"2009","Ledgewood",8,39
-"2009","Ledgewood",9,38
-"2009","Ledgewood",10,36
-"2009","Ledgewood",11,36
-"2009","Ledgewood",12,26
-"2009","Ledgewood",13,20
-"2009","Limpet Lane",8,32
-"2009","Limpet Lane",10,23
-"2009","Malmo Bluff",7,22
-"2009","Malmo Bluff",8,30
-"2009","Malmo Bluff",9,16
-"2009","Malmo Bluff",10,25
-"2009","Malmo Bluff",11,20
-"2009","Malmo Bluff",12,18
-"2009","Maylor Point",8,21
-"2009","Maylor Point",10,20
-"2009","Maylor Point",12,24
-"2009","Monroe Landing",7,13
-"2009","Monroe Landing",9,13
-"2009","Monroe Landing",12,26
-"2009","Mutiny Sands",7,34
-"2009","Mutiny Sands",8,45
-"2009","Mutiny Sands",9,29
-"2009","Mutiny Sands",10,40
-"2009","Mutiny Sands",11,41
-"2009","Possession Point",5,21
-"2009","Possession Point",6,18
-"2009","Possession Point",7,22
-"2009","Possession Point",8,20
-"2009","Possession Point",9,26
-"2009","Possession Point",10,16
-"2009","Possession Point",12,15
-"2009","Pratts Bluff",5,18
-"2009","Pratts Bluff",6,15
-"2009","Pratts Bluff",7,22
-"2009","Pratts Bluff",8,30
-"2009","Pratts Bluff",10,18
-"2009","Pratts Bluff",11,16
-"2009","Rolling Hills #1",7,27
-"2009","Rolling Hills #1",9,32
-"2009","Rolling Hills #1",11,39
-"2009","Rolling Hills #1",12,30
-"2009","Rolling Hills #2",6,33
-"2009","Rolling Hills #2",7,28
-"2009","Rolling Hills #2",8,50
-"2009","Rolling Hills #2",9,42
-"2009","Rolling Hills #2",10,46
-"2009","Rolling Hills #2",12,45
-"2009","Shore Meadows",5,56
-"2009","Shore Meadows",6,73
-"2009","Shore Meadows",7,71
-"2009","Shore Meadows",8,67
-"2009","Shore Meadows",9,65
-"2009","Shore Meadows",10,82
-"2009","Shore Meadows",10,44
-"2009","Shore Meadows",11,63
-"2009","Shore Meadows",12,57
-"2009","Shore Meadows",14,74
-"2009","Swantown",6,20
-"2009","Swantown",7,26
-"2009","Swantown",8,25
-"2009","Swantown",9,24
-"2009","Swantown",10,24
-"2009","Swantown",11,22
-"2009","Swantown",12,20
-"2010","Cliffside",5,23
-"2010","Cliffside",6,38
-"2010","Double Bluff North",5,99
-"2010","Double Bluff North",7,79
-"2010","Double Bluff North",8,72
-"2010","Double Bluff North",9,105
-"2010","Double Bluff North",10,99
-"2010","Double Bluff North",11,63
-"2010","Forbes Point",5,18
-"2010","Forbes Point",6,17
-"2010","Forbes Point",7,20
-"2010","Forbes Point",7,16
-"2010","Forbes Point",9,18
-"2010","Forbes Point",10,17
-"2010","Forbes Point",10,13
-"2010","Forbes Point",12,22
-"2010","Fort Casey",4,50
-"2010","Fort Casey",7,50
-"2010","Fort Casey",8,40
-"2010","Fort Casey",9,50
-"2010","Fort Casey",10,43
-"2010","Hancock Lake",4,69
-"2010","Hancock Lake",6,59
-"2010","Hancock Lake",7,66
-"2010","Hancock Lake",8,65
-"2010","Hancock Lake",8,47
-"2010","Hancock Lake",11,42
-"2010","Harrington North",5,27
-"2010","Harrington North",6,32
-"2010","Harrington North",7,22
-"2010","Harrington North",8,24
-"2010","Harrington North",9,25
-"2010","Harrington North",10,19
-"2010","Harrington North",11,37
-"2010","Harrington South",4,21
-"2010","Harrington South",7,16
-"2010","Harrington South",8,13
-"2010","Harrington South",9,18
-"2010","Harrington South",10,12
-"2010","Harrington South",11,17
-"2010","Hastie Lake",4,23
-"2010","Hastie Lake",8,29
-"2010","Hastie Lake",9,32
-"2010","Hastie Lake",10,16
-"2010","Keystone",5,45
-"2010","Keystone",6,25
-"2010","Keystone",7,24
-"2010","Keystone",8,24
-"2010","Keystone",9,25
-"2010","Lagoon North #1",5,38
-"2010","Lagoon North #1",6,53
-"2010","Lagoon North #1",7,45
-"2010","Lagoon North #1",8,49
-"2010","Lagoon North #1",11,49
-"2010","Lagoon North #2",5,8
-"2010","Lagoon North #2",6,9
-"2010","Lagoon North #2",7,9
-"2010","Lagoon North #2",8,14
-"2010","Lagoon North #2",9,12
-"2010","Lagoon North #2",10,9
-"2010","Lagoon North #3",5,18
-"2010","Lagoon North #3",6,23
-"2010","Lagoon North #3",7,28
-"2010","Lagoon North #3",8,23
-"2010","Lagoon North #3",9,15
-"2010","Lagoon North #3",11,14
-"2010","Lagoon South",5,37
-"2010","Lagoon South",7,28
-"2010","Lagoon South",10,24
-"2010","Lagoon South",11,44
-"2010","Ledgewood",5,37
-"2010","Ledgewood",6,31
-"2010","Ledgewood",6,33
-"2010","Ledgewood",7,29
-"2010","Ledgewood",8,36
-"2010","Ledgewood",9,41
-"2010","Ledgewood",10,33
-"2010","Limpet Lane",5,28
-"2010","Limpet Lane",7,28
-"2010","Limpet Lane",8,18
-"2010","Limpet Lane",9,35
-"2010","Limpet Lane",11,25
-"2010","Malmo Bluff",5,32
-"2010","Malmo Bluff",7,33
-"2010","Malmo Bluff",8,25
-"2010","Malmo Bluff",9,29
-"2010","Malmo Bluff",11,40
-"2010","Maylor Point",10,127
-"2010","Monroe Landing",5,12
-"2010","Monroe Landing",6,10
-"2010","Monroe Landing",7,14
-"2010","Monroe Landing",10,15
-"2010","Mutiny Sands",5,32
-"2010","Mutiny Sands",6,24
-"2010","Mutiny Sands",7,24
-"2010","Mutiny Sands",9,26
-"2010","Mutiny Sands",10,32
-"2010","Mutiny Sands",11,17
-"2010","Possession Point",4,24
-"2010","Possession Point",5,20
-"2010","Possession Point",6,15
-"2010","Possession Point",7,20
-"2010","Possession Point",9,25
-"2010","Possession Point",11,17
-"2010","Pratts Bluff",5,37
-"2010","Pratts Bluff",6,20
-"2010","Pratts Bluff",7,30
-"2010","Pratts Bluff",9,27
-"2010","Pratts Bluff",11,24
-"2010","Rolling Hills #1",4,40
-"2010","Rolling Hills #1",5,30
-"2010","Rolling Hills #1",6,45
-"2010","Rolling Hills #1",7,30
-"2010","Rolling Hills #1",7,50
-"2010","Rolling Hills #1",8,35
-"2010","Rolling Hills #1",9,45
-"2010","Rolling Hills #1",9,35
-"2010","Rolling Hills #1",10,30
-"2010","Rolling Hills #1",10,36
-"2010","Rolling Hills #1",11,37
-"2010","Rolling Hills #1",12,40
-"2010","Rolling Hills #2",5,39
-"2010","Rolling Hills #2",6,39
-"2010","Rolling Hills #2",7,25
-"2010","Rolling Hills #2",8,51
-"2010","Rolling Hills #2",9,28
-"2010","Rolling Hills #2",10,31
-"2010","Shore Meadows",5,71
-"2010","Shore Meadows",6,57
-"2010","Shore Meadows",6,47
-"2010","Shore Meadows",7,61
-"2010","Shore Meadows",7,75
-"2010","Shore Meadows",8,72
-"2010","Shore Meadows",8,48
-"2010","Shore Meadows",8,41
-"2010","Shore Meadows",9,60
-"2010","Shore Meadows",10,81
-"2010","Shore Meadows",10,43
-"2010","Shore Meadows",11,56
-"2010","Shore Meadows",11,55
-"2010","Shore Meadows",12,76
-"2010","Swantown",5,27
-"2010","Swantown",7,21
-"2010","Swantown",8,15
-"2010","Swantown",9,29
-"2010","Swantown",10,22
-"2010","Swantown",11,23
-"2011","Cliffside",5,23
-"2011","Cliffside",6,18
-"2011","Cliffside",7,23
-"2011","Cliffside",10,33
-"2011","Cliffside",12,22
-"2011","Crescent Harbor",5,15
-"2011","Crescent Harbor",6,12
-"2011","Double Bluff North",6,90
-"2011","Double Bluff North",7,64
-"2011","Double Bluff North",8,87
-"2011","Double Bluff North",9,78
-"2011","Double Bluff North",10,89
-"2011","Double Bluff North",12,101
-"2011","Double Bluff South",5,12
-"2011","Double Bluff South",6,17
-"2011","Double Bluff South",7,15
-"2011","Double Bluff South",8,18
-"2011","Double Bluff South",9,10
-"2011","Double Bluff South",10,13
-"2011","Double Bluff South",11,18
-"2011","Forbes Point",6,27
-"2011","Forbes Point",8,27
-"2011","Forbes Point",9,27
-"2011","Forbes Point",10,31
-"2011","Forbes Point",11,33
-"2011","Forbes Point",12,28
-"2011","Fort Casey",4,50
-"2011","Fort Casey",5,46
-"2011","Fort Casey",7,55
-"2011","Fort Casey",8,60
-"2011","Fort Casey",8,40
-"2011","Fort Casey",10,40
-"2011","Fort Casey",12,45
-"2011","Fort Casey",12,32
-"2011","Hancock Lake",5,76
-"2011","Hancock Lake",6,86
-"2011","Hancock Lake",7,63
-"2011","Hancock Lake",8,85
-"2011","Hancock Lake",9,83
-"2011","Hancock Lake",10,81
-"2011","Harrington North",6,18
-"2011","Harrington North",7,15
-"2011","Harrington North",8,22
-"2011","Harrington North",9,25
-"2011","Harrington North",10,17
-"2011","Harrington North",11,20
-"2011","Harrington South",5,14
-"2011","Harrington South",6,18
-"2011","Harrington South",7,12
-"2011","Harrington South",8,19
-"2011","Harrington South",10,14
-"2011","Harrington South",11,20
-"2011","Hastie Lake",5,33
-"2011","Hastie Lake",6,22
-"2011","Hastie Lake",7,35
-"2011","Hastie Lake",8,28
-"2011","Hastie Lake",9,20
-"2011","Hastie Lake",11,30
-"2011","Keystone",4,25
-"2011","Keystone",6,25
-"2011","Keystone",7,32
-"2011","Keystone",8,27
-"2011","Keystone",9,32
-"2011","Keystone",10,32
-"2011","Keystone",11,31
-"2011","Keystone",12,45
-"2011","Keystone",13,27
-"2011","Lagoon North #1",5,53
-"2011","Lagoon North #1",7,54
-"2011","Lagoon North #1",9,49
-"2011","Lagoon North #1",10,49
-"2011","Lagoon North #1",10,52
-"2011","Lagoon North #1",11,53
-"2011","Lagoon North #1",14,47
-"2011","Lagoon North #2",5,10
-"2011","Lagoon North #2",7,15
-"2011","Lagoon North #2",8,11
-"2011","Lagoon North #2",9,11
-"2011","Lagoon North #2",10,11
-"2011","Lagoon North #2",11,16
-"2011","Lagoon North #2",12,11
-"2011","Lagoon North #3",7,20
-"2011","Lagoon North #3",8,24
-"2011","Lagoon North #3",9,29
-"2011","Lagoon North #3",10,28
-"2011","Lagoon North #3",12,18
-"2011","Lagoon South",6,33
-"2011","Lagoon South",8,35
-"2011","Lagoon South",9,37
-"2011","Lagoon South",10,33
-"2011","Lagoon South",11,25
-"2011","Lagoon South",12,50
-"2011","Ledgewood",4,38
-"2011","Ledgewood",5,40
-"2011","Ledgewood",7,30
-"2011","Ledgewood",8,38
-"2011","Ledgewood",10,33
-"2011","Ledgewood",11,46
-"2011","Limpet Lane",5,19
-"2011","Limpet Lane",6,25
-"2011","Limpet Lane",8,23
-"2011","Limpet Lane",10,21
-"2011","Limpet Lane",11,31
-"2011","Limpet Lane",12,32
-"2011","Malmo Bluff",5,25
-"2011","Malmo Bluff",6,38
-"2011","Malmo Bluff",7,28
-"2011","Malmo Bluff",8,45
-"2011","Malmo Bluff",10,43
-"2011","Malmo Bluff",11,37
-"2011","Malmo Bluff",12,35
-"2011","Maylor Point",6,19
-"2011","Maylor Point",8,17
-"2011","Maylor Point",9,19
-"2011","Maylor Point",10,28
-"2011","Maylor Point",11,29
-"2011","Monroe Landing",6,9
-"2011","Monroe Landing",7,9
-"2011","Monroe Landing",8,11
-"2011","Monroe Landing",11,13
-"2011","Monroe Landing",12,7
-"2011","Monroe Landing",13,12
-"2011","Mutiny Sands",6,33
-"2011","Mutiny Sands",8,40
-"2011","Mutiny Sands",12,33
-"2011","Possession Point",6,25
-"2011","Possession Point",7,16
-"2011","Possession Point",8,24
-"2011","Possession Point",9,32
-"2011","Possession Point",10,29
-"2011","Possession Point",11,21
-"2011","Pratts Bluff",5,18
-"2011","Pratts Bluff",6,28
-"2011","Pratts Bluff",7,23
-"2011","Pratts Bluff",8,23
-"2011","Pratts Bluff",9,22
-"2011","Pratts Bluff",10,30
-"2011","Pratts Bluff",11,25
-"2011","Rolling Hills #1",6,30
-"2011","Rolling Hills #1",8,45
-"2011","Rolling Hills #1",11,26
-"2011","Rolling Hills #1",12,26
-"2011","Rolling Hills #2",5,42
-"2011","Rolling Hills #2",6,40
-"2011","Rolling Hills #2",8,39
-"2011","Rolling Hills #2",10,45
-"2011","Rolling Hills #2",11,33
-"2011","Rolling Hills #2",11,52
-"2011","Shore Meadows",5,71
-"2011","Shore Meadows",5,38
-"2011","Shore Meadows",6,45
-"2011","Shore Meadows",7,35
-"2011","Shore Meadows",9,66
-"2011","Shore Meadows",10,70
-"2011","Shore Meadows",11,67
-"2011","Swantown",5,18
-"2011","Swantown",6,28
-"2011","Swantown",7,27
-"2011","Swantown",8,20
-"2011","Swantown",9,30
-"2011","Swantown",10,30
-"2011","Swantown",12,16
-"2011","Swantown",14,19
-"2012","Cliffside",5,23
-"2012","Cliffside",7,29
-"2012","Cliffside",9,21
-"2012","Cliffside",11,29
-"2012","Double Bluff North",5,83
-"2012","Double Bluff North",6,86
-"2012","Double Bluff North",7,77
-"2012","Double Bluff North",8,83
-"2012","Double Bluff North",9,54
-"2012","Double Bluff North",11,60
-"2012","Double Bluff South",7,8
-"2012","Double Bluff South",9,13
-"2012","Forbes Point",5,24
-"2012","Forbes Point",6,21
-"2012","Forbes Point",7,32
-"2012","Forbes Point",9,29
-"2012","Forbes Point",11,31
-"2012","Forbes Point",13,20
-"2012","Fort Casey",5,35
-"2012","Fort Casey",6,39
-"2012","Fort Casey",7,31
-"2012","Fort Casey",8,61
-"2012","Fort Casey",9,48
-"2012","Fort Casey",10,50
-"2012","Hancock Lake",5,66
-"2012","Hancock Lake",6,76
-"2012","Hancock Lake",7,63
-"2012","Hancock Lake",8,76
-"2012","Hancock Lake",9,85
-"2012","Hancock Lake",10,85
-"2012","Hancock Lake",11,88
-"2012","Hancock Lake",12,89
-"2012","Harrington North",6,28
-"2012","Harrington North",7,26
-"2012","Harrington North",8,23
-"2012","Harrington North",9,27
-"2012","Harrington North",10,22
-"2012","Harrington South",4,17
-"2012","Harrington South",8,17
-"2012","Harrington South",8,24
-"2012","Harrington South",11,28
-"2012","Hastie Lake",5,22
-"2012","Hastie Lake",6,28
-"2012","Hastie Lake",7,15
-"2012","Hastie Lake",9,14
-"2012","Hastie Lake",10,15
-"2012","Hastie Lake",11,14
-"2012","Hastie Lake North",5,12
-"2012","Hastie Lake North",7,15
-"2012","Hastie Lake North",8,13
-"2012","Hastie Lake North",9,19
-"2012","Hastie Lake North",11,24
-"2012","Keystone",5,53
-"2012","Keystone",6,52
-"2012","Keystone",7,52
-"2012","Keystone",8,58
-"2012","Keystone",9,53
-"2012","Keystone",10,30
-"2012","Keystone",11,37
-"2012","Lagoon North #1",6,46
-"2012","Lagoon North #1",7,63
-"2012","Lagoon North #1",8,61
-"2012","Lagoon North #1",9,51
-"2012","Lagoon North #1",11,61
-"2012","Lagoon North #1",11,82
-"2012","Lagoon North #1",12,54
-"2012","Lagoon North #2",5,9
-"2012","Lagoon North #2",6,14
-"2012","Lagoon North #2",7,10
-"2012","Lagoon North #2",8,11
-"2012","Lagoon North #2",9,9
-"2012","Lagoon North #2",10,7
-"2012","Lagoon North #2",11,7
-"2012","Lagoon North #2",12,10
-"2012","Lagoon North #3",4,26
-"2012","Lagoon North #3",6,34
-"2012","Lagoon North #3",7,25
-"2012","Lagoon North #3",8,25
-"2012","Lagoon South",5,31
-"2012","Lagoon South",6,26
-"2012","Lagoon South",7,32
-"2012","Lagoon South",8,34
-"2012","Lagoon South",9,46
-"2012","Lagoon South",10,39
-"2012","Lagoon South",11,48
-"2012","Ledgewood",6,35
-"2012","Ledgewood",7,41
-"2012","Ledgewood",8,42
-"2012","Ledgewood",9,41
-"2012","Ledgewood",10,41
-"2012","Ledgewood",11,29
-"2012","Ledgewood",12,39
-"2012","Ledgewood",13,21
-"2012","Limpet Lane",5,13
-"2012","Limpet Lane",6,24
-"2012","Limpet Lane",7,17
-"2012","Limpet Lane",9,25
-"2012","Limpet Lane",10,18
-"2012","Limpet Lane",11,26
-"2012","Limpet Lane",11,20
-"2012","Malmo Bluff",5,31
-"2012","Malmo Bluff",6,50
-"2012","Malmo Bluff",8,25
-"2012","Malmo Bluff",9,43
-"2012","Malmo Bluff",10,36
-"2012","Monroe Landing",7,8
-"2012","Monroe Landing",9,13
-"2012","Monroe Landing",11,11
-"2012","Monroe Landing",12,13
-"2012","Monroe Landing",13,15
-"2012","Mutiny Sands",7,25
-"2012","Mutiny Sands",9,31
-"2012","Mutiny Sands",10,37
-"2012","Mutiny Sands",13,22
-"2012","Possession Point",5,28
-"2012","Possession Point",6,29
-"2012","Possession Point",7,20
-"2012","Possession Point",8,30
-"2012","Possession Point",10,18
-"2012","Possession Point",10,36
-"2012","Pratts Bluff",5,25
-"2012","Pratts Bluff",6,24
-"2012","Pratts Bluff",7,21
-"2012","Pratts Bluff",8,28
-"2012","Pratts Bluff",10,25
-"2012","Pratts Bluff",11,14
-"2012","Rolling Hills #1",5,26
-"2012","Rolling Hills #1",6,23
-"2012","Rolling Hills #1",7,41
-"2012","Rolling Hills #1",8,28
-"2012","Rolling Hills #1",9,33
-"2012","Rolling Hills #1",11,45
-"2012","Rolling Hills #1",12,25
-"2012","Rolling Hills #2",5,35
-"2012","Rolling Hills #2",6,32
-"2012","Rolling Hills #2",7,47
-"2012","Rolling Hills #2",8,25
-"2012","Rolling Hills #2",9,36
-"2012","Rolling Hills #2",10,33
-"2012","Rolling Hills #2",11,48
-"2012","Rolling Hills #2",12,48
-"2012","Shore Meadows",5,64
-"2012","Shore Meadows",6,52
-"2012","Shore Meadows",7,47
-"2012","Shore Meadows",8,62
-"2012","Shore Meadows",9,62
-"2012","Shore Meadows",10,78
-"2012","Shore Meadows",12,55
-"2012","Shore Meadows",13,47
-"2012","Swantown",5,31
-"2012","Swantown",8,19
-"2012","Swantown",9,21
-"2012","Swantown",10,18
-"2012","Swantown",11,18
-"2013","Cliffside",5,15
-"2013","Cliffside",8,17
-"2013","Cliffside",10,21
-"2013","Cliffside",11,26
-"2013","Cliffside",12,29
-"2013","Coupeville Wharf",6,9
-"2013","Coupeville Wharf",7,8
-"2013","Coupeville Wharf",8,11
-"2013","Coupeville Wharf",9,11
-"2013","Coupeville Wharf",10,15
-"2013","Coupeville Wharf",11,12
-"2013","Coupeville Wharf",12,10
-"2013","Double Bluff North",5,45
-"2013","Double Bluff North",6,61
-"2013","Double Bluff North",7,45
-"2013","Double Bluff North",8,40
-"2013","Double Bluff North",9,42
-"2013","Double Bluff North",10,40
-"2013","Double Bluff North",11,61
-"2013","Double Bluff North",12,42
-"2013","Double Bluff South",6,20
-"2013","Double Bluff South",7,18
-"2013","Double Bluff South",8,20
-"2013","Double Bluff South",10,19
-"2013","Forbes Point",5,15
-"2013","Forbes Point",7,19
-"2013","Forbes Point",9,23
-"2013","Forbes Point",10,17
-"2013","Forbes Point",11,26
-"2013","Fort Casey",4,57
-"2013","Fort Casey",7,54
-"2013","Fort Casey",8,45
-"2013","Fort Casey",9,30
-"2013","Fort Casey",11,41
-"2013","Fort Casey",12,30
-"2013","Hancock Lake",5,69
-"2013","Hancock Lake",6,71
-"2013","Hancock Lake",7,72
-"2013","Hancock Lake",8,75
-"2013","Hancock Lake",9,74
-"2013","Hancock Lake",11,64
-"2013","Hancock Lake",13,61
-"2013","Harrington North",5,10
-"2013","Harrington North",7,14
-"2013","Harrington North",9,15
-"2013","Harrington North",10,20
-"2013","Harrington North",11,13
-"2013","Harrington South",5,9
-"2013","Harrington South",6,9
-"2013","Harrington South",6,8
-"2013","Harrington South",8,12
-"2013","Harrington South",9,11
-"2013","Harrington South",10,14
-"2013","Harrington South",11,12
-"2013","Harrington South",12,13
-"2013","Harrington South",13,8
-"2013","Hastie Lake",5,20
-"2013","Hastie Lake",6,13
-"2013","Hastie Lake",7,26
-"2013","Hastie Lake",8,19
-"2013","Hastie Lake",9,13
-"2013","Hastie Lake",10,15
-"2013","Hastie Lake",12,20
-"2013","Hastie Lake North",5,21
-"2013","Hastie Lake North",7,17
-"2013","Hastie Lake North",8,17
-"2013","Hastie Lake North",9,17
-"2013","Hastie Lake North",11,15
-"2013","Hastie Lake North",13,11
-"2013","Keystone",5,43
-"2013","Keystone",6,47
-"2013","Keystone",7,37
-"2013","Keystone",8,47
-"2013","Keystone",9,38
-"2013","Keystone",10,42
-"2013","Keystone",11,55
-"2013","Lagoon North #1",5,75
-"2013","Lagoon North #1",6,85
-"2013","Lagoon North #1",7,86
-"2013","Lagoon North #1",8,77
-"2013","Lagoon North #1",9,86
-"2013","Lagoon North #1",10,72
-"2013","Lagoon North #1",11,61
-"2013","Lagoon North #2",7,14
-"2013","Lagoon North #2",8,17
-"2013","Lagoon North #2",9,14
-"2013","Lagoon North #2",10,14
-"2013","Lagoon North #2",11,21
-"2013","Lagoon North #3",5,12
-"2013","Lagoon North #3",6,14
-"2013","Lagoon North #3",7,11
-"2013","Lagoon North #3",8,18
-"2013","Lagoon North #3",9,17
-"2013","Lagoon North #3",10,9
-"2013","Lagoon North #3",12,14
-"2013","Lagoon South",6,30
-"2013","Lagoon South",7,47
-"2013","Lagoon South",8,43
-"2013","Lagoon South",10,41
-"2013","Lagoon South",11,45
-"2013","Lagoon South",12,40
-"2013","Ledgewood",5,29
-"2013","Ledgewood",6,26
-"2013","Ledgewood",7,35
-"2013","Ledgewood",8,38
-"2013","Ledgewood",9,33
-"2013","Ledgewood",10,38
-"2013","Ledgewood",11,40
-"2013","Ledgewood",12,28
-"2013","Ledgewood",13,21
-"2013","Limpet Lane",5,16
-"2013","Limpet Lane",7,31
-"2013","Limpet Lane",9,16
-"2013","Malmo Bluff",5,35
-"2013","Malmo Bluff",6,40
-"2013","Malmo Bluff",7,43
-"2013","Malmo Bluff",8,39
-"2013","Malmo Bluff",9,47
-"2013","Malmo Bluff",10,27
-"2013","Malmo Bluff",11,35
-"2013","Malmo Bluff",12,35
-"2013","Maylor Point",7,24
-"2013","Maylor Point",10,13
-"2013","Monroe Landing",7,9
-"2013","Monroe Landing",8,9
-"2013","Monroe Landing",9,16
-"2013","Monroe Landing",10,12
-"2013","Monroe Landing",11,12
-"2013","Monroe Landing",12,16
-"2013","Mutiny Sands",5,20
-"2013","Mutiny Sands",7,28
-"2013","Mutiny Sands",9,28
-"2013","Mutiny Sands",10,32
-"2013","Mutiny Sands",11,24
-"2013","Mutiny Sands",13,34
-"2013","Possession Point",4,18
-"2013","Possession Point",5,29
-"2013","Possession Point",6,23
-"2013","Possession Point",8,33
-"2013","Possession Point",9,25
-"2013","Possession Point",11,33
-"2013","Pratts Bluff",5,25
-"2013","Pratts Bluff",6,36
-"2013","Pratts Bluff",7,26
-"2013","Pratts Bluff",9,43
-"2013","Pratts Bluff",11,30
-"2013","Rolling Hills #1",5,31
-"2013","Rolling Hills #1",6,32
-"2013","Rolling Hills #1",7,26
-"2013","Rolling Hills #1",8,22
-"2013","Rolling Hills #1",9,28
-"2013","Rolling Hills #1",10,37
-"2013","Rolling Hills #1",11,38
-"2013","Rolling Hills #1",12,27
-"2013","Rolling Hills #2",5,38
-"2013","Rolling Hills #2",6,46
-"2013","Rolling Hills #2",7,36
-"2013","Rolling Hills #2",8,46
-"2013","Rolling Hills #2",9,32
-"2013","Rolling Hills #2",10,57
-"2013","Rolling Hills #2",11,51
-"2013","Rolling Hills #2",12,43
-"2013","Shore Meadows",5,48
-"2013","Shore Meadows",6,36
-"2013","Shore Meadows",7,57
-"2013","Shore Meadows",8,69
-"2013","Shore Meadows",9,67
-"2013","Shore Meadows",10,67
-"2013","Shore Meadows",11,59
-"2013","Shore Meadows",12,52
-"2013","Swantown",5,17
-"2013","Swantown",7,21
-"2013","Swantown",10,11
-"2013","Swantown",11,22
-"2014","Cliffside",4,39
-"2014","Double Bluff North",4,52
-"2014","Double Bluff North",6,63
-"2014","Double Bluff North",8,71
-"2014","Double Bluff North",10,80
-"2014","Double Bluff North",12,63
-"2014","Double Bluff South",6,8
-"2014","Double Bluff South",8,13
-"2014","Double Bluff South",9,16
-"2014","Double Bluff South",10,13
-"2014","Double Bluff South",11,13
-"2014","Forbes Point",9,18
-"2014","Forbes Point",10,13
-"2014","Forbes Point",11,20
-"2014","Forbes Point",12,19
-"2014","Fort Casey",4,40
-"2014","Fort Casey",5,35
-"2014","Fort Casey",6,36
-"2014","Fort Casey",7,26
-"2014","Fort Casey",8,32
-"2014","Fort Casey",9,35
-"2014","Fort Casey",10,40
-"2014","Fort Casey",11,44
-"2014","Fort Casey",12,36
-"2014","Hancock Lake",4,63
-"2014","Hancock Lake",5,60
-"2014","Hancock Lake",7,42
-"2014","Hancock Lake",8,67
-"2014","Hancock Lake",9,57
-"2014","Hancock Lake",10,67
-"2014","Hancock Lake",11,70
-"2014","Harrington North",4,26
-"2014","Harrington North",7,13
-"2014","Harrington North",10,20
-"2014","Harrington South",4,23
-"2014","Harrington South",6,13
-"2014","Harrington South",7,13
-"2014","Harrington South",7,15
-"2014","Harrington South",10,17
-"2014","Harrington South",11,18
-"2014","Harrington South",12,14
-"2014","Hastie Lake",4,18
-"2014","Hastie Lake",6,16
-"2014","Hastie Lake",8,19
-"2014","Hastie Lake",9,24
-"2014","Hastie Lake",10,29
-"2014","Hastie Lake",11,22
-"2014","Hastie Lake",12,21
-"2014","Hastie Lake North",4,21
-"2014","Hastie Lake North",6,21
-"2014","Hastie Lake North",8,16
-"2014","Keystone",4,47
-"2014","Keystone",5,46
-"2014","Keystone",6,44
-"2014","Keystone",7,50
-"2014","Keystone",8,30
-"2014","Keystone",9,33
-"2014","Keystone",10,49
-"2014","Keystone",11,27
-"2014","Keystone",12,40
-"2014","Lagoon North #1",4,66
-"2014","Lagoon North #1",5,66
-"2014","Lagoon North #1",7,71
-"2014","Lagoon North #1",8,67
-"2014","Lagoon North #1",10,66
-"2014","Lagoon North #1",12,62
-"2014","Lagoon North #2",4,12
-"2014","Lagoon North #2",6,14
-"2014","Lagoon North #2",7,20
-"2014","Lagoon North #3",7,33
-"2014","Lagoon North #3",8,50
-"2014","Lagoon North #3",11,30
-"2014","Lagoon South",4,35
-"2014","Lagoon South",6,29
-"2014","Lagoon South",8,38
-"2014","Lagoon South",10,41
-"2014","Lagoon South",12,25
-"2014","Ledgewood",4,47
-"2014","Ledgewood",5,47
-"2014","Ledgewood",6,38
-"2014","Ledgewood",8,45
-"2014","Ledgewood",9,27
-"2014","Ledgewood",10,47
-"2014","Ledgewood",11,47
-"2014","Ledgewood",12,33
-"2014","Ledgewood",13,29
-"2014","Malmo Bluff",4,35
-"2014","Malmo Bluff",5,24
-"2014","Malmo Bluff",6,34
-"2014","Malmo Bluff",7,27
-"2014","Malmo Bluff",8,27
-"2014","Malmo Bluff",9,39
-"2014","Malmo Bluff",10,39
-"2014","Malmo Bluff",12,39
-"2014","Maylor Point",6,25
-"2014","Maylor Point",7,17
-"2014","Maylor Point",8,22
-"2014","Maylor Point",9,17
-"2014","Maylor Point",10,26
-"2014","Maylor Point",11,20
-"2014","Monroe Landing",5,8
-"2014","Monroe Landing",7,7
-"2014","Monroe Landing",8,8
-"2014","Monroe Landing",9,11
-"2014","Monroe Landing",10,11
-"2014","Monroe Landing",11,11
-"2014","Monroe Landing",13,11
-"2014","Mutiny Sands",4,34
-"2014","Mutiny Sands",6,44
-"2014","Mutiny Sands",8,41
-"2014","Mutiny Sands",9,30
-"2014","Mutiny Sands",10,56
-"2014","Mutiny Sands",12,46
-"2014","Possession Point",4,24
-"2014","Possession Point",5,24
-"2014","Possession Point",6,22
-"2014","Possession Point",8,24
-"2014","Possession Point",9,16
-"2014","Possession Point",10,21
-"2014","Possession Point",12,21
-"2014","Pratts Bluff",4,26
-"2014","Pratts Bluff",5,13
-"2014","Pratts Bluff",6,22
-"2014","Pratts Bluff",8,18
-"2014","Pratts Bluff",9,15
-"2014","Pratts Bluff",10,26
-"2014","Pratts Bluff",11,25
-"2014","Pratts Bluff",12,25
-"2014","Rolling Hills #1",4,50
-"2014","Rolling Hills #1",6,38
-"2014","Rolling Hills #1",7,26
-"2014","Rolling Hills #1",8,43
-"2014","Rolling Hills #1",10,40
-"2014","Rolling Hills #1",12,47
-"2014","Rolling Hills #2",4,52
-"2014","Rolling Hills #2",5,28
-"2014","Rolling Hills #2",6,56
-"2014","Rolling Hills #2",7,46
-"2014","Rolling Hills #2",8,49
-"2014","Rolling Hills #2",9,39
-"2014","Rolling Hills #2",10,54
-"2014","Rolling Hills #2",12,55
-"2014","Rolling Hills #2",13,44
-"2014","Rolling Hills #3",6,38
-"2014","Rolling Hills #3",7,40
-"2014","Rolling Hills #3",8,60
-"2014","Rolling Hills #3",11,45
-"2014","Rolling Hills #3",12,44
-"2014","Rolling Hills #3",13,51
-"2014","Shore Meadows",4,71
-"2014","Shore Meadows",5,64
-"2014","Shore Meadows",6,52
-"2014","Shore Meadows",7,60
-"2014","Shore Meadows",8,92
-"2014","Shore Meadows",9,80
-"2014","Shore Meadows",10,96
-"2014","Shore Meadows",11,60
-"2014","Shore Meadows",12,76
-"2014","Swantown",4,11
-"2014","Swantown",7,13
-"2014","Swantown",8,14
-"2014","Swantown",9,11
-"2014","Swantown",10,21
-"2014","Swantown",12,15
-"2015","Cliffside",7,33
-"2015","Cliffside",9,27
-"2015","Cliffside",11,28
-"2015","Coupeville Wharf",5,8
-"2015","Coupeville Wharf",6,7
-"2015","Coupeville Wharf",7,8
-"2015","Coupeville Wharf",8,4
-"2015","Double Bluff North",5,40
-"2015","Double Bluff North",6,41
-"2015","Double Bluff North",7,52
-"2015","Double Bluff North",8,57
-"2015","Double Bluff North",9,51
-"2015","Double Bluff North",10,35
-"2015","Double Bluff North",11,43
-"2015","Double Bluff North",12,28
-"2015","Double Bluff South",7,8
-"2015","Double Bluff South",8,11
-"2015","Double Bluff South",9,11
-"2015","Double Bluff South",10,14
-"2015","Double Bluff South",11,10
-"2015","Double Bluff South",12,8
-"2015","Forbes Point",5,13
-"2015","Forbes Point",7,17
-"2015","Forbes Point",9,12
-"2015","Forbes Point",11,10
-"2015","Forbes Point",12,10
-"2015","Fort Casey",5,39
-"2015","Fort Casey",6,33
-"2015","Fort Casey",7,31
-"2015","Fort Casey",8,32
-"2015","Fort Casey",9,32
-"2015","Fort Casey",10,34
-"2015","Hancock Lake",4,47
-"2015","Hancock Lake",5,43
-"2015","Hancock Lake",6,58
-"2015","Hancock Lake",7,48
-"2015","Hancock Lake",8,49
-"2015","Hancock Lake",9,53
-"2015","Hancock Lake",10,56
-"2015","Hancock Lake",11,53
-"2015","Hancock Lake",12,65
-"2015","Harrington North",6,17
-"2015","Harrington North",7,15
-"2015","Harrington North",8,20
-"2015","Harrington North",9,19
-"2015","Harrington North",10,22
-"2015","Harrington North",11,16
-"2015","Harrington North",12,11
-"2015","Harrington South",5,12
-"2015","Harrington South",6,15
-"2015","Harrington South",7,18
-"2015","Harrington South",8,21
-"2015","Harrington South",8,14
-"2015","Harrington South",10,17
-"2015","Harrington South",11,22
-"2015","Harrington South",12,19
-"2015","Harrington South",13,14
-"2015","Hastie Lake",6,27
-"2015","Hastie Lake",7,32
-"2015","Hastie Lake",8,37
-"2015","Hastie Lake",9,35
-"2015","Hastie Lake",11,22
-"2015","Hastie Lake",12,21
-"2015","Hastie Lake",13,34
-"2015","Keystone",5,86
-"2015","Keystone",8,67
-"2015","Keystone",9,59
-"2015","Keystone",11,55
-"2015","Lagoon North #0",7,30
-"2015","Lagoon North #0",8,31
-"2015","Lagoon North #0",9,25
-"2015","Lagoon North #0",10,18
-"2015","Lagoon North #0",11,22
-"2015","Lagoon North #0",12,20
-"2015","Lagoon North #1",8,57
-"2015","Lagoon North #1",9,34
-"2015","Lagoon North #1",10,40
-"2015","Lagoon North #1",11,46
-"2015","Lagoon North #1",12,43
-"2015","Lagoon North #2",9,26
-"2015","Lagoon North #2",10,40
-"2015","Lagoon South",5,29
-"2015","Lagoon South",7,39
-"2015","Lagoon South",8,27
-"2015","Lagoon South",8,30
-"2015","Lagoon South",9,36
-"2015","Lagoon South",10,23
-"2015","Lagoon South",11,44
-"2015","Lagoon South",12,28
-"2015","Ledgewood",5,36
-"2015","Ledgewood",6,43
-"2015","Ledgewood",7,32
-"2015","Ledgewood",8,35
-"2015","Ledgewood",9,42
-"2015","Ledgewood",10,26
-"2015","Ledgewood",10,43
-"2015","Ledgewood",11,43
-"2015","Ledgewood",12,24
-"2015","Libby North",5,10
-"2015","Libby North",6,13
-"2015","Libby North",7,17
-"2015","Libby North",8,15
-"2015","Libby North",9,13
-"2015","Libby North",10,10
-"2015","Libby North",11,9
-"2015","Limpet Lane",11,15
-"2015","Limpet Lane",12,18
-"2015","Malmo Bluff",5,25
-"2015","Malmo Bluff",6,27
-"2015","Malmo Bluff",7,24
-"2015","Malmo Bluff",8,31
-"2015","Malmo Bluff",9,32
-"2015","Malmo Bluff",10,47
-"2015","Malmo Bluff",11,44
-"2015","Malmo Bluff",12,30
-"2015","Maylor Point",5,7
-"2015","Maylor Point",6,13
-"2015","Maylor Point",7,13
-"2015","Maylor Point",9,9
-"2015","Monroe Landing",4,9
-"2015","Monroe Landing",5,12
-"2015","Monroe Landing",6,8
-"2015","Monroe Landing",7,6
-"2015","Monroe Landing",9,10
-"2015","Monroe Landing",10,6
-"2015","Monroe Landing",11,12
-"2015","Monroe Landing",12,8
-"2015","Monroe Landing",13,10
-"2015","Possession Point",4,21
-"2015","Possession Point",6,19
-"2015","Possession Point",8,14
-"2015","Possession Point",11,21
-"2015","Possession Point",11,23
-"2015","Pratts Bluff",5,25
-"2015","Pratts Bluff",6,17
-"2015","Pratts Bluff",7,33
-"2015","Pratts Bluff",8,18
-"2015","Pratts Bluff",9,30
-"2015","Pratts Bluff",10,25
-"2015","Pratts Bluff",11,27
-"2015","Rolling Hills #1",5,61
-"2015","Rolling Hills #1",6,31
-"2015","Rolling Hills #1",7,40
-"2015","Rolling Hills #1",9,45
-"2015","Rolling Hills #1",11,45
-"2015","Rolling Hills #3",5,59
-"2015","Rolling Hills #3",6,36
-"2015","Rolling Hills #3",7,60
-"2015","Rolling Hills #3",9,64
-"2015","Rolling Hills #3",11,39
-"2015","Shore Meadows",5,76
-"2015","Shore Meadows",7,90
-"2015","Shore Meadows",8,85
-"2015","Shore Meadows",9,89
-"2015","Shore Meadows",10,65
-"2015","Shore Meadows",11,107
-"2015","Shore Meadows",12,55
-"2015","Swantown",7,18
-"2015","Swantown",9,30
-"2015","Swantown",13,36
-"2016","Bush Point Dock",3,3
-"2016","Bush Point Dock",4,6
-"2016","Bush Point Dock",6,3
-"2016","Bush Point Dock",8,4
-"2016","Bush Point Dock",9,5
-"2016","Bush Point Dock",10,3
-"2016","Bush Point Dock",11,6
-"2016","Bush Point Dock",12,3
-"2016","Bush Point Dock",13,3
-"2016","Cliffside",2,22
-"2016","Cliffside",3,26
-"2016","Cliffside",4,22
-"2016","Cliffside",5,27
-"2016","Cliffside",7,23
-"2016","Cliffside",9,21
-"2016","Cliffside",11,18
-"2016","Cliffside",13,16
-"2016","Clinton Ferry",3,15
-"2016","Clinton Ferry",6,15
-"2016","Clinton Ferry",9,14
-"2016","Coupeville Wharf",3,5
-"2016","Coupeville Wharf",4,6
-"2016","Double Bluff North",2,39
-"2016","Double Bluff North",4,39
-"2016","Double Bluff North",5,38
-"2016","Double Bluff North",6,45
-"2016","Double Bluff North",7,45
-"2016","Double Bluff North",8,62
-"2016","Double Bluff North",9,45
-"2016","Double Bluff North",10,62
-"2016","Double Bluff South",2,7
-"2016","Double Bluff South",5,5
-"2016","Double Bluff South",6,9
-"2016","Double Bluff South",7,9
-"2016","Double Bluff South",8,8
-"2016","Double Bluff South",10,9
-"2016","Double Bluff South",11,8
-"2016","Forbes Point",1,12
-"2016","Forbes Point",2,19
-"2016","Forbes Point",3,13
-"2016","Forbes Point",4,16
-"2016","Forbes Point",5,12
-"2016","Forbes Point",6,17
-"2016","Forbes Point",8,21
-"2016","Forbes Point",9,18
-"2016","Forbes Point",11,16
-"2016","Fort Casey",2,50
-"2016","Fort Casey",3,32
-"2016","Fort Casey",4,42
-"2016","Fort Casey",6,32
-"2016","Fort Casey",8,60
-"2016","Fort Casey",10,35
-"2016","Fort Casey",11,39
-"2016","Hancock Lake",2,53
-"2016","Hancock Lake",3,62
-"2016","Hancock Lake",4,43
-"2016","Hancock Lake",5,51
-"2016","Hancock Lake",6,60
-"2016","Hancock Lake",7,67
-"2016","Hancock Lake",8,53
-"2016","Hancock Lake",9,85
-"2016","Hancock Lake",10,68
-"2016","Hancock Lake",11,65
-"2016","Hancock Lake",13,66
-"2016","Harrington North",2,14
-"2016","Harrington North",4,13
-"2016","Harrington North",5,13
-"2016","Harrington North",7,16
-"2016","Harrington North",8,20
-"2016","Harrington North",9,20
-"2016","Harrington North",10,15
-"2016","Harrington North",11,22
-"2016","Harrington South",2,25
-"2016","Harrington South",5,18
-"2016","Harrington South",6,16
-"2016","Harrington South",9,17
-"2016","Harrington South",10,23
-"2016","Hastie Lake",3,20
-"2016","Hastie Lake",5,31
-"2016","Hastie Lake",7,24
-"2016","Hastie Lake",9,23
-"2016","Hastie Lake",11,40
-"2016","Keystone",3,62
-"2016","Keystone",4,54
-"2016","Keystone",9,53
-"2016","Keystone",11,35
-"2016","Lagoon North #0",2,29
-"2016","Lagoon North #0",4,40
-"2016","Lagoon North #0",5,51
-"2016","Lagoon North #0",8,34
-"2016","Lagoon North #0",9,30
-"2016","Lagoon North #0",10,26
-"2016","Lagoon North #0",12,28
-"2016","Lagoon North #1",2,68
-"2016","Lagoon North #1",3,58
-"2016","Lagoon North #1",4,73
-"2016","Lagoon North #1",5,81
-"2016","Lagoon North #1",6,67
-"2016","Lagoon North #1",7,67
-"2016","Lagoon North #1",8,62
-"2016","Lagoon North #1",10,71
-"2016","Lagoon North #1",11,40
-"2016","Lagoon South",2,45
-"2016","Lagoon South",3,32
-"2016","Lagoon South",4,32
-"2016","Lagoon South",5,33
-"2016","Lagoon South",6,31
-"2016","Lagoon South",8,35
-"2016","Lagoon South",9,34
-"2016","Langley Maina",3,5
-"2016","Langley Maina",7,3
-"2016","Langley Maina",8,5
-"2016","Langley Maina",10,3
-"2016","Langley Maina",12,5
-"2016","Langley Maina",13,5
-"2016","Ledgewood",2,39
-"2016","Ledgewood",3,40
-"2016","Ledgewood",4,37
-"2016","Ledgewood",5,41
-"2016","Ledgewood",6,39
-"2016","Ledgewood",7,42
-"2016","Ledgewood",8,38
-"2016","Ledgewood",9,39
-"2016","Ledgewood",10,31
-"2016","Ledgewood",11,30
-"2016","Libby North",2,9
-"2016","Libby North",4,9
-"2016","Libby North",5,9
-"2016","Limpet Lane",2,33
-"2016","Limpet Lane",3,26
-"2016","Limpet Lane",4,35
-"2016","Limpet Lane",5,34
-"2016","Limpet Lane",6,34
-"2016","Limpet Lane",7,31
-"2016","Limpet Lane",8,25
-"2016","Limpet Lane",10,37
-"2016","Limpet Lane",12,24
-"2016","Malmo Bluff",2,39
-"2016","Malmo Bluff",3,31
-"2016","Malmo Bluff",4,23
-"2016","Malmo Bluff",5,30
-"2016","Malmo Bluff",6,35
-"2016","Malmo Bluff",7,32
-"2016","Malmo Bluff",8,32
-"2016","Malmo Bluff",10,27
-"2016","Maylor Point",5,12
-"2016","Maylor Point",8,14
-"2016","Maylor Point",9,22
-"2016","Maylor Point",11,12
-"2016","Monroe Landing",2,6
-"2016","Monroe Landing",3,7
-"2016","Monroe Landing",4,6
-"2016","Monroe Landing",5,6
-"2016","Monroe Landing",6,6
-"2016","Monroe Landing",7,7
-"2016","Monroe Landing",8,7
-"2016","Monroe Landing",9,10
-"2016","Monroe Landing",10,9
-"2016","Monroe Landing",11,5
-"2016","Monroe Landing",12,5
-"2016","Mutiny Sands",2,48
-"2016","Mutiny Sands",4,27
-"2016","Mutiny Sands",6,48
-"2016","Mutiny Sands",7,28
-"2016","Mutiny Sands",8,51
-"2016","Mutiny Sands",9,34
-"2016","Mutiny Sands",10,42
-"2016","Mutiny Sands",11,37
-"2016","Mutiny Sands",12,26
-"2016","Possession Point",1,14
-"2016","Possession Point",2,15
-"2016","Possession Point",4,10
-"2016","Possession Point",4,13
-"2016","Possession Point",5,13
-"2016","Possession Point",6,20
-"2016","Possession Point",8,14
-"2016","Possession Point",8,13
-"2016","Possession Point",10,19
-"2016","Pratts Bluff",2,21
-"2016","Pratts Bluff",3,13
-"2016","Pratts Bluff",5,17
-"2016","Pratts Bluff",6,19
-"2016","Pratts Bluff",7,24
-"2016","Pratts Bluff",8,26
-"2016","Pratts Bluff",9,26
-"2016","Rolling Hills #1",2,33
-"2016","Rolling Hills #1",4,32
-"2016","Rolling Hills #1",5,38
-"2016","Rolling Hills #1",6,40
-"2016","Rolling Hills #1",7,54
-"2016","Rolling Hills #1",8,41
-"2016","Rolling Hills #1",9,34
-"2016","Rolling Hills #1",11,29
-"2016","Rolling Hills #2",2,30
-"2016","Rolling Hills #3",4,48
-"2016","Rolling Hills #3",6,42
-"2016","Rolling Hills #3",10,79
-"2016","Shore Meadows",2,72
-"2016","Shore Meadows",3,70
-"2016","Shore Meadows",4,65
-"2016","Shore Meadows",5,101
-"2016","Shore Meadows",7,70
-"2016","Shore Meadows",8,62
-"2016","Shore Meadows",10,69
-"2016","Swantown",3,20
-"2016","Swantown",4,20
-"2016","Swantown",5,17
-"2016","Swantown",6,20
-"2016","Swantown",9,25
-"2016","Swantown",10,31
-"2017","Bush Point Dock",3,6
-"2017","Bush Point Dock",4,10
-"2017","Bush Point Dock",7,7
-"2017","Bush Point Dock",12,6
-"2017","Cliffside",5,37
-"2017","Cliffside",6,22
-"2017","Cliffside",7,20
-"2017","Cliffside",8,19
-"2017","Cliffside",9,22
-"2017","Cliffside",10,22
-"2017","Clinton Ferry",3,12
-"2017","Clinton Ferry",4,11
-"2017","Clinton Ferry",5,8
-"2017","Clinton Ferry",7,8
-"2017","Clinton Ferry",8,7
-"2017","Clinton Ferry",10,9
-"2017","Clinton Ferry",11,14
-"2017","Coupeville Wharf",3,6
-"2017","Coupeville Wharf",5,5
-"2017","Coupeville Wharf",6,4
-"2017","Coupeville Wharf",7,5
-"2017","Coupeville Wharf",8,5
-"2017","Coupeville Wharf",9,6
-"2017","Coupeville Wharf",10,6
-"2017","Coupeville Wharf",11,8
-"2017","Coupeville Wharf",12,8
-"2017","Double Bluff North",3,66
-"2017","Double Bluff North",5,38
-"2017","Double Bluff North",7,63
-"2017","Double Bluff North",8,62
-"2017","Double Bluff North",9,74
-"2017","Double Bluff North",10,54
-"2017","Double Bluff North",11,61
-"2017","Double Bluff South",4,10
-"2017","Double Bluff South",6,14
-"2017","Double Bluff South",7,10
-"2017","Double Bluff South",8,8
-"2017","Double Bluff South",9,12
-"2017","Double Bluff South",10,14
-"2017","Double Bluff South",11,9
-"2017","Double Bluff South",12,8
-"2017","Forbes Point",3,15
-"2017","Forbes Point",5,16
-"2017","Forbes Point",7,12
-"2017","Forbes Point",9,24
-"2017","Forbes Point",11,20
-"2017","Fort Casey",3,56
-"2017","Fort Casey",4,45
-"2017","Fort Casey",5,43
-"2017","Fort Casey",6,75
-"2017","Fort Casey",7,38
-"2017","Fort Casey",8,52
-"2017","Fort Casey",9,63
-"2017","Fort Casey",10,49
-"2017","Hancock Lake",3,60
-"2017","Hancock Lake",4,73
-"2017","Hancock Lake",5,83
-"2017","Hancock Lake",6,67
-"2017","Hancock Lake",7,78
-"2017","Hancock Lake",8,66
-"2017","Hancock Lake",9,62
-"2017","Hancock Lake",10,65
-"2017","Hancock Lake",11,58
-"2017","Harrington North",3,16
-"2017","Harrington North",5,23
-"2017","Harrington North",6,17
-"2017","Harrington North",7,25
-"2017","Harrington North",9,20
-"2017","Harrington North",11,16
-"2017","Harrington North",12,15
-"2017","Harrington South",3,24
-"2017","Harrington South",4,20
-"2017","Harrington South",5,21
-"2017","Harrington South",6,15
-"2017","Harrington South",7,19
-"2017","Harrington South",7,13
-"2017","Harrington South",8,22
-"2017","Harrington South",10,25
-"2017","Harrington South",11,25
-"2017","Harrington South",12,18
-"2017","Hastie Lake",3,22
-"2017","Hastie Lake",4,31
-"2017","Hastie Lake",5,39
-"2017","Hastie Lake",6,39
-"2017","Hastie Lake",7,24
-"2017","Hastie Lake",9,22
-"2017","Hastie Lake",10,20
-"2017","Keystone",3,27
-"2017","Keystone",4,26
-"2017","Keystone",5,42
-"2017","Keystone",7,28
-"2017","Keystone",8,28
-"2017","Keystone",9,44
-"2017","Keystone",10,34
-"2017","Keystone",11,41
-"2017","Lagoon North #0",8,27
-"2017","Lagoon North #0",9,49
-"2017","Lagoon North #1",3,116
-"2017","Lagoon North #1",4,92
-"2017","Lagoon North #1",5,74
-"2017","Lagoon North #1",6,74
-"2017","Lagoon North #1",7,77
-"2017","Lagoon South",3,25
-"2017","Lagoon South",4,32
-"2017","Lagoon South",5,25
-"2017","Lagoon South",6,30
-"2017","Lagoon South",7,37
-"2017","Lagoon South",8,27
-"2017","Lagoon South",9,44
-"2017","Lagoon South",10,30
-"2017","Lagoon South",11,43
-"2017","Langley Maina",4,7
-"2017","Langley Maina",5,7
-"2017","Langley Maina",6,5
-"2017","Langley Maina",8,5
-"2017","Langley Maina",9,10
-"2017","Langley Maina",10,6
-"2017","Langley Maina",11,7
-"2017","Ledgewood",2,46
-"2017","Ledgewood",3,40
-"2017","Ledgewood",4,38
-"2017","Ledgewood",7,39
-"2017","Ledgewood",8,32
-"2017","Ledgewood",9,38
-"2017","Ledgewood",10,44
-"2017","Ledgewood",11,42
-"2017","Limpet Lane",3,35
-"2017","Limpet Lane",4,24
-"2017","Limpet Lane",5,27
-"2017","Limpet Lane",6,21
-"2017","Limpet Lane",7,29
-"2017","Limpet Lane",8,26
-"2017","Limpet Lane",9,31
-"2017","Limpet Lane",10,24
-"2017","Limpet Lane",11,23
-"2017","Malmo Bluff",3,41
-"2017","Malmo Bluff",5,29
-"2017","Malmo Bluff",7,31
-"2017","Malmo Bluff",8,28
-"2017","Malmo Bluff",9,38
-"2017","Malmo Bluff",10,39
-"2017","Malmo Bluff",11,53
-"2017","Malmo Bluff",12,36
-"2017","Malmo Bluff",13,40
-"2017","Mutiny Sands",3,42
-"2017","Mutiny Sands",4,26
-"2017","Mutiny Sands",5,44
-"2017","Mutiny Sands",6,31
-"2017","Mutiny Sands",7,50
-"2017","Mutiny Sands",9,44
-"2017","Mutiny Sands",11,49
-"2017","Mutiny Sands",13,25
-"2017","Possession Point",4,10
-"2017","Possession Point",5,13
-"2017","Possession Point",6,12
-"2017","Possession Point",8,17
-"2017","Possession Point",8,12
-"2017","Possession Point",9,19
-"2017","Possession Point",11,12
-"2017","Pratts Bluff",3,25
-"2017","Pratts Bluff",5,25
-"2017","Pratts Bluff",6,25
-"2017","Pratts Bluff",7,30
-"2017","Pratts Bluff",8,30
-"2017","Pratts Bluff",9,19
-"2017","Pratts Bluff",10,33
-"2017","Pratts Bluff",11,29
-"2017","Pratts Bluff",12,23
-"2017","Rolling Hills #1",3,44
-"2017","Rolling Hills #1",4,50
-"2017","Rolling Hills #1",5,40
-"2017","Rolling Hills #1",6,38
-"2017","Rolling Hills #1",7,41
-"2017","Rolling Hills #1",8,32
-"2017","Rolling Hills #1",9,47
-"2017","Rolling Hills #1",10,29
-"2017","Rolling Hills #1",11,42
-"2017","Rolling Hills #3",3,15
-"2017","Rolling Hills #3",4,8
-"2017","Rolling Hills #3",5,12
-"2017","Rolling Hills #3",6,14
-"2017","Rolling Hills #3",7,15
-"2017","Rolling Hills #3",8,15
-"2017","Rolling Hills #3",9,8
-"2017","Rolling Hills #3",11,8
-"2017","Shore Meadows",3,44
-"2017","Shore Meadows",4,69
-"2017","Shore Meadows",5,50
-"2017","Shore Meadows",6,54
-"2017","Shore Meadows",7,54
-"2017","Shore Meadows",8,40
-"2017","Shore Meadows",9,53
-"2017","Shore Meadows",10,35
-"2017","Shore Meadows",11,63
-"2017","Swantown",3,26
-"2017","Swantown",4,16
-"2017","Swantown",5,19
-"2017","Swantown",7,30
-"2017","Swantown",8,24
-"2017","Swantown",9,26
-"2017","Swantown",10,21
-"2017","Swantown",14,22
+"year","site","week","PG_count"
+"2008","Cliffside",26,47
+"2008","Cliffside",28,41
+"2008","Cliffside",30,51
+"2008","Crescent Harbor",26,14
+"2008","Crescent Harbor",27,11
+"2008","Crescent Harbor",29,12
+"2008","Crescent Harbor",29,8
+"2008","Crescent Harbor",31,10
+"2008","Crescent Harbor",32,12
+"2008","Double Bluff North",26,66
+"2008","Double Bluff North",28,101
+"2008","Double Bluff North",29,67
+"2008","Double Bluff North",30,95
+"2008","Double Bluff North",31,84
+"2008","Double Bluff North",32,93
+"2008","Double Bluff South",26,20
+"2008","Double Bluff South",28,23
+"2008","Double Bluff South",29,16
+"2008","Double Bluff South",30,24
+"2008","Forbes Point",26,18
+"2008","Forbes Point",28,17
+"2008","Forbes Point",30,16
+"2008","Forbes Point",32,28
+"2008","Forbes Point",32,21
+"2008","Fort Casey",26,30
+"2008","Fort Casey",28,25
+"2008","Fort Casey",30,48
+"2008","Fort Casey",30,30
+"2008","Hancock Lake",26,44
+"2008","Hancock Lake",27,46
+"2008","Hancock Lake",28,32
+"2008","Hancock Lake",29,32
+"2008","Hancock Lake",30,29
+"2008","Hancock Lake",32,50
+"2008","Harrington North",27,21
+"2008","Harrington North",28,30
+"2008","Harrington North",29,25
+"2008","Harrington North",30,40
+"2008","Harrington South",30,33
+"2008","Harrington South",31,38
+"2008","Hastie Lake",26,29
+"2008","Hastie Lake",27,30
+"2008","Hastie Lake",28,31
+"2008","Hastie Lake",29,26
+"2008","Hastie Lake",30,31
+"2008","Hastie Lake",32,16
+"2008","Keystone",25,32
+"2008","Keystone",27,41
+"2008","Keystone",30,22
+"2008","Keystone",31,28
+"2008","Keystone",33,35
+"2008","Lagoon North #1",26,55
+"2008","Lagoon North #1",29,58
+"2008","Lagoon North #1",29,54
+"2008","Lagoon North #1",30,44
+"2008","Lagoon North #1",31,70
+"2008","Lagoon North #1",32,44
+"2008","Lagoon North #2",26,38
+"2008","Lagoon North #2",29,54
+"2008","Lagoon North #2",32,42
+"2008","Lagoon North #3",29,26
+"2008","Lagoon North #3",30,26
+"2008","Lagoon North #3",31,26
+"2008","Lagoon North #3",32,18
+"2008","Lagoon South",26,35
+"2008","Lagoon South",28,38
+"2008","Lagoon South",29,35
+"2008","Lagoon South",30,41
+"2008","Lagoon South",31,45
+"2008","Lagoon South",32,42
+"2008","Ledgewood",26,18
+"2008","Ledgewood",27,22
+"2008","Ledgewood",24,28
+"2008","Ledgewood",29,23
+"2008","Ledgewood",30,30
+"2008","Ledgewood",31,29
+"2008","Ledgewood",31,25
+"2008","Ledgewood",32,27
+"2008","Ledgewood",33,28
+"2008","Limpet Lane",26,38
+"2008","Limpet Lane",30,45
+"2008","Limpet Lane",32,37
+"2008","Malmo Bluff",26,26
+"2008","Malmo Bluff",28,22
+"2008","Malmo Bluff",29,22
+"2008","Malmo Bluff",30,18
+"2008","Malmo Bluff",32,16
+"2008","Maylor Point",26,15
+"2008","Maylor Point",29,17
+"2008","Maylor Point",29,15
+"2008","Maylor Point",31,17
+"2008","Maylor Point",32,19
+"2008","Monroe Landing",26,9
+"2008","Monroe Landing",27,11
+"2008","Monroe Landing",28,13
+"2008","Monroe Landing",29,10
+"2008","Monroe Landing",31,11
+"2008","Monroe Landing",32,7
+"2008","Mutiny Sands",26,40
+"2008","Mutiny Sands",28,40
+"2008","Mutiny Sands",29,33
+"2008","Mutiny Sands",30,50
+"2008","Possession Point",26,18
+"2008","Possession Point",28,22
+"2008","Possession Point",29,21
+"2008","Possession Point",30,20
+"2008","Possession Point",32,24
+"2008","Pratts Bluff",26,18
+"2008","Pratts Bluff",27,17
+"2008","Pratts Bluff",27,30
+"2008","Pratts Bluff",29,21
+"2008","Pratts Bluff",30,15
+"2008","Pratts Bluff",31,19
+"2008","Rolling Hills",28,61
+"2008","Rolling Hills",30,69
+"2008","Shore Meadows",26,81
+"2008","Shore Meadows",27,52
+"2008","Shore Meadows",28,46
+"2008","Shore Meadows",30,47
+"2008","Shore Meadows",31,53
+"2008","Swantown",28,30
+"2008","Swantown",30,34
+"2008","Swantown",31,27
+"2008","Swantown",32,39
+"2009","Cliffside",26,35
+"2009","Cliffside",29,41
+"2009","Cliffside",30,30
+"2009","Cliffside",33,48
+"2009","Crescent Harbor",27,10
+"2009","Crescent Harbor",29,18
+"2009","Crescent Harbor",30,10
+"2009","Crescent Harbor",31,15
+"2009","Crescent Harbor",34,9
+"2009","Double Bluff North",27,72
+"2009","Double Bluff North",28,93
+"2009","Double Bluff North",29,117
+"2009","Double Bluff North",30,65
+"2009","Double Bluff North",31,110
+"2009","Double Bluff North",33,118
+"2009","Double Bluff South",29,15
+"2009","Double Bluff South",30,18
+"2009","Double Bluff South",31,20
+"2009","Double Bluff South",32,18
+"2009","Fort Casey",27,30
+"2009","Fort Casey",28,35
+"2009","Fort Casey",29,30
+"2009","Fort Casey",31,32
+"2009","Fort Casey",32,44
+"2009","Fort Casey",33,55
+"2009","Hancock Lake",27,65
+"2009","Hancock Lake",28,69
+"2009","Hancock Lake",29,42
+"2009","Hancock Lake",30,63
+"2009","Hancock Lake",31,50
+"2009","Hancock Lake",32,73
+"2009","Hastie Lake",27,36
+"2009","Hastie Lake",29,26
+"2009","Hastie Lake",30,30
+"2009","Hastie Lake",31,33
+"2009","Hastie Lake",33,39
+"2009","Keystone",27,27
+"2009","Keystone",28,28
+"2009","Keystone",30,39
+"2009","Keystone",31,34
+"2009","Keystone",32,32
+"2009","Keystone",34,28
+"2009","Lagoon North #1",26,46
+"2009","Lagoon North #1",27,40
+"2009","Lagoon North #1",29,36
+"2009","Lagoon North #1",29,42
+"2009","Lagoon North #1",30,57
+"2009","Lagoon North #1",31,37
+"2009","Lagoon North #1",32,64
+"2009","Lagoon North #2",29,14
+"2009","Lagoon North #2",31,15
+"2009","Lagoon North #2",32,18
+"2009","Lagoon North #3",30,26
+"2009","Lagoon North #3",31,16
+"2009","Lagoon North #3",31,22
+"2009","Lagoon North #3",32,26
+"2009","Lagoon South",31,35
+"2009","Lagoon South",29,46
+"2009","Lagoon South",27,35
+"2009","Lagoon South",27,57
+"2009","Lagoon South",28,52
+"2009","Lagoon South",33,43
+"2009","Lagoon South",31,33
+"2009","Lagoon South",30,56
+"2009","Lagoon South",32,45
+"2009","Ledgewood",27,26
+"2009","Ledgewood",28,25
+"2009","Ledgewood",29,39
+"2009","Ledgewood",30,38
+"2009","Ledgewood",31,36
+"2009","Ledgewood",32,36
+"2009","Ledgewood",33,26
+"2009","Ledgewood",34,20
+"2009","Limpet Lane",29,32
+"2009","Limpet Lane",31,23
+"2009","Malmo Bluff",28,22
+"2009","Malmo Bluff",29,30
+"2009","Malmo Bluff",30,16
+"2009","Malmo Bluff",31,25
+"2009","Malmo Bluff",32,20
+"2009","Malmo Bluff",33,18
+"2009","Maylor Point",29,21
+"2009","Maylor Point",31,20
+"2009","Maylor Point",33,24
+"2009","Monroe Landing",28,13
+"2009","Monroe Landing",30,13
+"2009","Monroe Landing",33,26
+"2009","Mutiny Sands",28,34
+"2009","Mutiny Sands",29,45
+"2009","Mutiny Sands",30,29
+"2009","Mutiny Sands",31,40
+"2009","Mutiny Sands",32,41
+"2009","Possession Point",26,21
+"2009","Possession Point",27,18
+"2009","Possession Point",28,22
+"2009","Possession Point",29,20
+"2009","Possession Point",30,26
+"2009","Possession Point",31,16
+"2009","Possession Point",33,15
+"2009","Pratts Bluff",26,18
+"2009","Pratts Bluff",27,15
+"2009","Pratts Bluff",28,22
+"2009","Pratts Bluff",29,30
+"2009","Pratts Bluff",31,18
+"2009","Pratts Bluff",32,16
+"2009","Rolling Hills",27,52
+"2009","Rolling Hills",28,55
+"2009","Rolling Hills",29,50
+"2009","Rolling Hills",30,74
+"2009","Rolling Hills",31,61
+"2009","Rolling Hills",32,58
+"2009","Rolling Hills",33,75
+"2009","Shore Meadows",26,56
+"2009","Shore Meadows",30,65
+"2009","Shore Meadows",27,73
+"2009","Shore Meadows",28,71
+"2009","Shore Meadows",29,67
+"2009","Shore Meadows",33,57
+"2009","Shore Meadows",31,82
+"2009","Shore Meadows",31,44
+"2009","Shore Meadows",32,63
+"2009","Shore Meadows",35,74
+"2009","Swantown",27,20
+"2009","Swantown",28,26
+"2009","Swantown",29,25
+"2009","Swantown",30,24
+"2009","Swantown",31,24
+"2009","Swantown",32,22
+"2009","Swantown",33,20
+"2010","Cliffside",26,23
+"2010","Cliffside",27,38
+"2010","Double Bluff North",26,99
+"2010","Double Bluff North",28,79
+"2010","Double Bluff North",29,72
+"2010","Double Bluff North",30,105
+"2010","Double Bluff North",31,99
+"2010","Double Bluff North",32,63
+"2010","Forbes Point",26,18
+"2010","Forbes Point",27,17
+"2010","Forbes Point",28,20
+"2010","Forbes Point",28,16
+"2010","Forbes Point",30,18
+"2010","Forbes Point",31,17
+"2010","Forbes Point",31,13
+"2010","Forbes Point",33,22
+"2010","Fort Casey",25,50
+"2010","Fort Casey",28,50
+"2010","Fort Casey",29,40
+"2010","Fort Casey",31,43
+"2010","Fort Casey",30,50
+"2010","Hancock Lake",28,66
+"2010","Hancock Lake",29,65
+"2010","Hancock Lake",29,47
+"2010","Hancock Lake",32,42
+"2010","Hancock Lake",25,69
+"2010","Hancock Lake",27,59
+"2010","Harrington North",26,27
+"2010","Harrington North",27,32
+"2010","Harrington North",30,25
+"2010","Harrington North",28,22
+"2010","Harrington North",29,24
+"2010","Harrington North",31,19
+"2010","Harrington North",32,37
+"2010","Harrington South",25,21
+"2010","Harrington South",28,16
+"2010","Harrington South",29,13
+"2010","Harrington South",30,18
+"2010","Harrington South",31,12
+"2010","Harrington South",32,17
+"2010","Hastie Lake",25,23
+"2010","Hastie Lake",29,29
+"2010","Hastie Lake",30,32
+"2010","Hastie Lake",31,16
+"2010","Keystone",26,45
+"2010","Keystone",27,25
+"2010","Keystone",28,24
+"2010","Keystone",29,24
+"2010","Keystone",30,25
+"2010","Lagoon North #1",26,38
+"2010","Lagoon North #1",27,53
+"2010","Lagoon North #1",28,45
+"2010","Lagoon North #1",29,49
+"2010","Lagoon North #1",32,49
+"2010","Lagoon North #2",26,8
+"2010","Lagoon North #2",27,9
+"2010","Lagoon North #2",28,9
+"2010","Lagoon North #2",29,14
+"2010","Lagoon North #2",30,12
+"2010","Lagoon North #2",31,9
+"2010","Lagoon North #3",26,18
+"2010","Lagoon North #3",27,23
+"2010","Lagoon North #3",28,28
+"2010","Lagoon North #3",29,23
+"2010","Lagoon North #3",30,15
+"2010","Lagoon North #3",32,14
+"2010","Lagoon South",26,37
+"2010","Lagoon South",28,28
+"2010","Lagoon South",31,24
+"2010","Lagoon South",32,44
+"2010","Ledgewood",26,37
+"2010","Ledgewood",27,31
+"2010","Ledgewood",28,29
+"2010","Ledgewood",29,36
+"2010","Ledgewood",30,41
+"2010","Ledgewood",31,33
+"2010","Ledgewood",27,33
+"2010","Limpet Lane",26,28
+"2010","Limpet Lane",28,28
+"2010","Limpet Lane",29,18
+"2010","Limpet Lane",30,35
+"2010","Limpet Lane",32,25
+"2010","Malmo Bluff",26,32
+"2010","Malmo Bluff",28,33
+"2010","Malmo Bluff",29,25
+"2010","Malmo Bluff",30,29
+"2010","Malmo Bluff",32,40
+"2010","Maylor Point",31,127
+"2010","Monroe Landing",26,12
+"2010","Monroe Landing",27,10
+"2010","Monroe Landing",28,14
+"2010","Monroe Landing",31,15
+"2010","Mutiny Sands",26,32
+"2010","Mutiny Sands",27,24
+"2010","Mutiny Sands",28,24
+"2010","Mutiny Sands",30,26
+"2010","Mutiny Sands",31,32
+"2010","Mutiny Sands",32,17
+"2010","Possession Point",25,24
+"2010","Possession Point",26,20
+"2010","Possession Point",27,15
+"2010","Possession Point",28,20
+"2010","Possession Point",30,25
+"2010","Possession Point",32,17
+"2010","Pratts Bluff",26,37
+"2010","Pratts Bluff",27,20
+"2010","Pratts Bluff",28,30
+"2010","Pratts Bluff",30,27
+"2010","Pratts Bluff",32,24
+"2010","Rolling Hills",26,69
+"2010","Rolling Hills",27,84
+"2010","Rolling Hills",28,105
+"2010","Rolling Hills",29,86
+"2010","Rolling Hills",30,108
+"2010","Rolling Hills",31,97
+"2010","Shore Meadows",27,47
+"2010","Shore Meadows",26,71
+"2010","Shore Meadows",28,75
+"2010","Shore Meadows",29,48
+"2010","Shore Meadows",30,60
+"2010","Shore Meadows",31,43
+"2010","Shore Meadows",27,57
+"2010","Shore Meadows",28,61
+"2010","Shore Meadows",29,72
+"2010","Shore Meadows",29,41
+"2010","Shore Meadows",31,81
+"2010","Shore Meadows",32,56
+"2010","Shore Meadows",32,55
+"2010","Shore Meadows",33,76
+"2010","Swantown",26,27
+"2010","Swantown",28,21
+"2010","Swantown",29,15
+"2010","Swantown",30,29
+"2010","Swantown",31,22
+"2010","Swantown",32,23
+"2011","Cliffside",26,23
+"2011","Cliffside",27,18
+"2011","Cliffside",28,23
+"2011","Cliffside",31,33
+"2011","Cliffside",33,22
+"2011","Crescent Harbor",26,15
+"2011","Crescent Harbor",27,12
+"2011","Double Bluff North",27,90
+"2011","Double Bluff North",28,64
+"2011","Double Bluff North",29,87
+"2011","Double Bluff North",30,78
+"2011","Double Bluff North",31,89
+"2011","Double Bluff North",33,101
+"2011","Double Bluff South",26,12
+"2011","Double Bluff South",27,17
+"2011","Double Bluff South",28,15
+"2011","Double Bluff South",29,18
+"2011","Double Bluff South",30,10
+"2011","Double Bluff South",31,13
+"2011","Double Bluff South",32,18
+"2011","Forbes Point",27,27
+"2011","Forbes Point",29,27
+"2011","Forbes Point",30,27
+"2011","Forbes Point",31,31
+"2011","Forbes Point",32,33
+"2011","Forbes Point",33,28
+"2011","Fort Casey",25,50
+"2011","Fort Casey",26,46
+"2011","Fort Casey",28,55
+"2011","Fort Casey",29,60
+"2011","Fort Casey",29,40
+"2011","Fort Casey",31,40
+"2011","Fort Casey",33,45
+"2011","Fort Casey",33,32
+"2011","Hancock Lake",26,76
+"2011","Hancock Lake",27,86
+"2011","Hancock Lake",28,63
+"2011","Hancock Lake",29,85
+"2011","Hancock Lake",30,83
+"2011","Hancock Lake",31,81
+"2011","Harrington North",27,18
+"2011","Harrington North",28,15
+"2011","Harrington North",29,22
+"2011","Harrington North",30,25
+"2011","Harrington North",31,17
+"2011","Harrington North",32,20
+"2011","Harrington South",26,14
+"2011","Harrington South",27,18
+"2011","Harrington South",28,12
+"2011","Harrington South",29,19
+"2011","Harrington South",31,14
+"2011","Harrington South",32,20
+"2011","Hastie Lake",26,33
+"2011","Hastie Lake",27,22
+"2011","Hastie Lake",28,35
+"2011","Hastie Lake",29,28
+"2011","Hastie Lake",30,20
+"2011","Hastie Lake",32,30
+"2011","Keystone",25,25
+"2011","Keystone",27,25
+"2011","Keystone",28,32
+"2011","Keystone",29,27
+"2011","Keystone",30,32
+"2011","Keystone",31,32
+"2011","Keystone",32,31
+"2011","Keystone",33,45
+"2011","Keystone",34,27
+"2011","Lagoon North #1",26,53
+"2011","Lagoon North #1",28,54
+"2011","Lagoon North #1",30,49
+"2011","Lagoon North #1",31,49
+"2011","Lagoon North #1",31,52
+"2011","Lagoon North #1",32,53
+"2011","Lagoon North #1",35,47
+"2011","Lagoon North #2",26,10
+"2011","Lagoon North #2",28,15
+"2011","Lagoon North #2",29,11
+"2011","Lagoon North #2",30,11
+"2011","Lagoon North #2",31,11
+"2011","Lagoon North #2",32,16
+"2011","Lagoon North #2",33,11
+"2011","Lagoon North #3",28,20
+"2011","Lagoon North #3",29,24
+"2011","Lagoon North #3",30,29
+"2011","Lagoon North #3",31,28
+"2011","Lagoon North #3",33,18
+"2011","Lagoon South",27,33
+"2011","Lagoon South",29,35
+"2011","Lagoon South",30,37
+"2011","Lagoon South",31,33
+"2011","Lagoon South",32,25
+"2011","Lagoon South",33,50
+"2011","Ledgewood",25,38
+"2011","Ledgewood",26,40
+"2011","Ledgewood",28,30
+"2011","Ledgewood",29,38
+"2011","Ledgewood",31,33
+"2011","Ledgewood",32,46
+"2011","Limpet Lane",26,19
+"2011","Limpet Lane",27,25
+"2011","Limpet Lane",29,23
+"2011","Limpet Lane",31,21
+"2011","Limpet Lane",32,31
+"2011","Limpet Lane",33,32
+"2011","Malmo Bluff",26,25
+"2011","Malmo Bluff",27,38
+"2011","Malmo Bluff",28,28
+"2011","Malmo Bluff",29,45
+"2011","Malmo Bluff",31,43
+"2011","Malmo Bluff",32,37
+"2011","Malmo Bluff",33,35
+"2011","Maylor Point",27,19
+"2011","Maylor Point",29,17
+"2011","Maylor Point",30,19
+"2011","Maylor Point",31,28
+"2011","Maylor Point",32,29
+"2011","Monroe Landing",27,9
+"2011","Monroe Landing",28,9
+"2011","Monroe Landing",29,11
+"2011","Monroe Landing",32,13
+"2011","Monroe Landing",33,7
+"2011","Monroe Landing",34,12
+"2011","Mutiny Sands",27,33
+"2011","Mutiny Sands",29,40
+"2011","Mutiny Sands",33,33
+"2011","Possession Point",27,25
+"2011","Possession Point",28,16
+"2011","Possession Point",29,24
+"2011","Possession Point",30,32
+"2011","Possession Point",31,29
+"2011","Possession Point",32,21
+"2011","Pratts Bluff",26,18
+"2011","Pratts Bluff",27,28
+"2011","Pratts Bluff",28,23
+"2011","Pratts Bluff",29,23
+"2011","Pratts Bluff",30,22
+"2011","Pratts Bluff",31,30
+"2011","Pratts Bluff",32,25
+"2011","Rolling Hills",26,57
+"2011","Rolling Hills",27,70
+"2011","Rolling Hills",29,84
+"2011","Rolling Hills",31,66
+"2011","Rolling Hills",32,111
+"2011","Shore Meadows",28,35
+"2011","Shore Meadows",26,71
+"2011","Shore Meadows",26,38
+"2011","Shore Meadows",27,45
+"2011","Shore Meadows",30,66
+"2011","Shore Meadows",31,70
+"2011","Shore Meadows",32,67
+"2011","Swantown",26,18
+"2011","Swantown",27,28
+"2011","Swantown",28,27
+"2011","Swantown",29,20
+"2011","Swantown",30,30
+"2011","Swantown",31,30
+"2011","Swantown",33,16
+"2011","Swantown",35,19
+"2012","Cliffside",26,23
+"2012","Cliffside",28,29
+"2012","Cliffside",30,21
+"2012","Cliffside",32,29
+"2012","Double Bluff North",26,83
+"2012","Double Bluff North",27,86
+"2012","Double Bluff North",28,77
+"2012","Double Bluff North",29,83
+"2012","Double Bluff North",30,54
+"2012","Double Bluff North",32,60
+"2012","Double Bluff South",28,8
+"2012","Double Bluff South",30,13
+"2012","Forbes Point",26,24
+"2012","Forbes Point",27,21
+"2012","Forbes Point",28,32
+"2012","Forbes Point",30,29
+"2012","Forbes Point",32,31
+"2012","Forbes Point",34,20
+"2012","Fort Casey",26,35
+"2012","Fort Casey",27,39
+"2012","Fort Casey",28,31
+"2012","Fort Casey",29,61
+"2012","Fort Casey",30,48
+"2012","Fort Casey",31,50
+"2012","Hancock Lake",26,66
+"2012","Hancock Lake",27,76
+"2012","Hancock Lake",28,63
+"2012","Hancock Lake",29,76
+"2012","Hancock Lake",30,85
+"2012","Hancock Lake",31,85
+"2012","Hancock Lake",32,88
+"2012","Hancock Lake",33,89
+"2012","Harrington North",27,28
+"2012","Harrington North",28,26
+"2012","Harrington North",29,23
+"2012","Harrington North",30,27
+"2012","Harrington North",31,22
+"2012","Harrington South",25,17
+"2012","Harrington South",29,17
+"2012","Harrington South",29,24
+"2012","Harrington South",32,28
+"2012","Hastie Lake",26,22
+"2012","Hastie Lake",27,28
+"2012","Hastie Lake",28,15
+"2012","Hastie Lake",30,14
+"2012","Hastie Lake",31,15
+"2012","Hastie Lake",32,14
+"2012","Hastie Lake North",26,12
+"2012","Hastie Lake North",28,15
+"2012","Hastie Lake North",29,13
+"2012","Hastie Lake North",30,19
+"2012","Hastie Lake North",32,24
+"2012","Keystone",26,53
+"2012","Keystone",27,52
+"2012","Keystone",28,52
+"2012","Keystone",29,58
+"2012","Keystone",30,53
+"2012","Keystone",31,30
+"2012","Keystone",32,37
+"2012","Lagoon North #1",27,46
+"2012","Lagoon North #1",28,63
+"2012","Lagoon North #1",29,61
+"2012","Lagoon North #1",30,51
+"2012","Lagoon North #1",32,82
+"2012","Lagoon North #1",32,61
+"2012","Lagoon North #1",33,54
+"2012","Lagoon North #2",26,9
+"2012","Lagoon North #2",27,14
+"2012","Lagoon North #2",28,10
+"2012","Lagoon North #2",29,11
+"2012","Lagoon North #2",30,9
+"2012","Lagoon North #2",31,7
+"2012","Lagoon North #2",32,7
+"2012","Lagoon North #2",33,10
+"2012","Lagoon North #3",25,26
+"2012","Lagoon North #3",27,34
+"2012","Lagoon North #3",28,25
+"2012","Lagoon North #3",29,25
+"2012","Lagoon South",27,26
+"2012","Lagoon South",29,34
+"2012","Lagoon South",28,32
+"2012","Lagoon South",26,31
+"2012","Lagoon South",30,46
+"2012","Lagoon South",31,39
+"2012","Lagoon South",32,48
+"2012","Ledgewood",27,35
+"2012","Ledgewood",28,41
+"2012","Ledgewood",29,42
+"2012","Ledgewood",30,41
+"2012","Ledgewood",31,41
+"2012","Ledgewood",32,29
+"2012","Ledgewood",33,39
+"2012","Ledgewood",34,21
+"2012","Limpet Lane",26,13
+"2012","Limpet Lane",27,24
+"2012","Limpet Lane",28,17
+"2012","Limpet Lane",30,25
+"2012","Limpet Lane",31,18
+"2012","Limpet Lane",32,26
+"2012","Limpet Lane",32,20
+"2012","Malmo Bluff",26,31
+"2012","Malmo Bluff",27,50
+"2012","Malmo Bluff",29,25
+"2012","Malmo Bluff",30,43
+"2012","Malmo Bluff",31,36
+"2012","Monroe Landing",28,8
+"2012","Monroe Landing",30,13
+"2012","Monroe Landing",32,11
+"2012","Monroe Landing",33,13
+"2012","Monroe Landing",34,15
+"2012","Mutiny Sands",28,25
+"2012","Mutiny Sands",30,31
+"2012","Mutiny Sands",31,37
+"2012","Mutiny Sands",34,22
+"2012","Possession Point",26,28
+"2012","Possession Point",27,29
+"2012","Possession Point",28,20
+"2012","Possession Point",29,30
+"2012","Possession Point",31,18
+"2012","Possession Point",31,36
+"2012","Pratts Bluff",26,25
+"2012","Pratts Bluff",27,24
+"2012","Pratts Bluff",28,21
+"2012","Pratts Bluff",29,28
+"2012","Pratts Bluff",31,25
+"2012","Pratts Bluff",32,14
+"2012","Rolling Hills",26,61
+"2012","Rolling Hills",27,55
+"2012","Rolling Hills",28,88
+"2012","Rolling Hills",29,53
+"2012","Rolling Hills",30,69
+"2012","Rolling Hills",32,93
+"2012","Rolling Hills",33,73
+"2012","Shore Meadows",31,78
+"2012","Shore Meadows",26,64
+"2012","Shore Meadows",27,52
+"2012","Shore Meadows",28,47
+"2012","Shore Meadows",29,62
+"2012","Shore Meadows",30,62
+"2012","Shore Meadows",33,55
+"2012","Shore Meadows",34,47
+"2012","Swantown",26,31
+"2012","Swantown",29,19
+"2012","Swantown",30,21
+"2012","Swantown",31,18
+"2012","Swantown",32,18
+"2013","Cliffside",26,15
+"2013","Cliffside",29,17
+"2013","Cliffside",31,21
+"2013","Cliffside",32,26
+"2013","Cliffside",33,29
+"2013","Coupeville Wharf",27,9
+"2013","Coupeville Wharf",28,8
+"2013","Coupeville Wharf",29,11
+"2013","Coupeville Wharf",30,11
+"2013","Coupeville Wharf",31,15
+"2013","Coupeville Wharf",32,12
+"2013","Coupeville Wharf",33,10
+"2013","Double Bluff North",26,45
+"2013","Double Bluff North",27,61
+"2013","Double Bluff North",28,45
+"2013","Double Bluff North",29,40
+"2013","Double Bluff North",30,42
+"2013","Double Bluff North",31,40
+"2013","Double Bluff North",32,61
+"2013","Double Bluff North",33,42
+"2013","Double Bluff South",27,20
+"2013","Double Bluff South",28,18
+"2013","Double Bluff South",29,20
+"2013","Double Bluff South",31,19
+"2013","Forbes Point",26,15
+"2013","Forbes Point",28,19
+"2013","Forbes Point",30,23
+"2013","Forbes Point",31,17
+"2013","Forbes Point",32,26
+"2013","Fort Casey",25,57
+"2013","Fort Casey",28,54
+"2013","Fort Casey",29,45
+"2013","Fort Casey",30,30
+"2013","Fort Casey",32,41
+"2013","Fort Casey",33,30
+"2013","Hancock Lake",26,69
+"2013","Hancock Lake",27,71
+"2013","Hancock Lake",28,72
+"2013","Hancock Lake",29,75
+"2013","Hancock Lake",30,74
+"2013","Hancock Lake",32,64
+"2013","Hancock Lake",34,61
+"2013","Harrington North",26,10
+"2013","Harrington North",28,14
+"2013","Harrington North",30,15
+"2013","Harrington North",31,20
+"2013","Harrington North",32,13
+"2013","Harrington South",26,9
+"2013","Harrington South",27,9
+"2013","Harrington South",27,8
+"2013","Harrington South",29,12
+"2013","Harrington South",30,11
+"2013","Harrington South",31,14
+"2013","Harrington South",32,12
+"2013","Harrington South",33,13
+"2013","Harrington South",34,8
+"2013","Hastie Lake",26,20
+"2013","Hastie Lake",27,13
+"2013","Hastie Lake",28,26
+"2013","Hastie Lake",29,19
+"2013","Hastie Lake",30,13
+"2013","Hastie Lake",31,15
+"2013","Hastie Lake",33,20
+"2013","Hastie Lake North",26,21
+"2013","Hastie Lake North",28,17
+"2013","Hastie Lake North",29,17
+"2013","Hastie Lake North",30,17
+"2013","Hastie Lake North",32,15
+"2013","Hastie Lake North",34,11
+"2013","Keystone",26,43
+"2013","Keystone",27,47
+"2013","Keystone",28,37
+"2013","Keystone",29,47
+"2013","Keystone",30,38
+"2013","Keystone",31,42
+"2013","Keystone",32,55
+"2013","Lagoon North #1",26,75
+"2013","Lagoon North #1",27,85
+"2013","Lagoon North #1",28,86
+"2013","Lagoon North #1",29,77
+"2013","Lagoon North #1",30,86
+"2013","Lagoon North #1",31,72
+"2013","Lagoon North #1",32,61
+"2013","Lagoon North #2",28,14
+"2013","Lagoon North #2",29,17
+"2013","Lagoon North #2",30,14
+"2013","Lagoon North #2",31,14
+"2013","Lagoon North #2",32,21
+"2013","Lagoon North #3",26,12
+"2013","Lagoon North #3",27,14
+"2013","Lagoon North #3",28,11
+"2013","Lagoon North #3",29,18
+"2013","Lagoon North #3",30,17
+"2013","Lagoon North #3",31,9
+"2013","Lagoon North #3",33,14
+"2013","Lagoon South",31,41
+"2013","Lagoon South",32,45
+"2013","Lagoon South",33,40
+"2013","Lagoon South",27,30
+"2013","Lagoon South",28,47
+"2013","Lagoon South",29,43
+"2013","Ledgewood",26,29
+"2013","Ledgewood",27,26
+"2013","Ledgewood",28,35
+"2013","Ledgewood",29,38
+"2013","Ledgewood",30,33
+"2013","Ledgewood",31,38
+"2013","Ledgewood",32,40
+"2013","Ledgewood",33,28
+"2013","Ledgewood",34,21
+"2013","Limpet Lane",26,16
+"2013","Limpet Lane",28,31
+"2013","Limpet Lane",30,16
+"2013","Malmo Bluff",26,35
+"2013","Malmo Bluff",27,40
+"2013","Malmo Bluff",28,43
+"2013","Malmo Bluff",29,39
+"2013","Malmo Bluff",30,47
+"2013","Malmo Bluff",31,27
+"2013","Malmo Bluff",32,35
+"2013","Malmo Bluff",33,35
+"2013","Maylor Point",28,24
+"2013","Maylor Point",31,13
+"2013","Monroe Landing",28,9
+"2013","Monroe Landing",29,9
+"2013","Monroe Landing",30,16
+"2013","Monroe Landing",31,12
+"2013","Monroe Landing",32,12
+"2013","Monroe Landing",33,16
+"2013","Mutiny Sands",26,20
+"2013","Mutiny Sands",28,28
+"2013","Mutiny Sands",30,28
+"2013","Mutiny Sands",31,32
+"2013","Mutiny Sands",32,24
+"2013","Mutiny Sands",34,34
+"2013","Possession Point",25,18
+"2013","Possession Point",26,29
+"2013","Possession Point",27,23
+"2013","Possession Point",29,33
+"2013","Possession Point",30,25
+"2013","Possession Point",32,33
+"2013","Pratts Bluff",26,25
+"2013","Pratts Bluff",27,36
+"2013","Pratts Bluff",28,26
+"2013","Pratts Bluff",30,43
+"2013","Pratts Bluff",32,30
+"2013","Rolling Hills",26,69
+"2013","Rolling Hills",27,78
+"2013","Rolling Hills",28,62
+"2013","Rolling Hills",29,68
+"2013","Rolling Hills",30,60
+"2013","Rolling Hills",31,94
+"2013","Rolling Hills",32,89
+"2013","Rolling Hills",33,70
+"2013","Shore Meadows",26,48
+"2013","Shore Meadows",27,36
+"2013","Shore Meadows",28,57
+"2013","Shore Meadows",29,69
+"2013","Shore Meadows",30,67
+"2013","Shore Meadows",31,67
+"2013","Shore Meadows",32,59
+"2013","Shore Meadows",33,52
+"2013","Swantown",26,17
+"2013","Swantown",28,21
+"2013","Swantown",31,11
+"2013","Swantown",32,22
+"2014","Cliffside",25,39
+"2014","Double Bluff North",25,52
+"2014","Double Bluff North",27,63
+"2014","Double Bluff North",29,71
+"2014","Double Bluff North",31,80
+"2014","Double Bluff North",33,63
+"2014","Double Bluff South",27,8
+"2014","Double Bluff South",29,13
+"2014","Double Bluff South",30,16
+"2014","Double Bluff South",31,13
+"2014","Double Bluff South",32,13
+"2014","Forbes Point",30,18
+"2014","Forbes Point",31,13
+"2014","Forbes Point",32,20
+"2014","Forbes Point",33,19
+"2014","Fort Casey",25,40
+"2014","Fort Casey",26,35
+"2014","Fort Casey",27,36
+"2014","Fort Casey",28,26
+"2014","Fort Casey",29,32
+"2014","Fort Casey",30,35
+"2014","Fort Casey",31,40
+"2014","Fort Casey",32,44
+"2014","Fort Casey",33,36
+"2014","Hancock Lake",25,63
+"2014","Hancock Lake",26,60
+"2014","Hancock Lake",28,42
+"2014","Hancock Lake",29,67
+"2014","Hancock Lake",30,57
+"2014","Hancock Lake",31,67
+"2014","Hancock Lake",32,70
+"2014","Harrington North",25,26
+"2014","Harrington North",28,13
+"2014","Harrington North",31,20
+"2014","Harrington South",25,23
+"2014","Harrington South",27,13
+"2014","Harrington South",28,13
+"2014","Harrington South",28,15
+"2014","Harrington South",31,17
+"2014","Harrington South",32,18
+"2014","Harrington South",33,14
+"2014","Hastie Lake",25,18
+"2014","Hastie Lake",27,16
+"2014","Hastie Lake",29,19
+"2014","Hastie Lake",30,24
+"2014","Hastie Lake",31,29
+"2014","Hastie Lake",32,22
+"2014","Hastie Lake",33,21
+"2014","Hastie Lake North",25,21
+"2014","Hastie Lake North",27,21
+"2014","Hastie Lake North",29,16
+"2014","Keystone",25,47
+"2014","Keystone",26,46
+"2014","Keystone",27,44
+"2014","Keystone",28,50
+"2014","Keystone",29,30
+"2014","Keystone",30,33
+"2014","Keystone",31,49
+"2014","Keystone",32,27
+"2014","Keystone",33,40
+"2014","Lagoon North #1",25,66
+"2014","Lagoon North #1",26,66
+"2014","Lagoon North #1",28,71
+"2014","Lagoon North #1",29,67
+"2014","Lagoon North #1",31,66
+"2014","Lagoon North #1",33,62
+"2014","Lagoon North #2",25,12
+"2014","Lagoon North #2",27,14
+"2014","Lagoon North #2",28,20
+"2014","Lagoon North #3",28,33
+"2014","Lagoon North #3",29,50
+"2014","Lagoon North #3",32,30
+"2014","Lagoon South",25,35
+"2014","Lagoon South",27,29
+"2014","Lagoon South",29,38
+"2014","Lagoon South",31,41
+"2014","Lagoon South",33,25
+"2014","Ledgewood",25,47
+"2014","Ledgewood",26,47
+"2014","Ledgewood",27,38
+"2014","Ledgewood",29,45
+"2014","Ledgewood",30,27
+"2014","Ledgewood",31,47
+"2014","Ledgewood",32,47
+"2014","Ledgewood",33,33
+"2014","Ledgewood",34,29
+"2014","Malmo Bluff",25,35
+"2014","Malmo Bluff",26,24
+"2014","Malmo Bluff",27,34
+"2014","Malmo Bluff",28,27
+"2014","Malmo Bluff",29,27
+"2014","Malmo Bluff",30,39
+"2014","Malmo Bluff",31,39
+"2014","Malmo Bluff",33,39
+"2014","Maylor Point",27,25
+"2014","Maylor Point",28,17
+"2014","Maylor Point",29,22
+"2014","Maylor Point",30,17
+"2014","Maylor Point",31,26
+"2014","Maylor Point",32,20
+"2014","Monroe Landing",26,8
+"2014","Monroe Landing",28,7
+"2014","Monroe Landing",29,8
+"2014","Monroe Landing",30,11
+"2014","Monroe Landing",31,11
+"2014","Monroe Landing",32,11
+"2014","Monroe Landing",34,11
+"2014","Mutiny Sands",25,34
+"2014","Mutiny Sands",27,44
+"2014","Mutiny Sands",29,41
+"2014","Mutiny Sands",30,30
+"2014","Mutiny Sands",31,56
+"2014","Mutiny Sands",33,46
+"2014","Possession Point",25,24
+"2014","Possession Point",26,24
+"2014","Possession Point",27,22
+"2014","Possession Point",29,24
+"2014","Possession Point",30,16
+"2014","Possession Point",31,21
+"2014","Possession Point",33,21
+"2014","Pratts Bluff",25,26
+"2014","Pratts Bluff",26,13
+"2014","Pratts Bluff",27,22
+"2014","Pratts Bluff",29,18
+"2014","Pratts Bluff",30,15
+"2014","Pratts Bluff",31,26
+"2014","Pratts Bluff",32,25
+"2014","Pratts Bluff",33,25
+"2014","Rolling Hills",25,102
+"2014","Rolling Hills",26,77
+"2014","Rolling Hills",27,132
+"2014","Rolling Hills",28,112
+"2014","Rolling Hills",29,152
+"2014","Rolling Hills",30,80
+"2014","Rolling Hills",31,94
+"2014","Rolling Hills",33,146
+"2014","Rolling Hills",34,102
+"2014","Shore Meadows",25,71
+"2014","Shore Meadows",26,64
+"2014","Shore Meadows",27,52
+"2014","Shore Meadows",28,60
+"2014","Shore Meadows",29,92
+"2014","Shore Meadows",30,80
+"2014","Shore Meadows",31,96
+"2014","Shore Meadows",32,60
+"2014","Shore Meadows",33,76
+"2014","Swantown",25,11
+"2014","Swantown",28,13
+"2014","Swantown",29,14
+"2014","Swantown",30,11
+"2014","Swantown",31,21
+"2014","Swantown",33,15
+"2015","Cliffside",28,33
+"2015","Cliffside",30,27
+"2015","Cliffside",32,28
+"2015","Coupeville Wharf",26,8
+"2015","Coupeville Wharf",27,7
+"2015","Coupeville Wharf",28,8
+"2015","Coupeville Wharf",29,4
+"2015","Double Bluff North",26,40
+"2015","Double Bluff North",27,41
+"2015","Double Bluff North",28,52
+"2015","Double Bluff North",29,57
+"2015","Double Bluff North",30,51
+"2015","Double Bluff North",31,35
+"2015","Double Bluff North",32,43
+"2015","Double Bluff North",33,28
+"2015","Double Bluff South",28,8
+"2015","Double Bluff South",29,11
+"2015","Double Bluff South",30,11
+"2015","Double Bluff South",31,14
+"2015","Double Bluff South",32,10
+"2015","Double Bluff South",33,8
+"2015","Forbes Point",26,13
+"2015","Forbes Point",28,17
+"2015","Forbes Point",30,12
+"2015","Forbes Point",32,10
+"2015","Forbes Point",33,10
+"2015","Fort Casey",26,39
+"2015","Fort Casey",27,33
+"2015","Fort Casey",28,31
+"2015","Fort Casey",29,32
+"2015","Fort Casey",30,32
+"2015","Fort Casey",31,34
+"2015","Hancock Lake",25,47
+"2015","Hancock Lake",26,43
+"2015","Hancock Lake",27,58
+"2015","Hancock Lake",28,48
+"2015","Hancock Lake",29,49
+"2015","Hancock Lake",30,53
+"2015","Hancock Lake",31,56
+"2015","Hancock Lake",32,53
+"2015","Hancock Lake",33,65
+"2015","Harrington North",27,17
+"2015","Harrington North",28,15
+"2015","Harrington North",29,20
+"2015","Harrington North",30,19
+"2015","Harrington North",31,22
+"2015","Harrington North",32,16
+"2015","Harrington North",33,11
+"2015","Harrington South",26,12
+"2015","Harrington South",27,15
+"2015","Harrington South",28,18
+"2015","Harrington South",29,21
+"2015","Harrington South",29,14
+"2015","Harrington South",31,17
+"2015","Harrington South",32,22
+"2015","Harrington South",33,19
+"2015","Harrington South",34,14
+"2015","Hastie Lake",27,27
+"2015","Hastie Lake",28,32
+"2015","Hastie Lake",29,37
+"2015","Hastie Lake",30,35
+"2015","Hastie Lake",32,22
+"2015","Hastie Lake",33,21
+"2015","Hastie Lake",34,34
+"2015","Keystone",26,86
+"2015","Keystone",29,67
+"2015","Keystone",30,59
+"2015","Keystone",32,55
+"2015","Lagoon North #0",28,30
+"2015","Lagoon North #0",29,31
+"2015","Lagoon North #0",30,25
+"2015","Lagoon North #0",31,18
+"2015","Lagoon North #0",32,22
+"2015","Lagoon North #0",33,20
+"2015","Lagoon North #1",29,57
+"2015","Lagoon North #1",30,34
+"2015","Lagoon North #1",31,40
+"2015","Lagoon North #1",32,46
+"2015","Lagoon North #1",33,43
+"2015","Lagoon North #2",30,26
+"2015","Lagoon North #2",31,40
+"2015","Lagoon South",26,29
+"2015","Lagoon South",28,39
+"2015","Lagoon South",29,30
+"2015","Lagoon South",30,36
+"2015","Lagoon South",31,23
+"2015","Lagoon South",32,44
+"2015","Lagoon South",33,28
+"2015","Lagoon South",29,27
+"2015","Ledgewood",26,36
+"2015","Ledgewood",27,43
+"2015","Ledgewood",28,32
+"2015","Ledgewood",29,35
+"2015","Ledgewood",30,42
+"2015","Ledgewood",31,26
+"2015","Ledgewood",31,43
+"2015","Ledgewood",32,43
+"2015","Ledgewood",33,24
+"2015","Libby North",26,10
+"2015","Libby North",27,13
+"2015","Libby North",28,17
+"2015","Libby North",29,15
+"2015","Libby North",30,13
+"2015","Libby North",31,10
+"2015","Libby North",32,9
+"2015","Limpet Lane",32,15
+"2015","Limpet Lane",33,18
+"2015","Malmo Bluff",26,25
+"2015","Malmo Bluff",27,27
+"2015","Malmo Bluff",28,24
+"2015","Malmo Bluff",29,31
+"2015","Malmo Bluff",30,32
+"2015","Malmo Bluff",31,47
+"2015","Malmo Bluff",32,44
+"2015","Malmo Bluff",33,30
+"2015","Maylor Point",26,7
+"2015","Maylor Point",27,13
+"2015","Maylor Point",28,13
+"2015","Maylor Point",30,9
+"2015","Monroe Landing",25,9
+"2015","Monroe Landing",26,12
+"2015","Monroe Landing",27,8
+"2015","Monroe Landing",28,6
+"2015","Monroe Landing",30,10
+"2015","Monroe Landing",31,6
+"2015","Monroe Landing",32,12
+"2015","Monroe Landing",33,8
+"2015","Monroe Landing",34,10
+"2015","Possession Point",25,21
+"2015","Possession Point",27,19
+"2015","Possession Point",29,14
+"2015","Possession Point",32,21
+"2015","Possession Point",32,23
+"2015","Pratts Bluff",26,25
+"2015","Pratts Bluff",27,17
+"2015","Pratts Bluff",28,33
+"2015","Pratts Bluff",29,18
+"2015","Pratts Bluff",30,30
+"2015","Pratts Bluff",31,25
+"2015","Pratts Bluff",32,27
+"2015","Rolling Hills",26,120
+"2015","Rolling Hills",27,67
+"2015","Rolling Hills",28,100
+"2015","Rolling Hills",30,109
+"2015","Rolling Hills",32,84
+"2015","Shore Meadows",26,76
+"2015","Shore Meadows",28,90
+"2015","Shore Meadows",29,85
+"2015","Shore Meadows",30,89
+"2015","Shore Meadows",31,65
+"2015","Shore Meadows",32,107
+"2015","Shore Meadows",33,55
+"2015","Swantown",28,18
+"2015","Swantown",30,30
+"2015","Swantown",34,36
+"2016","Bush Point Dock",24,3
+"2016","Bush Point Dock",25,6
+"2016","Bush Point Dock",27,3
+"2016","Bush Point Dock",29,4
+"2016","Bush Point Dock",30,5
+"2016","Bush Point Dock",31,3
+"2016","Bush Point Dock",32,6
+"2016","Bush Point Dock",33,3
+"2016","Bush Point Dock",34,3
+"2016","Cliffside",23,22
+"2016","Cliffside",24,26
+"2016","Cliffside",25,22
+"2016","Cliffside",26,27
+"2016","Cliffside",28,23
+"2016","Cliffside",30,21
+"2016","Cliffside",32,18
+"2016","Cliffside",34,16
+"2016","Clinton Ferry",24,15
+"2016","Clinton Ferry",27,15
+"2016","Clinton Ferry",30,14
+"2016","Coupeville Wharf",24,5
+"2016","Coupeville Wharf",25,6
+"2016","Double Bluff North",23,39
+"2016","Double Bluff North",25,39
+"2016","Double Bluff North",26,38
+"2016","Double Bluff North",27,45
+"2016","Double Bluff North",28,45
+"2016","Double Bluff North",29,62
+"2016","Double Bluff North",30,45
+"2016","Double Bluff North",31,62
+"2016","Double Bluff South",23,7
+"2016","Double Bluff South",26,5
+"2016","Double Bluff South",27,9
+"2016","Double Bluff South",28,9
+"2016","Double Bluff South",29,8
+"2016","Double Bluff South",31,9
+"2016","Double Bluff South",32,8
+"2016","Forbes Point",22,12
+"2016","Forbes Point",23,19
+"2016","Forbes Point",24,13
+"2016","Forbes Point",25,16
+"2016","Forbes Point",26,12
+"2016","Forbes Point",27,17
+"2016","Forbes Point",29,21
+"2016","Forbes Point",30,18
+"2016","Forbes Point",32,16
+"2016","Fort Casey",23,50
+"2016","Fort Casey",24,32
+"2016","Fort Casey",25,42
+"2016","Fort Casey",27,32
+"2016","Fort Casey",29,60
+"2016","Fort Casey",31,35
+"2016","Fort Casey",32,39
+"2016","Hancock Lake",23,53
+"2016","Hancock Lake",24,62
+"2016","Hancock Lake",25,43
+"2016","Hancock Lake",26,51
+"2016","Hancock Lake",27,60
+"2016","Hancock Lake",28,67
+"2016","Hancock Lake",29,53
+"2016","Hancock Lake",30,85
+"2016","Hancock Lake",31,68
+"2016","Hancock Lake",32,65
+"2016","Hancock Lake",34,66
+"2016","Harrington North",23,14
+"2016","Harrington North",25,13
+"2016","Harrington North",26,13
+"2016","Harrington North",28,16
+"2016","Harrington North",29,20
+"2016","Harrington North",30,20
+"2016","Harrington North",31,15
+"2016","Harrington North",32,22
+"2016","Harrington South",23,25
+"2016","Harrington South",26,18
+"2016","Harrington South",27,16
+"2016","Harrington South",30,17
+"2016","Harrington South",31,23
+"2016","Hastie Lake",24,20
+"2016","Hastie Lake",26,31
+"2016","Hastie Lake",28,24
+"2016","Hastie Lake",30,23
+"2016","Hastie Lake",32,40
+"2016","Keystone",24,62
+"2016","Keystone",25,54
+"2016","Keystone",30,53
+"2016","Keystone",32,35
+"2016","Lagoon North #0",23,29
+"2016","Lagoon North #0",25,40
+"2016","Lagoon North #0",26,51
+"2016","Lagoon North #0",29,34
+"2016","Lagoon North #0",30,30
+"2016","Lagoon North #0",31,26
+"2016","Lagoon North #0",33,28
+"2016","Lagoon North #1",23,68
+"2016","Lagoon North #1",24,58
+"2016","Lagoon North #1",25,73
+"2016","Lagoon North #1",26,81
+"2016","Lagoon North #1",27,67
+"2016","Lagoon North #1",28,67
+"2016","Lagoon North #1",29,62
+"2016","Lagoon North #1",31,71
+"2016","Lagoon North #1",32,40
+"2016","Lagoon South",23,45
+"2016","Lagoon South",24,32
+"2016","Lagoon South",25,32
+"2016","Lagoon South",26,33
+"2016","Lagoon South",27,31
+"2016","Lagoon South",29,35
+"2016","Lagoon South",30,34
+"2016","Langley Maina",24,5
+"2016","Langley Maina",31,3
+"2016","Langley Maina",33,5
+"2016","Langley Maina",34,5
+"2016","Langley Maina",28,3
+"2016","Langley Maina",29,5
+"2016","Ledgewood",23,39
+"2016","Ledgewood",24,40
+"2016","Ledgewood",25,37
+"2016","Ledgewood",26,41
+"2016","Ledgewood",27,39
+"2016","Ledgewood",28,42
+"2016","Ledgewood",29,38
+"2016","Ledgewood",30,39
+"2016","Ledgewood",31,31
+"2016","Ledgewood",32,30
+"2016","Libby North",23,9
+"2016","Libby North",25,9
+"2016","Libby North",26,9
+"2016","Limpet Lane",23,33
+"2016","Limpet Lane",24,26
+"2016","Limpet Lane",25,35
+"2016","Limpet Lane",26,34
+"2016","Limpet Lane",27,34
+"2016","Limpet Lane",28,31
+"2016","Limpet Lane",29,25
+"2016","Limpet Lane",31,37
+"2016","Limpet Lane",33,24
+"2016","Malmo Bluff",23,39
+"2016","Malmo Bluff",24,31
+"2016","Malmo Bluff",25,23
+"2016","Malmo Bluff",26,30
+"2016","Malmo Bluff",27,35
+"2016","Malmo Bluff",28,32
+"2016","Malmo Bluff",29,32
+"2016","Malmo Bluff",31,27
+"2016","Maylor Point",26,12
+"2016","Maylor Point",29,14
+"2016","Maylor Point",30,22
+"2016","Maylor Point",32,12
+"2016","Monroe Landing",23,6
+"2016","Monroe Landing",24,7
+"2016","Monroe Landing",25,6
+"2016","Monroe Landing",26,6
+"2016","Monroe Landing",27,6
+"2016","Monroe Landing",28,7
+"2016","Monroe Landing",29,7
+"2016","Monroe Landing",30,10
+"2016","Monroe Landing",31,9
+"2016","Monroe Landing",32,5
+"2016","Monroe Landing",33,5
+"2016","Mutiny Sands",23,48
+"2016","Mutiny Sands",25,27
+"2016","Mutiny Sands",27,48
+"2016","Mutiny Sands",28,28
+"2016","Mutiny Sands",29,51
+"2016","Mutiny Sands",30,34
+"2016","Mutiny Sands",31,42
+"2016","Mutiny Sands",32,37
+"2016","Mutiny Sands",33,26
+"2016","Possession Point",22,14
+"2016","Possession Point",23,15
+"2016","Possession Point",25,10
+"2016","Possession Point",25,13
+"2016","Possession Point",26,13
+"2016","Possession Point",27,20
+"2016","Possession Point",29,14
+"2016","Possession Point",29,13
+"2016","Possession Point",31,19
+"2016","Pratts Bluff",23,21
+"2016","Pratts Bluff",24,13
+"2016","Pratts Bluff",26,17
+"2016","Pratts Bluff",27,19
+"2016","Pratts Bluff",28,24
+"2016","Pratts Bluff",29,26
+"2016","Pratts Bluff",30,26
+"2016","Rolling Hills",23,69
+"2016","Rolling Hills",25,80
+"2016","Rolling Hills",26,66
+"2016","Rolling Hills",27,82
+"2016","Rolling Hills",28,54
+"2016","Rolling Hills",30,66
+"2016","Rolling Hills",31,84
+"2016","Shore Meadows",23,72
+"2016","Shore Meadows",24,70
+"2016","Shore Meadows",25,65
+"2016","Shore Meadows",26,101
+"2016","Shore Meadows",28,70
+"2016","Shore Meadows",29,62
+"2016","Shore Meadows",31,69
+"2016","Swantown",24,20
+"2016","Swantown",25,20
+"2016","Swantown",26,17
+"2016","Swantown",27,20
+"2016","Swantown",30,25
+"2016","Swantown",31,31
+"2017","Bush Point Dock",24,6
+"2017","Bush Point Dock",25,10
+"2017","Bush Point Dock",28,7
+"2017","Bush Point Dock",33,6
+"2017","Cliffside",26,37
+"2017","Cliffside",27,22
+"2017","Cliffside",28,20
+"2017","Cliffside",29,19
+"2017","Cliffside",30,22
+"2017","Cliffside",31,22
+"2017","Clinton Ferry",24,12
+"2017","Clinton Ferry",25,11
+"2017","Clinton Ferry",26,8
+"2017","Clinton Ferry",28,8
+"2017","Clinton Ferry",29,7
+"2017","Clinton Ferry",31,9
+"2017","Clinton Ferry",32,14
+"2017","Coupeville Wharf",24,6
+"2017","Coupeville Wharf",26,5
+"2017","Coupeville Wharf",27,4
+"2017","Coupeville Wharf",28,5
+"2017","Coupeville Wharf",29,5
+"2017","Coupeville Wharf",30,6
+"2017","Coupeville Wharf",31,6
+"2017","Coupeville Wharf",32,8
+"2017","Coupeville Wharf",33,8
+"2017","Double Bluff North",24,66
+"2017","Double Bluff North",26,38
+"2017","Double Bluff North",28,63
+"2017","Double Bluff North",29,62
+"2017","Double Bluff North",30,74
+"2017","Double Bluff North",31,54
+"2017","Double Bluff North",32,61
+"2017","Double Bluff South",25,10
+"2017","Double Bluff South",27,14
+"2017","Double Bluff South",28,10
+"2017","Double Bluff South",29,8
+"2017","Double Bluff South",30,12
+"2017","Double Bluff South",31,14
+"2017","Double Bluff South",32,9
+"2017","Double Bluff South",33,8
+"2017","Forbes Point",24,15
+"2017","Forbes Point",26,16
+"2017","Forbes Point",28,12
+"2017","Forbes Point",30,24
+"2017","Forbes Point",32,20
+"2017","Fort Casey",24,56
+"2017","Fort Casey",25,45
+"2017","Fort Casey",26,43
+"2017","Fort Casey",27,75
+"2017","Fort Casey",28,38
+"2017","Fort Casey",29,52
+"2017","Fort Casey",30,63
+"2017","Fort Casey",31,49
+"2017","Hancock Lake",24,60
+"2017","Hancock Lake",25,73
+"2017","Hancock Lake",26,83
+"2017","Hancock Lake",27,67
+"2017","Hancock Lake",28,78
+"2017","Hancock Lake",29,66
+"2017","Hancock Lake",30,62
+"2017","Hancock Lake",31,65
+"2017","Hancock Lake",32,58
+"2017","Harrington North",24,16
+"2017","Harrington North",26,23
+"2017","Harrington North",27,17
+"2017","Harrington North",28,25
+"2017","Harrington North",30,20
+"2017","Harrington North",32,16
+"2017","Harrington North",33,15
+"2017","Harrington South",24,24
+"2017","Harrington South",25,20
+"2017","Harrington South",26,21
+"2017","Harrington South",27,15
+"2017","Harrington South",28,19
+"2017","Harrington South",29,22
+"2017","Harrington South",28,13
+"2017","Harrington South",31,25
+"2017","Harrington South",32,25
+"2017","Harrington South",33,18
+"2017","Hastie Lake",24,22
+"2017","Hastie Lake",25,31
+"2017","Hastie Lake",26,39
+"2017","Hastie Lake",27,39
+"2017","Hastie Lake",28,24
+"2017","Hastie Lake",30,22
+"2017","Hastie Lake",31,20
+"2017","Keystone",24,27
+"2017","Keystone",25,26
+"2017","Keystone",26,42
+"2017","Keystone",28,28
+"2017","Keystone",29,28
+"2017","Keystone",30,44
+"2017","Keystone",31,34
+"2017","Keystone",32,41
+"2017","Lagoon North #0",29,27
+"2017","Lagoon North #0",30,49
+"2017","Lagoon North #1",24,116
+"2017","Lagoon North #1",25,92
+"2017","Lagoon North #1",26,74
+"2017","Lagoon North #1",27,74
+"2017","Lagoon North #1",28,77
+"2017","Lagoon South",24,25
+"2017","Lagoon South",25,32
+"2017","Lagoon South",26,25
+"2017","Lagoon South",27,30
+"2017","Lagoon South",28,37
+"2017","Lagoon South",29,27
+"2017","Lagoon South",30,44
+"2017","Lagoon South",31,30
+"2017","Lagoon South",32,43
+"2017","Langley Maina",25,7
+"2017","Langley Maina",26,7
+"2017","Langley Maina",27,5
+"2017","Langley Maina",29,5
+"2017","Langley Maina",30,10
+"2017","Langley Maina",31,6
+"2017","Langley Maina",32,7
+"2017","Ledgewood",23,46
+"2017","Ledgewood",24,40
+"2017","Ledgewood",25,38
+"2017","Ledgewood",28,39
+"2017","Ledgewood",29,32
+"2017","Ledgewood",30,38
+"2017","Ledgewood",31,44
+"2017","Ledgewood",32,42
+"2017","Limpet Lane",24,35
+"2017","Limpet Lane",25,24
+"2017","Limpet Lane",26,27
+"2017","Limpet Lane",27,21
+"2017","Limpet Lane",28,29
+"2017","Limpet Lane",29,26
+"2017","Limpet Lane",30,31
+"2017","Limpet Lane",31,24
+"2017","Limpet Lane",32,23
+"2017","Malmo Bluff",24,41
+"2017","Malmo Bluff",26,29
+"2017","Malmo Bluff",28,31
+"2017","Malmo Bluff",29,28
+"2017","Malmo Bluff",30,38
+"2017","Malmo Bluff",31,39
+"2017","Malmo Bluff",32,53
+"2017","Malmo Bluff",33,36
+"2017","Malmo Bluff",34,40
+"2017","Mutiny Sands",24,42
+"2017","Mutiny Sands",25,26
+"2017","Mutiny Sands",26,44
+"2017","Mutiny Sands",27,31
+"2017","Mutiny Sands",28,50
+"2017","Mutiny Sands",30,44
+"2017","Mutiny Sands",32,49
+"2017","Mutiny Sands",34,25
+"2017","Possession Point",25,10
+"2017","Possession Point",26,13
+"2017","Possession Point",27,12
+"2017","Possession Point",29,17
+"2017","Possession Point",29,12
+"2017","Possession Point",30,19
+"2017","Possession Point",32,12
+"2017","Pratts Bluff",24,25
+"2017","Pratts Bluff",26,25
+"2017","Pratts Bluff",27,25
+"2017","Pratts Bluff",28,30
+"2017","Pratts Bluff",29,30
+"2017","Pratts Bluff",30,19
+"2017","Pratts Bluff",31,33
+"2017","Pratts Bluff",32,29
+"2017","Pratts Bluff",33,23
+"2017","Rolling Hills",24,59
+"2017","Rolling Hills",25,58
+"2017","Rolling Hills",26,52
+"2017","Rolling Hills",27,52
+"2017","Rolling Hills",28,56
+"2017","Rolling Hills",29,47
+"2017","Rolling Hills",30,55
+"2017","Rolling Hills",31,35
+"2017","Rolling Hills",32,50
+"2017","Shore Meadows",24,44
+"2017","Shore Meadows",25,69
+"2017","Shore Meadows",26,50
+"2017","Shore Meadows",27,54
+"2017","Shore Meadows",28,54
+"2017","Shore Meadows",29,40
+"2017","Shore Meadows",30,53
+"2017","Shore Meadows",31,35
+"2017","Shore Meadows",32,63
+"2017","Swantown",24,26
+"2017","Swantown",25,16
+"2017","Swantown",26,19
+"2017","Swantown",28,30
+"2017","Swantown",29,24
+"2017","Swantown",30,26
+"2017","Swantown",31,21
+"2017","Swantown",35,22
