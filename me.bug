@@ -1,0 +1,111 @@
+
+model {
+
+# -------------------------------------------------
+# Parameters:
+# phiA: survival probability at site A
+# phiB: survival probability at site B
+# psiAB: movement probability from site A to site B
+# psiBA: movement probability from site B to site A
+# pA: recapture probability at site A
+# pB: recapture probability at site B
+# dA: probability to correctly assign site A to an observed individual that is at site A
+# dB: probability to correctly assign site B to an observed individual that is at site B
+# pi: probability that an individual is at site A when marked 
+# -------------------------------------------------
+# States (S):
+# 1 alive at A
+# 2 alive at B
+# 3 dead
+# Observations (O):  
+# 1 seen at A 
+# 2 seen at B
+# 3 seen, but site unknown
+# 4 not seen
+# -------------------------------------------------
+
+# Priors and constraints
+for (i in 1:nind){
+   for (t in 1:(n.occasions-1)){
+      phiA[i,t] <- mean.phi[1]
+      phiB[i,t] <- mean.phi[2]
+      psiAB[i,t] <- mean.psi[1]
+      psiBA[i,t] <- mean.psi[2]
+      pA[i,t] <- mean.p[1]
+      pB[i,t] <- mean.p[2]
+      dA[i,t] <- mean.d[1]
+      dB[i,t] <- mean.d[2]
+      pi[i,t] <- mean.pi
+      } # t
+   } # i
+
+for (u in 1:2){
+   mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
+   mean.psi[u] ~ dunif(0, 1)    # Priors for mean transitions
+   mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
+   mean.d[u] ~ dunif(0, 1)      # Priors for mean assignment error
+   }
+mean.pi ~ dunif(0, 1)
+
+# Define state-transition and observation matrices
+for (i in 1:nind){
+   for (t in f[i]:(n.occasions-1)){
+      # Define state probability when an individual is marked
+      pj[i,t,1] <- pi[i,t]
+      pj[i,t,2] <- 1-pi[i,t]
+      
+      # Define probabilities of O(t) given S(t) at the occasion of marking (this corresponds to B(0) in E-SURGE notation)
+      po1[1,i,t,1] <- dA[i,t]
+      po1[1,i,t,2] <- 0
+      po1[1,i,t,3] <- 1-dA[i,t]
+      po1[1,i,t,4] <- 0
+      po1[2,i,t,1] <- 0
+      po1[2,i,t,2] <- dB[i,t]
+      po1[2,i,t,3] <- 1-dB[i,t]
+      po1[2,i,t,4] <- 0
+      po1[3,i,t,1] <- 0
+      po1[3,i,t,2] <- 0
+      po1[3,i,t,3] <- 0
+      po1[3,i,t,4] <- 1
+   
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- phiA[i,t] * (1-psiAB[i,t])
+      ps[1,i,t,2] <- phiA[i,t] * psiAB[i,t]
+      ps[1,i,t,3] <- 1-phiA[i,t]
+      ps[2,i,t,1] <- phiB[i,t] * psiBA[i,t]
+      ps[2,i,t,2] <- phiB[i,t] * (1-psiBA[i,t])
+      ps[2,i,t,3] <- 1-phiB[i,t]
+      ps[3,i,t,1] <- 0
+      ps[3,i,t,2] <- 0
+      ps[3,i,t,3] <- 1
+      
+      # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- dA[i,t] * pA[i,t]
+      po[1,i,t,2] <- 0
+      po[1,i,t,3] <- (1-dA[i,t]) * pA[i,t]
+      po[1,i,t,4] <- 1-pA[i,t]
+      po[2,i,t,1] <- 0
+      po[2,i,t,2] <- dB[i,t] * pB[i,t]
+      po[2,i,t,3] <- (1-dB[i,t]) * pB[i,t]
+      po[2,i,t,4] <- 1-pB[i,t]
+      po[3,i,t,1] <- 0
+      po[3,i,t,2] <- 0
+      po[3,i,t,3] <- 0
+      po[3,i,t,4] <- 1
+      } #t
+   } #i
+
+# Likelihood 
+for (i in 1:nind){
+   # Define latent state at first capture
+   z[i,f[i]] ~ dcat(pj[i, f[i],])
+   y[i,f[i]] ~ dcat(po1[z[i,f[i]], i, f[i],])
+   for (t in (f[i]+1):n.occasions){
+      # State process: draw S(t) given S(t-1)
+      z[i,t] ~ dcat(ps[z[i,t-1], i, t-1,])
+      # Observation process: draw O(t) given S(t)
+      y[i,t] ~ dcat(po[z[i,t], i, t-1,])
+      } #t
+   } #i
+}
+

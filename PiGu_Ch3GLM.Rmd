@@ -20,12 +20,12 @@ library(lme4)
 library(stats) 
 library(zoo)
 library(sciplot)
-#library(R2OpenBUGS)
+library(R2OpenBUGS)
 library(jagsUI)
 # WINE="/usr/local/Cellar/wine/3.0_1/bin/wine"
 # WINEPATH="/usr/local/Cellar/wine/3.0_1/bin/winepath"
 # OpenBUGS.pgm="/Users/amandawarlick/.wine/drive_c/Program\ Files/OpenBUGS/OpenBUGS323/OpenBUGS.exe"
-setwd("~/Documents/R/SAFS/PigeonGuillemots")
+setwd("~/Documents/SAFS/PigeonGuillemots")
 #knitr::opts_chunk$set(echo = TRUE)
 ```
 

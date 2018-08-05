@@ -1,0 +1,333 @@
+
+# Following example code from Kery & Schaub, implementing Conn & Cooch 2009
+
+```{r}
+
+library(rjags)
+#library(R2jags) #seems to fight with jagsUI
+library(jagsUI)
+library(R2OpenBUGS)
+
+data_ME <- read.csv("burrow_full_week_CH.csv", stringsAsFactors = F, header = T) %>%
+  select(year, site, week, study_day, burrow_name, capt_hist)
+
+# unique <- data_ME %>% distinct(year, site, burrow_name)
+# unique$id <- 1:nrow(unique)
+# 
+# data_ME <- data_ME %>% 
+#   merge(unique, by = c('year', 'site', 'burrow_name'))
+#   transform(id = 1:nrow(data_ME)) #adding a temporary id variable to use dcast() without defaulting to length
+
+
+#data_ME_small <- data_ME[1:500,] 
+
+```
+
+```{r}
+
+data_ME_wide <- data_ME %>% 
+  distinct(year, site, burrow_name, week, capt_hist) %>% #yikes CHECK why there are duplicate year, site, burrow, week???
+  dcast(year + site + burrow_name ~ week, value.var = 'capt_hist', fill = 0, fun.aggregate = mean)
+
+data_ME_wide_small <- data_ME_wide[1:1000,] 
+
+CH_PG <- as.matrix(data_ME_wide %>% select(-c(year, site, burrow_name)), rownames.force = F)
+colnames(CH_PG) <- NULL
+
+
+```
+
+```{r}
+
+
+
+# Specify model in jags
+
+model <- function () {
+
+# -------------------------------------------------
+# Parameters:
+# three states - state A: egg; state B: nestling; terminated
+# phiA: survival probability from egg to fledge (Q: or to nestling?) 
+# phiB: survival probability from nestling to fledge
+# psiAB: probability of transitioning from egg to nestling
+# psiBA: probability of transitioning from nestling to egg
+# pA: recapture probability of eggs
+# pB: recapture probability of nestling
+# dA: probability of correctly assigning egg state to an observed individual that is an egg
+# dB: probability of correctly assigning nestling state to an observed individual that is a nestling
+# pi: probability that an individual is an egg when marked 
+# -------------------------------------------------
+# States (S):
+# 1 alive as an egg
+# 2 alive as a nestling
+# 3 dead or fledged
+# Observations (O):  
+# 1 observed as an egg (BV if PV == NA/0 and study_day < prey_start)
+# 2 observed as a nestling (PV)
+# 3 observed, but state unknown (BV when PV > 0 and study_day > prey_start or BV when no observed PV)
+# 4 not observed
+# -------------------------------------------------
+
+# Priors and constraints
+for (i in 1:nind){
+   for (t in 1:(n.occasions-1)){
+      phiA[i,t] <- mean.phi[1]
+      phiB[i,t] <- mean.phi[2]
+      psiAB[i,t] <- mean.psi[1]
+      psiBA[i,t] <- 0 #adapted, because I think this should be zero?
+      pA[i,t] <- mean.p[1]
+      pB[i,t] <- mean.p[2]
+      dA[i,t] <- mean.d[1]
+      dB[i,t] <- mean.d[2]
+      pi[i,t] <- mean.pi
+      } # t
+   } # i
+
+for (u in 1:2){
+   mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
+   mean.psi[u] ~ dunif(0, 1)    # Priors for mean transition
+   mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
+   mean.d[u] ~ dunif(0, 1)      # Priors for mean assignment error
+   }
+mean.pi ~ dunif(0, 1)
+
+# Define state-transition and observation matrices
+for (i in 1:nind){
+   for (t in f[i]:(n.occasions - 1)){
+      # Define state probability when an individual is marked
+      pj[i,t,1] <- pi[i,t]
+      pj[i,t,2] <- 1 - pi[i,t]
+      
+      # Define probabilities of O(t) given S(t) at first encounter
+      po1[1,i,t,1] <- dA[i,t]
+      po1[1,i,t,2] <- 0
+      po1[1,i,t,3] <- 1 - dA[i,t]
+      po1[1,i,t,4] <- 0
+      po1[2,i,t,1] <- 0
+      po1[2,i,t,2] <- dB[i,t]
+      po1[2,i,t,3] <- 1 - dB[i,t]
+      po1[2,i,t,4] <- 0
+      po1[3,i,t,1] <- 0
+      po1[3,i,t,2] <- 0
+      po1[3,i,t,3] <- 0
+      po1[3,i,t,4] <- 1
+   
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- phiA[i,t] * (1-psiAB[i,t]) #survival of egg * probability of not transitioning
+      ps[1,i,t,2] <- phiA[i,t] * psiAB[i,t] #survival of egg * probability of transitioning
+      ps[1,i,t,3] <- 1 - phiA[i,t]  #egg terminates
+      ps[2,i,t,1] <- phiB[i,t] * 0  #nestling can't become an egg
+      ps[2,i,t,2] <- phiB[i,t] * (1 - psiBA[i,t]) #survival of nestling * probability of not fledgling/dying 
+      ps[2,i,t,3] <- 1 - phiB[i,t] #nestling terminates
+      ps[3,i,t,1] <- 0 #terminated can't go backwards
+      ps[3,i,t,2] <- 0 #terminated can't go backwards
+      ps[3,i,t,3] <- 1 #terminated stays dead
+      
+      # Define probabilities of O(t) given S(t)
+      # Q/Check, not all these are right - don't understand the difference between [1,i,t,3/4], [2,i,t,3/4]
+      po[1,i,t,1] <- dA[i,t] * pA[i,t]  #prob of correctly obs egg * egg detection probability
+      po[1,i,t,2] <- 0  #can't be observed getting PV if an egg
+      #po[1,i,t,3] <- (1 - dA[i,t]) * pA[i,t]  #prob of not observing egg when it is 
+      po[1,i,t,3] <- 0 #don't have uncertain observations when true state is egg
+      po[1,i,t,4] <- 1 - pA[i,t]  #probability of not detecting egg
+      
+      #po[2,i,t,1] <- pB[i,t] * (1 - dA[i,t]) #nestling being observed as an egg (BV state)
+      po[2,i,t,1] <- 0 #can't observe egg state once prey deliveries ever happened; these are unknown
+      po[2,i,t,2] <- dB[i,t] * pB[i,t]  #nestling correctly observed * nestling detection probability
+      po[2,i,t,3] <- (1 - dB[i,t]) * pB[i,t]  #prob of not observing nestling when it is * no nestling detection
+      po[2,i,t,4] <- 1 - pB[i,t]  #probability of not detecting a nestling
+      
+      po[3,i,t,1] <- 0 #can't be terminated and observed, but.... failed eggs?
+      po[3,i,t,2] <- 0
+      po[3,i,t,3] <- 0
+      po[3,i,t,4] <- 1  #prob of not detecting a terminated nest
+      } #t
+   } #i
+
+# Likelihood 
+for (i in 1:nind){
+   # Define latent state at first capture
+   z[i,f[i]] ~ dcat(pj[i, f[i],])
+   y[i,f[i]] ~ dcat(po1[z[i,f[i]], i, f[i],])
+   for (t in (f[i]+1):n.occasions){
+      # State process: draw S(t) given S(t-1)
+      z[i,t] ~ dcat(ps[z[i,t-1], i, t - 1,])
+      # Observation process: draw O(t) given S(t)
+      y[i,t] ~ dcat(po[z[i,t], i, t - 1,])
+      } #t
+   } #i
+}
+
+# Function to create initial values for unknown z
+me.init.z <- function(ch, f){
+   g <- which(ch == 3)
+   g <- c(g, which(ch == 4))
+   states <- max(ch, na.rm = TRUE)
+   known.states <- 1:(states - 2)
+   ch[g] <- sample(known.states, length(g), replace = TRUE)   
+   for (i in 1:nrow(ch)){
+      fi <- ch[i,f[i]]
+      ch[i,1:f[i]] <- NA
+      ch[i,f[i]] <- fi
+      }
+   return(ch)
+   }
+write.model(model, "model.txt")
+model.file = paste(getwd(),"model.txt", sep="/")
+
+
+get.first <- function(x) min(which(x!=0))
+f <- apply(CH_PG, 1, get.first)
+
+
+# Bundle data
+jags.data <- list(y = CH_PG, f = f, n.occasions = dim(CH_PG)[2], nind = dim(CH_PG)[1])
+
+# Initial values
+inits <- function(){list(mean.phi = runif(2, 0, 1), 
+                         mean.psi = runif(2, 0, 1), 
+                         mean.p = runif(2, 0, 1), z = me.init.z(CH_PG, f))}  
+
+# Parameters monitored
+parameters <- c("mean.phi", "mean.psi", "mean.p", "mean.d", "mean.pi")
+
+# MCMC settings
+nc <- 3; nAdapt <- 100; nb <- 200; ni <- 500+nb; nt <- 1  
+
+# Call jagsUI
+me <- jags(jags.data, inits, parameters, n.chains = nc, model.file = model.file,
+           n.adapt=nAdapt, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = F)
+
+print(me, digits = 3)
+
+```
+
+
+```{r}
+# Function to simulate multistate capture-recapture data for a model where the true state of an individual may not always be seen; from Kery & Schaub
+
+simul.me <- function(PSI.STATE, PSI.OBS, PSI.INI, OBS.INI, marked, unobservable = NA){
+   # Unobservable: number of state that is unobservable
+   n.occasions <- dim(PSI.STATE)[4] + 1
+   CH <- CH.TRUE <- matrix(NA, ncol = n.occasions, nrow = sum(marked))
+   # Define a vector with the occasion of marking
+   mark.occ <- rep(1:length(marked), marked)
+   
+   for (i in 1:sum(marked)){
+      # Initial state
+      CH.TRUE[i,mark.occ[i]] <- which(rmultinom(1, 1, PSI.INI[,i,mark.occ[i]])==1)
+      CH[i,mark.occ[i]] <- which(rmultinom(1, 1, OBS.INI[CH.TRUE[i,mark.occ[i]],,i,mark.occ[i]])==1)
+      for (t in (mark.occ[i]+1):n.occasions){
+         # Multinomial trials for state transitions
+         if (mark.occ[i]==n.occasions) next
+         state <- which(rmultinom(1, 1, PSI.STATE[CH.TRUE[i,t-1],,i,t-1])==1)
+         CH.TRUE[i,t] <- state
+         # Multinomial trials for observation process
+         event <- which(rmultinom(1, 1, PSI.OBS[CH.TRUE[i,t],,i,t-1])==1)
+         CH[i,t] <- event
+         } #t
+      } #i
+   # Replace the NA and the highest state number (dead) in the file by 0
+   CH[is.na(CH)] <- 0
+   CH[CH==dim(PSI.OBS)[2]] <- 0
+   CH[CH==unobservable] <- 0
+   id <- numeric(0)
+   for (i in 1:dim(CH)[1]){
+      z <- min(which(CH[i,]!=0))
+      ifelse(z==dim(CH)[2], id <- c(id,i), id <- c(id))
+      }
+   return(list(CH=CH[-id,], CH.TRUE=CH.TRUE[-id,]))
+   # CH: capture histories to be used
+   # CH.TRUE: capture histories with perfect observation
+   }
+
+
+# Defining parameters, setting up empty matrices and then filling them
+
+
+# Define mean survival, transitions, recapture, as well as number of occasions, states, observations and released individuals
+phiA <- 0.8
+phiB <- 0.6
+psiAB <- 0.3
+psiBA <- 0.5
+pA <- 0.7
+pB <- 0.4
+dA <- 0.9     # probability that the state of an individual that is in state A is correctly observed 
+dB <- 0.6     # probability that the state of an individual that is in state B is correctly observed
+psi <- 0.75   # probability that an individual is in state A when marked
+
+n.occasions <- 6
+n.states <- 3
+n.obs <- 4
+marked <- rep(2500, n.occasions)  
+
+# Define matrices with survival, transition and recapture probabilities
+# These are 4-dimensional matrices, with 
+   # Dimension 1: state of departure
+   # Dimension 2: state of arrival
+   # Dimension 3: individual
+   # Dimension 4: time
+
+# 1. State process matrix
+totrel <- sum(marked)
+PSI.STATE <- array(NA, dim=c(n.states, n.states, totrel, n.occasions-1))
+for (i in 1:totrel){
+   for (t in 1:(n.occasions-1)){
+      PSI.STATE[,,i,t] <- matrix(c(
+      phiA*(1-psiAB), phiA*psiAB,     1-phiA,
+      phiB*psiBA,     phiB*(1-psiBA), 1-phiB,
+      0,              0,              1       ), nrow = n.states, byrow = TRUE)
+      } #t
+   } #i
+
+# 2.Observation process matrix
+PSI.OBS <- array(NA, dim=c(n.states, n.obs, totrel, n.occasions-1))
+for (i in 1:totrel){
+   for (t in 1:(n.occasions-1)){
+      PSI.OBS[,,i,t] <- matrix(c(
+      dA * pA, 0,  (1-dA) * pA, 1-pA,
+      0,  dB * pB, (1-dB) * pB, 1-pB,
+      0,  0,  0, 1       ), nrow = n.states, byrow = TRUE)
+      } #t
+   } #i
+
+# 3. Matrix with the initial state probabilities
+PSI.INI <- array(NA, dim=c(n.states-1, totrel, n.occasions))
+for (i in 1:totrel){
+   for (t in 1:n.occasions){
+      PSI.INI[1,i,t] <- psi
+      PSI.INI[2,i,t] <- 1-psi
+      }
+   }
+
+# 4. Assignment matrix at initial capture
+OBS.INI <- array(NA, dim=c(n.states, n.obs, totrel, n.occasions))
+for (i in 1:totrel){
+   for (t in 1:n.occasions){
+      OBS.INI[,,i,t] <- matrix(c(
+      dA , 0,  1-dA, 0,
+      0,  dB,  1-dB, 0,
+      0,  0,  0, 1       ), nrow = n.states, byrow = TRUE)
+      } #t
+   } #i
+
+
+
+# Execute function
+sim <- simul.me(PSI.STATE, PSI.OBS, PSI.INI, OBS.INI, marked)
+CH <- sim$CH
+table(CH) # 0 = not seen, 1 = seen alive in A, 2 = seen alive in B, 3 = seen alive but unknown site ("state") 
+
+
+# Compute vector with occasion of first capture
+get.first <- function(x) min(which(x!=0))
+f <- apply(CH, 1, get.first)
+
+# Recode CH matrix: note, a 0 is not allowed in WinBUGS!
+# 1 = seen alive in A, 2 = seen alive in B, 3 = seen alive, unknown site, 4 = not seen
+rCH <- CH          # Recoded CH
+rCH[rCH==0] <- 4
+
+```
+
