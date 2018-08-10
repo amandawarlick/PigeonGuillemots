@@ -5,11 +5,10 @@ model
             phiA[i, t] <- mean.phi[1]
             phiB[i, t] <- mean.phi[2]
             psiAB[i, t] <- mean.psi[1]
-            psiBA[i, t] <- 0.00000E+00
+            psiBA[i, t] <- mean.psi[1]
             pA[i, t] <- mean.p[1]
             pB[i, t] <- mean.p[2]
-            dA[i, t] <- mean.d[1]
-            dB[i, t] <- mean.d[2]
+            b[i, t] <- mean.b
             pi[i, t] <- mean.pi
         }
     }
@@ -17,25 +16,22 @@ model
         mean.phi[u] ~ dunif(0.00000E+00, 1)
         mean.psi[u] ~ dunif(0.00000E+00, 1)
         mean.p[u] ~ dunif(0.00000E+00, 1)
-        mean.d[u] ~ dunif(0.00000E+00, 1)
     }
+    mean.b ~ dunif(0.00000E+00, 1)
     mean.pi ~ dunif(0.00000E+00, 1)
     for (i in 1:nind) {
         for (t in f[i]:(n.occasions - 1)) {
             pj[i, t, 1] <- pi[i, t]
             pj[i, t, 2] <- 1 - pi[i, t]
-            po1[1, i, t, 1] <- dA[i, t]
+            po1[1, i, t, 1] <- 1
             po1[1, i, t, 2] <- 0.00000E+00
-            po1[1, i, t, 3] <- 1 - dA[i, t]
-            po1[1, i, t, 4] <- 0.00000E+00
-            po1[2, i, t, 1] <- 0.00000E+00
-            po1[2, i, t, 2] <- dB[i, t]
-            po1[2, i, t, 3] <- 1 - dB[i, t]
-            po1[2, i, t, 4] <- 0.00000E+00
+            po1[1, i, t, 3] <- 0.00000E+00
+            po1[2, i, t, 1] <- b[i, t]
+            po1[2, i, t, 2] <- 1 - b[i, t]
+            po1[2, i, t, 3] <- 0.00000E+00
             po1[3, i, t, 1] <- 0.00000E+00
             po1[3, i, t, 2] <- 0.00000E+00
-            po1[3, i, t, 3] <- 0.00000E+00
-            po1[3, i, t, 4] <- 1
+            po1[3, i, t, 3] <- 1
             ps[1, i, t, 1] <- phiA[i, t] * (1 - psiAB[i, t])
             ps[1, i, t, 2] <- phiA[i, t] * psiAB[i, t]
             ps[1, i, t, 3] <- 1 - phiA[i, t]
@@ -45,18 +41,15 @@ model
             ps[3, i, t, 1] <- 0.00000E+00
             ps[3, i, t, 2] <- 0.00000E+00
             ps[3, i, t, 3] <- 1
-            po[1, i, t, 1] <- dA[i, t] * pA[i, t]
+            po[1, i, t, 1] <- pA[i, t]
             po[1, i, t, 2] <- 0.00000E+00
-            po[1, i, t, 3] <- (1 - dA[i, t]) * pA[i, t]
-            po[1, i, t, 4] <- 1 - pA[i, t]
-            po[2, i, t, 1] <- 0.00000E+00
-            po[2, i, t, 2] <- dB[i, t] * pB[i, t]
-            po[2, i, t, 3] <- (1 - dB[i, t]) * pB[i, t]
-            po[2, i, t, 4] <- 1 - pB[i, t]
+            po[1, i, t, 3] <- 1 - pA[i, t]
+            po[2, i, t, 1] <- b[i, t] * pB[i, t]
+            po[2, i, t, 2] <- (1 - b[i, t]) * pB[i, t]
+            po[2, i, t, 3] <- 1 - pB[i, t]
             po[3, i, t, 1] <- 0.00000E+00
             po[3, i, t, 2] <- 0.00000E+00
-            po[3, i, t, 3] <- 0.00000E+00
-            po[3, i, t, 4] <- 1
+            po[3, i, t, 3] <- 1
         }
     }
     for (i in 1:nind) {

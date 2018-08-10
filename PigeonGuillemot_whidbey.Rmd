@@ -93,8 +93,7 @@ data_count[is.na(data_count)] <- 0
 data_count <- data_count %>%
   transform(id = 1:nrow(data_count))
 
-#dates for empty burrow visits (bvs not recorded in burrow-level data, so use dates of count data and merge in)
-
+#dates for empty burrow visits (non-visits not recorded in burrow-level data, so use dates of count data and merge in)
 count_dates <- data_count %>%
   filter(intern_data != 'Y') %>%
   distinct(site, date, year, week, yday) 
