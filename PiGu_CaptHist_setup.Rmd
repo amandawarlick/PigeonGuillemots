@@ -126,7 +126,7 @@ table(burrow_week_CH$capt_hist)
 
 write.csv(burrow_week_CH, "burrow_week_CH.csv", row.names = F)
 
-burrow_count_yr <- burrow_week %>%
+burrow_count_yr <- burrow_week_CH %>%
   #transform(id = 1:nrow(burrow_week)) %>%
   distinct(year, site, burrow_name) %>%
   group_by(year, site) %>%
@@ -141,6 +141,8 @@ burrow_count_yr <- burrow_week %>%
 ```{r}
  
 # Capture history column with three observed states and NAs for unobserved
+
+#day-level
 
 burrow_1 <- burrow %>%
   select(site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
@@ -162,18 +164,16 @@ burrow_day_CH <- burrow_2 %>%
   transform(prey_days = prey_end + 1 - prey_start) %>%
   transform(bv_days = bv_end + 1 - bv_start) %>%
   transform(capt_hist =
-              ifelse(tot_prey > 0, 2, #nestling
-                ifelse(burrow_visit > 0, 1, #egg
-                       0))) %>%
-  transform(capt_hist = 
-              ifelse(capt_hist > 0, capt_hist,
-                            ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #not seen
-                                   ifelse(burrow_visit == 0 & tot_prey == 0, 3, #not seen
-                       100))))
+              ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #not seen
+                     ifelse(burrow_visit == 0 & tot_prey == 0, 3, #not seen
+              ifelse(tot_prey > 0, 2,#nestling
+              ifelse(burrow_visit > 0, 1, #egg
+                       100)))))
 
 test <- burrow_day_CH %>%
   #filter(capt_hist == 100)
-  filter(capt_hist != 'NA')
+  #filter(capt_hist != 'NA')
+  filter(is.na(capt_hist))
 hist(burrow_day_CH$capt_hist)
 table(burrow_day_CH$capt_hist)
 

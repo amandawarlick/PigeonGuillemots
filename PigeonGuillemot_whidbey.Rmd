@@ -75,11 +75,25 @@ color3 <- c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c")
 
 ```{r data, results = 'hide', message = FALSE}
 
-#read in data, created needed columns
-
 setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
 
-data_count <- read.csv("PGdata_08_17.csv", stringsAsFactors = F) %>%
+#fixing up website output for burrow-level data 2015-2017
+burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>%
+  mutate(burrow_name = gsub("b.", "", burrow_name)) %>%
+  mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
+  mutate(site = gsub(" -- INTERN", "", site)) %>%
+  mutate(site = gsub("- INTERN", "", site)) %>%
+  mutate(visit_type = ifelse(visit_type == 'gunnels', 'Gunnel', 
+                             ifelse(visit_type == 'sculpin', 'Sculpin',
+                                    ifelse(visit_type == 'noprey', 'burrow_visit', 'Other')))) %>%
+  dcast(site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
+        fun.aggregate = mean, fill = 0) %>%
+  select(site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data)
+
+
+#read in early data (2008-2014) compiled by hand from spreadsheets
+
+data_count <- read.csv("PGdata_pre_proc.csv", stringsAsFactors = F) %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
   transform(year = format(date, "%Y")) %>%
   mutate(PG_count = as.numeric(PG_count), burrow_count = as.numeric(burrow_count), 
@@ -98,13 +112,17 @@ count_dates <- data_count %>%
   filter(intern_data != 'Y') %>%
   distinct(site, date, year, week, yday) 
 
-data_burrow <- read.csv("burrow_08_17.csv", stringsAsFactors = F) %>%
-  transform(date = as.Date(date, format = "%m/%d/%y")) %>%
-  transform(year = format(date, "%Y")) %>%
+burrow_allyrs <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
+  select(-qaqc_concern) %>%
   mutate(Gunnel = coalesce(as.numeric(Gunnel), 0)) %>% #forcing NAs to 0, other ways weren't working
   mutate(Sculpin = coalesce(as.numeric(Sculpin), 0)) %>%
   mutate(Other = coalesce(as.numeric(Other), 0)) %>%
   mutate(burrow_visit = coalesce(as.numeric(burrow_visit), 0)) %>%
+  bind_rows(burrow_2015_18)
+  
+data_burrow <- burrow_allyrs %>%
+  transform(date = as.Date(date, format = "%m/%d/%y")) %>%
+  transform(year = format(date, "%Y")) %>%
   mutate(burrow_name = gsub("-","", burrow_name)) %>%
   transform(week = strftime(date, format = "%V")) %>%
   #transform(week = as.numeric(week)) %>%
