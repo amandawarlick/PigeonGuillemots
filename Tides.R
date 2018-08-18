@@ -1,31 +1,32 @@
 library(dplyr)
 library(rvest)
+library(readr)
 
 #station IDs
-# 604 <- DeceptionPass (DeceptionPass)
 #* 644 <- CrescentHarbor (MarinersCove, CrescentHarbor, ForbesPoint, MaylorPoint)
 #* 620 <- Coupeville (MonroeLanding, RollingHills, Coupeville)
 #* 1078 <- Greenbank (HarringtonN, HarringtonS, PrattsBluff)
 #* 2395 <- SandyPoint (Langley)
 #* 1026 <- Glendale (PossessionPoint)
-#* 361 <- BushPoint (MalmoBluff, ShoreMeadows, MutinySands, LimpetLane, DoubleBluff
+#* 361 <- BushPoint (Bush Point Dock, MalmoBluff, ShoreMeadows, MutinySands, LimpetLane, DoubleBluff
 #                   LagoonN, LagoonS, Keystone, Ledgewood, Hancock, FortCasey)
-# 16 <- AdmiraltyHead (Keystone, Ledgewood, Hancock, FortCasey)
 #* 2686 <- SunsetBeach (Cliffside, Swantown, HastieLake)
 
-col_id <- data.frame(col = c("Deception Pass",
-                                     "Mariners Cove", "Crescent Harbor", "Forbes Point", "Maylor Point",
-                                     "Coupeville", "Monroe Landing", "Rolling Hills #1", "Rolling Hills #2", "Rolling Hills #3", "Rolling Hills",
-                                     "Harrington North", "Harrington South", "Pratts Bluff",
-                                     "Langley",
-                                     "Possession Point",
-                                     "Malmo Bluff", "Shore Meadows", "Mutiny Sands", "Limpet Lane", "Double Bluff", "Lagoon North", "Lagoon South",
-                                     "Keystone", "Ledgewood", "Hancock Lake", "Fort Casey",
-                                     "Cliffside", "Swantown", "Hastie Lake"), 
-                             grp = c(2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 
-                                     5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 8, 8, 8))
+col_id <- data.frame(site = 
+        c("Crescent Harbor", "Forbes Point", "Maylor Point",
+          "Coupeville Wharf", "Monroe Landing", "Rolling Hills",
+          "Harrington North", "Harrington South", "Pratts Bluff",
+          "Langley Marina",
+          "Possession Point",
+          "Bush Point Dock", "Malmo Bluff", "Shore Meadows", "Mutiny Sands", "Limpet Lane", 
+                "Double Bluff North", "Double Bluff South", "Lagoon North #0", "Lagoon North #1", 
+                "Lagoon North #2", "Lagoon North #3", "Lagoon South", 
+                "Keystone", "Ledgewood", "Hancock Lake", "Fort Casey", "Libby North",
+          "Cliffside", "Swantown", "Hastie Lake", "Hastie Lake North"), 
+                             grp = c(1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 5, rep(6, 17),
+                                     7, 7, 7, 7))
 
-station_id <- data.frame(id = c(604, 644, 620, 1078, 2395, 1026, 361, 16, 2686), grp = 1:9) %>%
+station_id <- data.frame(station = c(644, 620, 1078, 2395, 1026, 361, 2686), grp = 1:7) %>%
   merge(col_id, by = 'grp')
 
 id <- c(644, 620, 1078, 2395, 1026, 361, 2686)
@@ -87,11 +88,15 @@ tides_all_clean <- tides_all %>%
 
 tides_tidy <- tides_all_clean %>%
   select(year, station, date, type, tide, time, type.1, tide.1, time.1) %>%
-  transform(sample = as.POSIXlt(paste(date, format(strptime("8:00", format = "%H:%M"), "%H:%M:%S"), sep = " "))) %>%
+  transform(sample = as.POSIXlt(paste(date, 
+              format(strptime("8:00", format = "%H:%M"), "%H:%M:%S"), sep = " "))) %>%
   transform(from_low = 
-              ifelse(type == "L", as.numeric(time-sample, units = "mins"), as.numeric(time.1-sample, units = "mins")),
+              ifelse(type == "L", as.numeric(time-sample, units = "mins"), 
+                     as.numeric(time.1-sample, units = "mins")),
             from_high = 
-              ifelse(type == "H", as.numeric(time-sample, units = "mins"), as.numeric(time.1-sample, units = "mins")))
+              ifelse(type == "H", as.numeric(time-sample, units = "mins"), 
+                     as.numeric(time.1-sample, units = "mins"))) %>%
+  merge(station_id %>% select(-grp), by = 'station')
 
-write.csv(tides_tidy, "tides.csv", row.names = F)
+write.csv(tides_tidy, "tides_tidy.csv", row.names = F)
 

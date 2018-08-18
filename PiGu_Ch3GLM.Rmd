@@ -286,7 +286,7 @@ lines(perc_suc_isl$year, predictions, type = "l", lwd = 1, lty = 2)
 
 ```{r}
 
-#Ch. 3: Basicl Poisson & Binomial GLM
+#Ch. 3: Basic Poisson & Binomial GLM
 
 ####### Simulated data ##############
 #linear predictor is cubic binomial function

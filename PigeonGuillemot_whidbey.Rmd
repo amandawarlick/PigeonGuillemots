@@ -95,7 +95,7 @@ burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>
 
 data_count <- read.csv("PGdata_pre_proc.csv", stringsAsFactors = F) %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
-  transform(year = format(date, "%Y")) %>%
+  transform(year = as.numeric(format(date, "%Y"))) %>%
   mutate(PG_count = as.numeric(PG_count), burrow_count = as.numeric(burrow_count), 
          burrow_visit = as.numeric(burrow_visit)) %>%
   transform(week = strftime(date, format = "%V")) %>%
@@ -176,6 +176,40 @@ write.csv(data_count, "data_count.csv", row.names = F)
 
 ```
 
+
+```{r}
+# bringing in tide data
+tides <- read.csv("tides_tidy.csv", stringsAsFactors = F, header = T) %>%
+  transform(date = as.Date(date)) %>%
+  transform(month = month(date))
+
+tides_counts <- tides %>%
+  merge(data_count %>% filter(year > 2013 & intern_data != 'Y') %>%
+          select(site, date, PG_count), by = c('site', 'date'), all.y = T) 
+tides_counts_trim <- tides_counts %>%
+  filter(month > 6 & month < 9)
+
+mod <- glm(PG_count ~ from_low, data = tides_counts_trim)
+summary(mod)
+
+from_low <- ggplot(tides_counts_trim, aes(x = from_low, y = PG_count)) +
+  #geom_point() + 
+  geom_smooth(se = F)
+
+from_high <- ggplot(tides_counts_trim, aes(x = from_high, y = PG_count)) +
+  #geom_point() + 
+  geom_smooth(se = F)
+grid.arrange(from_low, from_high)
+
+# ggplot(tides_counts_trim %>% filter(type.1 == 'H'), aes(x = tide.1, y = PG_count)) +
+#   #geom_point() + 
+#   geom_smooth(se = T)
+# 
+# ggplot(tides_counts_trim %>% filter(type.1 == 'L'), aes(x = tide.1, y = PG_count)) +
+#   #geom_point() + 
+#   geom_smooth()
+
+```
 
 ```{r}
 #peak/trimmed counts
