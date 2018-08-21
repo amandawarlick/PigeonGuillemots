@@ -189,17 +189,36 @@ tides_counts <- tides %>%
 tides_counts_trim <- tides_counts %>%
   filter(month > 6 & month < 9)
 
-mod <- glm(PG_count ~ from_low, data = tides_counts_trim)
+mod <- lm(PG_count ~ from_low + site, data = tides_counts_trim)
 summary(mod)
 
 from_low <- ggplot(tides_counts_trim, aes(x = from_low, y = PG_count)) +
   #geom_point() + 
-  geom_smooth(se = F)
+  geom_smooth(se = T) +
+  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+  fig_theme()
+
+from_low_col <- ggplot(tides_counts_trim, 
+                       aes(x = from_low, y = PG_count, group = site, col = site)) +
+  #geom_point() + 
+  geom_smooth(se = F) +
+  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+  fig_theme()
 
 from_high <- ggplot(tides_counts_trim, aes(x = from_high, y = PG_count)) +
   #geom_point() + 
-  geom_smooth(se = F)
-grid.arrange(from_low, from_high)
+  geom_smooth(se = T) +
+  xlab("Minutes from High Tide" ) + ylab("PG Count") + 
+  fig_theme()
+
+from_high_col <- ggplot(tides_counts_trim, 
+                       aes(x = from_high, y = PG_count, group = site, col = site)) +
+  #geom_point() + 
+  geom_smooth(se = F) +
+  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+  fig_theme()
+
+#grid.arrange(from_low, from_high)
 
 # ggplot(tides_counts_trim %>% filter(type.1 == 'H'), aes(x = tide.1, y = PG_count)) +
 #   #geom_point() + 
