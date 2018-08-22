@@ -11,21 +11,20 @@ library(dplyr)
 library(tidyr)
 library(reshape2)
 
+setwd("~/Documents/SAFS/PigeonGuillemots")
+
+
 # data_ME <- read.csv("burrow_week_CH.csv", stringsAsFactors = F, header = T) %>%
 #   select(year, site, week, study_day, burrow_name, capt_hist)
 
 data_ME_day <- read.csv("burrow_day_CH.csv", stringsAsFactors = F, header = T) %>%
   select(year, site, study_day, burrow_name, capt_hist)
 
-# unique <- data_ME %>% distinct(year, site, burrow_name)
+# unique <- data_ME_day %>% distinct(year, site, burrow_name)
 # unique$id <- 1:nrow(unique)
 # 
-# data_ME <- data_ME %>% 
-#   merge(unique, by = c('year', 'site', 'burrow_name'))
-#   transform(id = 1:nrow(data_ME)) #adding a temporary id variable to use dcast() without defaulting to length
+# test <- data_ME_day[duplicated(data_ME_day),]
 
-
-#data_ME_small <- data_ME[1:500,] 
 
 ```
 
@@ -34,18 +33,18 @@ data_ME_day <- read.csv("burrow_day_CH.csv", stringsAsFactors = F, header = T) %
 #daily level
 data_ME_day_wide <- data_ME_day %>% 
   distinct(year, site, burrow_name, study_day, capt_hist) %>% 
-  dcast(year + site + burrow_name ~ study_day, value.var = 'capt_hist', fill = 0, fun.aggregate = mean)
-data_ME_day_wide[is.na(data_ME_day_wide)] <- 0
+  dcast(year + site + burrow_name ~ study_day, value.var = 'capt_hist', fill = 3) 
+        #fun.aggregate = mean)
+#data_ME_day_wide[is.na(data_ME_day_wide)] <- 3
 
 CH_PG_day <- as.matrix(data_ME_day_wide %>% select(-c(year, site, burrow_name)), rownames.force = F)
 colnames(CH_PG_day) <- NULL
+#CH_PG_day <- round(CH_PG_day, 0)
 
-data_ME_day_small <- data_ME_day_wide[sample(nrow(data_ME_day_wide), 50), ]
+data_ME_day_small <- data_ME_day_wide[sample(nrow(data_ME_day_wide), 200), ]
 
 CH_PG_day_small <- as.matrix(data_ME_day_small %>% select(-c(year, site, burrow_name)), rownames.force = F)
 colnames(CH_PG_day_small) <- NULL
-
-CH_PG_day_small[CH_PG_day_small==0] <- 3
 
 #weekly level 
 # data_ME_wide <- data_ME %>% 
@@ -64,11 +63,11 @@ CH_PG_day_small[CH_PG_day_small==0] <- 3
 
 # Specify model in jags
 
-model <- function () {
+model_ME <- function () {
 
 # -------------------------------------------------
 # Parameters:
-# phiA: survival probability from egg to fledge (or to nestling?) 
+# phiA: survival probability from egg to nestling
 # phiB: survival probability from nestling to fledge
 # psiAB: probability of transitioning from egg to nestling
 # psiBA: probability of transitioning from nestling to egg
@@ -94,7 +93,7 @@ for (i in 1:nind){
       phiA[i,t] <- mean.phi[1]
       phiB[i,t] <- mean.phi[2]
       psiAB[i,t] <- mean.psi[1]
-      psiBA[i,t] <- mean.psi[1] #zero? removed?
+      psiBA[i,t] <- 0 #zero? removed?
       pA[i,t] <- mean.p[1]
       pB[i,t] <- mean.p[2]
       b[i,t] <- mean.b
@@ -117,7 +116,7 @@ for (i in 1:nind){
       pj[i,t,1] <- pi[i,t]
       pj[i,t,2] <- 1-pi[i,t]
       
-      # Define probabilities of O(t) given S(t) at the occasion of marking (this corresponds to B(0) in E-SURGE notation)
+      # Define probabilities of O(t) given S(t) at the occasion of marking 
       po1[1,i,t,1] <- 1
       po1[1,i,t,2] <- 0
       po1[1,i,t,3] <- 0
@@ -133,7 +132,7 @@ for (i in 1:nind){
       ps[1,i,t,2] <- phiA[i,t] * psiAB[i,t] #survival of egg * probability of transitioning
       ps[1,i,t,3] <- 1 - phiA[i,t]  #egg terminates
       ps[2,i,t,1] <- phiB[i,t] * 0  #nestling can't become an egg
-      ps[2,i,t,2] <- phiB[i,t] * (1 - psiBA[i,t]) #survival of nestling * prob of not transitioning nestling -> egg 
+      ps[2,i,t,2] <- phiB[i,t] * 1 #survival of nestling * prob of not transitioning nestling -> egg 
       ps[2,i,t,3] <- 1 - phiB[i,t] #nestling terminates
       ps[3,i,t,1] <- 0 #terminated can't go backwards
       ps[3,i,t,2] <- 0 #terminated can't go backwards
@@ -165,48 +164,65 @@ for (i in 1:nind){
       } #t
    } #i
 }
-write.model(model, "model.txt")
-model.file = paste(getwd(),"model.txt", sep="/")
+write.model(model_ME, "model_ME.txt")
+model.file = paste(getwd(),"model_ME.txt", sep="/")
 
-# Function to create initial values for unknown z to reduce computation time; explained on pg 181-2 of BPA
-me.init.z <- function(ch, f){
-   g <- which(ch == 3)
-   g <- c(g, which(ch==4))
-   states <- max(ch, na.rm = TRUE)
-   known.states <- 1:(states-2)
-   ch[g] <- sample(known.states, length(g), replace = TRUE)
-   for (i in 1:nrow(ch)){
-      fi <- ch[i,f[i]]
-      ch[i,1:f[i]] <- NA
-      ch[i,f[i]] <- fi
+#ch <- CH_PG_day_small
+
+# Function to fill in known z state (reduce computation time)
+me.known.z <- function(ch) {
+  known.z <- ch
+  for (i in 1:dim(ch)[1]) {
+    known_first <- min(which(ch[i,] == 2)) #first prey delivery
+    known_last <- max(which(ch[i,] == 2)) #last prey delivery
+    known.z[i, known_first:known_last] <- 2 #all days between first and last represent known state 2
+  }
+  known.z[known.z == 1] <- NA  #unknown states when observations are bv or not seen
+  known.z[known.z == 3] <- NA
+  return(known.z)
+}
+
+# Function to create initial values for unknown z; explained on pg 181-2 of BPA
+me.init.z <- function(ch){
+  dat <- ch
+   for (i in 1:dim(ch)[1]) {
+    prey_first <- min(which(ch[i,] == 2)) #first prey delivery
+    prey_last <- max(which(ch[i,] == 2)) #last prey delivery
+    dat[i, prey_first:prey_last] <- NA
+    dat[i, 1:(prey_first-1)] <- sample(1:2, prey_first-1, replace = T)
+    dat[i, (prey_last+1):(dim(ch)[2])] <- sample(2:3, dim(ch)[2]-prey_last, replace = T)
       }
    return(ch)
-   }
+}
 
-get.first <- function(x) min(which(x!=0))
+get.first <- function(x) min(which(x != 3))
 f <- apply(CH_PG_day_small, 1, get.first)
 
+# get.last <- function(x) max(which(x != 3))
+# last <- apply(CH_PG_day_small, 1, get.last)
 
 # Bundle data
 jags.data <- list(y = CH_PG_day_small, f = f, 
                   n.occasions = dim(CH_PG_day_small)[2], 
-                  nind = dim(CH_PG_day_small)[1])
+                  nind = dim(CH_PG_day_small)[1],
+                  z = me.known.z(CH_PG_day_small))
 
-# Initial values - why no mean.d?
-inits <- function(){list(mean.phi = runif(2, 0, 1), 
-                         mean.psi = runif(2, 0, 1), 
-                         mean.p = runif(2, 0, 1), 
-                         z = me.init.z(CH_PG_day_small, f))}  
+# Initial values - no mean.b?
+inits <- function(){list(mean.phi = runif(2, 0, 1),
+                         mean.psi = runif(2, 0, 1),
+                         mean.p = runif(2, 0, 1),
+                         z = me.init.z(CH_PG_day_small, f))}
  
-
-# Parameters monitored
+# Parameters
 parameters <- c("mean.phi", "mean.psi", "mean.p", "mean.b", "mean.pi")
 
 # MCMC settings
 nc <- 3; nAdapt <- 100; nb <- 200; ni <- 500 + nb; nt <- 1  
 
-# Call jagsUI
-me <- jags(jags.data, inits, parameters, n.chains = nc, model.file = model.file,
+#jags
+me <- jags(jags.data, 
+           inits, 
+           parameters.to.save = parameters, n.chains = nc, model.file = model.file,
            n.adapt = nAdapt, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
 
 print(me, digits = 3)
@@ -254,19 +270,19 @@ simul.me <- function(PSI.STATE, PSI.OBS, PSI.INI, OBS.INI, marked, unobservable 
    }
 
 # Define mean survival, transitions, recapture, as well as number of occasions, states, observations and released individuals
-phiA <- 0.8  # survial if healthy
-phiB <- 0.6  # survival if diseased
-psiAB <- 0.3 # probability healthy individual transitions to disease state, conditional on survival
-psiBA <- 0.5 # probability diseased individual transitions to healthy state, conditional on survival
-pA <- 0.7    # probability of detection if in healthy state
-pB <- 0.4    # probability of detection if in diseased state
-b <- 0.2     # probability that the disease is not detected
-psi <- 0.75  # probability that an individual is in healthy state when marked
+phiA <- 0.8  # survial from egg - egg hatches
+phiB <- 0.6  # survival of nestling
+psiAB <- 0.5 # probability of transitioning from egg to nestling, conditional on survival
+psiBA <- 0   # probability of transitioning from nestling to egg
+pA <- 0.7    # recapture probability of egg
+pB <- 0.5    # recapture probability of nestling
+b <- 0.3     # probability that a PV is not detected
+psi <- 0.75  # probability that an individual is an egg when marked 
 
-n.occasions <- 13
+n.occasions <- 75
 n.states <- 3
 n.obs <- 3
-marked <- rep(250, n.occasions)  
+marked <- c(rep(10, 4), rep(15, 4), rep(5, 32), rep(1, 35))  
 
 # Define matrices with survival, transition and recapture probabilities
 # These are 4-dimensional matrices, with 
@@ -325,19 +341,19 @@ CH <- sim$CH
 
 
 # Compute vector with occasion of first capture
-get.first <- function(x) min(which(x!=0))
+get.first <- function(x) min(which(x != 0))
 f <- apply(CH, 1, get.first)
 
-# Recode CH matrix: note, a 0 is not allowed in WinBUGS!
+# Recode CH matrix: note, a 0 is not allowed in WinBUGS
 # 1 = seen without disease, 2 = seen with disease, 3 = not seen
 rCH <- CH          # Recoded CH
-rCH[rCH==0] <- 3
+rCH[rCH == 0] <- 3
 
 
 # Function to create initial values for unknown z
-me.init.z <- function(ch, f){
+me.init.z.sim <- function(ch, f){
    g <- which(ch == 3)
-   g <- c(g, which(ch==4))
+   g <- c(g, which(ch == 4))
    states <- max(ch, na.rm = TRUE)
    known.states <- 1:(states-2)
    ch[g] <- sample(known.states, length(g), replace = TRUE)   
@@ -351,23 +367,23 @@ me.init.z <- function(ch, f){
 
 
 # Bundle data
-jags.data <- list(y = rCH, f = f, n.occasions = dim(rCH)[2], nind = dim(rCH)[1])
+jags.sim <- list(y = rCH, f = f, n.occasions = dim(rCH)[2], nind = dim(rCH)[1])
 
 # Initial values
 inits <- function(){list(mean.phi = runif(2, 0, 1), 
                          mean.psi = runif(2, 0, 1), 
-                         mean.p = runif(2, 0, 1), z = me.init.z(rCH, f))}  
+                         mean.p = runif(2, 0, 1), z = me.init.z.sim(rCH, f))}  
 
 # Parameters monitored
 parameters <- c("mean.phi", "mean.psi", "mean.p", "mean.b", "mean.pi")
 
 
 # MCMC settings
-nc <- 3; nAdapt <- 1000; nb <- 2000; ni <- 5000+nb; nt <- 1  
+nc <- 3; nAdapt <- 100; nb <- 200; ni <- 500 + nb; nt <- 1  
 
 # Call jagsUI
 me.sim <- jags(jags.sim, inits, parameters, n.chains = nc, model.file = model.file,
-           n.adapt=nAdapt, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=F)
+           n.adapt=nAdapt, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
 
 print(me.sim, digits = 3)
 

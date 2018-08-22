@@ -2,15 +2,32 @@ library(dplyr)
 library(rvest)
 library(readr)
 
-#station IDs
-#* 644 <- CrescentHarbor (MarinersCove, CrescentHarbor, ForbesPoint, MaylorPoint)
-#* 620 <- Coupeville (MonroeLanding, RollingHills, Coupeville)
-#* 1078 <- Greenbank (HarringtonN, HarringtonS, PrattsBluff)
-#* 2395 <- SandyPoint (Langley)
-#* 1026 <- Glendale (PossessionPoint)
-#* 361 <- BushPoint (Bush Point Dock, MalmoBluff, ShoreMeadows, MutinySands, LimpetLane, DoubleBluff
+# station IDs
+
+## Whidbey
+# 644 <- CrescentHarbor (MarinersCove, CrescentHarbor, ForbesPoint, MaylorPoint)
+# 620 <- Coupeville (MonroeLanding, RollingHills, Coupeville)
+# 1078 <- Greenbank (HarringtonN, HarringtonS, PrattsBluff)
+# 2395 <- SandyPoint (Langley)
+# 1026 <- Glendale (PossessionPoint)
+# 361 <- BushPoint (Bush Point Dock, MalmoBluff, ShoreMeadows, MutinySands, LimpetLane, DoubleBluff
 #                   LagoonN, LagoonS, Keystone, Ledgewood, Hancock, FortCasey)
-#* 2686 <- SunsetBeach (Cliffside, Swantown, HastieLake)
+# 2686 <- SunsetBeach (Cliffside, Swantown, HastieLake)
+
+## South Sound
+# 155 <- Totten Legacy, Totten Elizan C, Totten Elizan A Tower, Totten Elizan A North, 
+# 2306 <- Youngs Cove A, Youngs Cove B, Youngs Cove C, Youngs Cove D, Youngs Cove E, Youngs Cove F, Flapjack
+# 1909 <- Priest Point, Hearthfire
+# 344 <- Gull Harbor, Burfoot Park, Burfoot Extended
+# 733 <- Zangle Cove A, Big Fish Trap, Briscoe Pt
+# 715 <- Amsterdam Bay, Mill Bight A, Mill Bight B, Mill Bight Extended, Walnut Rd A, Walnut Rd B, Walnut Rd C, Beachcrest,
+#           Butterball Cove South A, Butterball North, Andys Marine Park South, Andys Marine Park West, Lyle Point
+# 3048 <- Sandy Pt, Higgins Cove
+# 2643 <- Ketron Ferry, Ketron SE, Ketron SW
+# 2906 <- Jarrell Cove State Park
+# 773 <- Cole Pt
+# 1147 <- Zittels Marina
+
 
 col_id <- data.frame(site = 
         c("Crescent Harbor", "Forbes Point", "Maylor Point",

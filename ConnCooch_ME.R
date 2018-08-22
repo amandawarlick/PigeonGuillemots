@@ -352,7 +352,7 @@ sim <- simul.me(PSI.STATE, PSI.OBS, PSI.INI, OBS.INI, marked)
 CH <- sim$CH
 
 # Compute vector with occasion of first capture
-get.first <- function(x) min(which(x!=0))
+get.first <- function(x) min(which(x != 0))
 f <- apply(CH, 1, get.first)
 
 # Recode CH matrix: note, a 0 is not allowed in WinBUGS!
@@ -470,7 +470,7 @@ model.file = paste(getwd(),"model.txt", sep="/")
 # Function to create initial values for unknown z
 me.init.z <- function(ch, f){
    g <- which(ch == 3)
-   g <- c(g, which(ch==4))
+   g <- c(g, which(ch == 4))
    states <- max(ch, na.rm = TRUE)
    known.states <- 1:(states-2)
    ch[g] <- sample(known.states, length(g), replace = TRUE)   

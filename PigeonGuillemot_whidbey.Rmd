@@ -80,16 +80,24 @@ setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
 #fixing up website output for burrow-level data 2015-2017
 burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>%
   mutate(burrow_name = gsub("b.", "", burrow_name)) %>%
+  filter(site != 'All South Sound') %>%
   mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
   mutate(site = gsub(" -- INTERN", "", site)) %>%
   mutate(site = gsub("- INTERN", "", site)) %>%
+  mutate(site = gsub(" @E", " E", site)) %>%
+  mutate(site = gsub("@", " ", site)) %>%
+  mutate(site = gsub("- ", " ", site)) %>%
+  mutate(site = gsub("'", "", site)) %>%
   mutate(visit_type = ifelse(visit_type == 'gunnels', 'Gunnel', 
                              ifelse(visit_type == 'sculpin', 'Sculpin',
                                     ifelse(visit_type == 'noprey', 'burrow_visit', 'Other')))) %>%
-  dcast(site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
+  dcast(region + site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
         fun.aggregate = mean, fill = 0) %>%
-  select(site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data)
+  select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data)
 
+test_names <- burrow_2015_18 %>%
+  filter(region == 'South Sound') %>%
+  distinct(site)
 
 #read in early data (2008-2014) compiled by hand from spreadsheets
 
@@ -129,11 +137,14 @@ data_burrow <- burrow_allyrs %>%
   transform(week = as.numeric(as.character(week))) %>%
   transform(yday = yday(date)) %>%
   transform(tot_prey = Gunnel + Sculpin + Other) %>%
-  select(site, year, date, yday, week, burrow_name, burrow_visit, burrow_visit,
+  select(region, site, year, date, yday, week, burrow_name, burrow_visit, burrow_visit,
          Gunnel, Sculpin, Other, tot_prey, intern_data) %>%
   merge(count_dates, by = c('site', 'year', 'date', 'week', 'yday'), all = T) #check these get added on ALL burrow_name
 data_burrow <- data_burrow %>%
-  transform(id = 1:nrow(data_burrow))
+  transform(id = 1:nrow(data_burrow)) %>%
+  filter(region != 'South Sound')
+
+dup_test <- data_burrow[duplicated(data_burrow),]
 
 #adding on columns for number of weeks of prey deliveries
 prey_weeks_range <- data_burrow %>% 
@@ -198,12 +209,12 @@ from_low <- ggplot(tides_counts_trim, aes(x = from_low, y = PG_count)) +
   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
   fig_theme()
 
-from_low_col <- ggplot(tides_counts_trim, 
-                       aes(x = from_low, y = PG_count, group = site, col = site)) +
-  #geom_point() + 
-  geom_smooth(se = F) +
-  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
-  fig_theme()
+# from_low_col <- ggplot(tides_counts_trim, 
+#                        aes(x = from_low, y = PG_count, group = site, col = site)) +
+#   #geom_point() + 
+#   geom_smooth(se = F) +
+#   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+#   fig_theme()
 
 from_high <- ggplot(tides_counts_trim, aes(x = from_high, y = PG_count)) +
   #geom_point() + 
