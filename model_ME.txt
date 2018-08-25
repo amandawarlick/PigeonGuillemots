@@ -4,8 +4,7 @@ model
         for (t in 1:(n.occasions - 1)) {
             phiA[i, t] <- mean.phi[1]
             phiB[i, t] <- mean.phi[2]
-            psiAB[i, t] <- mean.psi[1]
-            psiBA[i, t] <- 0.00000E+00
+            psiAB[i, t] <- mean.psi
             pA[i, t] <- mean.p[1]
             pB[i, t] <- mean.p[2]
             b[i, t] <- mean.b
@@ -14,9 +13,9 @@ model
     }
     for (u in 1:2) {
         mean.phi[u] ~ dunif(0.00000E+00, 1)
-        mean.psi[u] ~ dunif(0.00000E+00, 1)
         mean.p[u] ~ dunif(0.00000E+00, 1)
     }
+    mean.psi ~ dunif(0.00000E+00, 1)
     mean.b ~ dunif(0.00000E+00, 1)
     mean.pi ~ dunif(0.00000E+00, 1)
     for (i in 1:nind) {

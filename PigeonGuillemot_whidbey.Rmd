@@ -81,7 +81,7 @@ setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
 burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>%
   mutate(burrow_name = gsub("b.", "", burrow_name)) %>%
   filter(site != 'All South Sound') %>%
-  mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
+  #mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
   mutate(site = gsub(" -- INTERN", "", site)) %>%
   mutate(site = gsub("- INTERN", "", site)) %>%
   mutate(site = gsub(" @E", " E", site)) %>%
@@ -95,21 +95,24 @@ burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>
         fun.aggregate = mean, fill = 0) %>%
   select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data)
 
-test_names <- burrow_2015_18 %>%
-  filter(region == 'South Sound') %>%
-  distinct(site)
-
 #read in early data (2008-2014) compiled by hand from spreadsheets
 
-data_count <- read.csv("PGdata_pre_proc.csv", stringsAsFactors = F) %>%
+data_count <- read.csv("PGdata_pre_proc_allyrs.csv", stringsAsFactors = F) %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
   transform(year = as.numeric(format(date, "%Y"))) %>%
-  mutate(PG_count = as.numeric(PG_count), burrow_count = as.numeric(burrow_count), 
-         burrow_visit = as.numeric(burrow_visit)) %>%
+  #mutate(PG_count = as.numeric(PG_count)) %>%
   transform(week = strftime(date, format = "%V")) %>%
   #transform(week = as.numeric(week)) %>%
   transform(week = as.numeric(as.character(week))) %>%
-  transform(yday = yday(date)) 
+  transform(yday = yday(date)) %>%
+  filter(site != 'All South Sound') %>%
+  #mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
+  mutate(site = gsub(" -- INTERN", "", site)) %>%
+  mutate(site = gsub("- INTERN", "", site)) %>%
+  mutate(site = gsub(" @E", " E", site)) %>%
+  mutate(site = gsub("@", " ", site)) %>%
+  mutate(site = gsub("- ", " ", site)) %>%
+  mutate(site = gsub("'", "", site))
 data_count[is.na(data_count)] <- 0
 
 data_count <- data_count %>%
@@ -117,11 +120,10 @@ data_count <- data_count %>%
 
 #dates for empty burrow visits (non-visits not recorded in burrow-level data, so use dates of count data and merge in)
 count_dates <- data_count %>%
-  filter(intern_data != 'Y') %>%
-  distinct(site, date, year, week, yday) 
+  filter(intern_data != 'on') %>%
+  distinct(region, site, date, year, week, yday) 
 
 burrow_allyrs <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
-  select(-qaqc_concern) %>%
   mutate(Gunnel = coalesce(as.numeric(Gunnel), 0)) %>% #forcing NAs to 0, other ways weren't working
   mutate(Sculpin = coalesce(as.numeric(Sculpin), 0)) %>%
   mutate(Other = coalesce(as.numeric(Other), 0)) %>%
@@ -141,10 +143,10 @@ data_burrow <- burrow_allyrs %>%
          Gunnel, Sculpin, Other, tot_prey, intern_data) %>%
   merge(count_dates, by = c('site', 'year', 'date', 'week', 'yday'), all = T) #check these get added on ALL burrow_name
 data_burrow <- data_burrow %>%
-  transform(id = 1:nrow(data_burrow)) %>%
-  filter(region != 'South Sound')
+  transform(id = 1:nrow(data_burrow)) #%>%
+  #filter(region != 'South Sound')
 
-dup_test <- data_burrow[duplicated(data_burrow),]
+#dup_test <- data_burrow[duplicated(data_burrow),]
 
 #adding on columns for number of weeks of prey deliveries
 prey_weeks_range <- data_burrow %>% 
@@ -190,54 +192,71 @@ write.csv(data_count, "data_count.csv", row.names = F)
 
 ```{r}
 # bringing in tide data
-tides <- read.csv("tides_tidy.csv", stringsAsFactors = F, header = T) %>%
-  transform(date = as.Date(date)) %>%
-  transform(month = month(date))
+# tides <- read.csv("tides_tidy.csv", stringsAsFactors = F, header = T) %>%
+#   transform(date = as.Date(date)) %>%
+#   transform(month = month(date))
 
-tides_counts <- tides %>%
-  merge(data_count %>% filter(year > 2013 & intern_data != 'Y') %>%
-          select(site, date, PG_count), by = c('site', 'date'), all.y = T) 
-tides_counts_trim <- tides_counts %>%
+tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
+  transform(date = as.Date(date)) %>%
+  transform(month = month(date)) %>%
+  transform(time = as.POSIXct(time))
+    
+PG_count_tides <- data_count %>% filter(intern_data != 'on' & PG_count != '') %>% 
+        select(region, site, date, PG_count, start_time) %>%
+      inner_join(tides, by = c('site', 'date', 'region')) %>%
+  transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
+  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
+  transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
+            from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
+  transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
+  select(-c(t, month, from_low, from_high)) %>%
+  transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
+  transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
+                          ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
+                                 ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
+  filter(rank == 2 | rank == 3) 
+
+table(PG_count_tides$rank)
+
+test <- PG_count_tides %>%
+  group_by(site, date) %>%
+  summarize(cnt = n_distinct(v)) %>%
+  filter(cnt < 2)
+
+PG_count_tides_trim <- PG_count_tides %>%
+  transform(month = month(date)) %>%
   filter(month > 6 & month < 9)
 
-mod <- lm(PG_count ~ from_low + site, data = tides_counts_trim)
+mod <- lm(PG_count ~ abs(from_hilo) + site, data = tides_counts_trim %>% filter(type == 'L'))
 summary(mod)
 
-from_low <- ggplot(tides_counts_trim, aes(x = from_low, y = PG_count)) +
+#from low tide; loess
+from_low <- ggplot(tides_counts_trim %>% filter(type == 'L'), aes(x = from_hilo, y = PG_count)) +
   #geom_point() + 
   geom_smooth(se = T) +
   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
   fig_theme()
 
-# from_low_col <- ggplot(tides_counts_trim, 
-#                        aes(x = from_low, y = PG_count, group = site, col = site)) +
-#   #geom_point() + 
-#   geom_smooth(se = F) +
-#   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
-#   fig_theme()
-
-from_high <- ggplot(tides_counts_trim, aes(x = from_high, y = PG_count)) +
+ggplot(tides_counts_trim %>% filter(type == 'L'), aes(x = from_hilo)) + geom_histogram()
+#from low and high tide; loess
+ggplot(tides_counts_trim, aes(x = from_hilo, y = PG_count, col = type, group = type)) +
   #geom_point() + 
   geom_smooth(se = T) +
-  xlab("Minutes from High Tide" ) + ylab("PG Count") + 
+  xlab("Minutes from Low or High Tide" ) + ylab("PG Count") + 
   fig_theme()
 
-from_high_col <- ggplot(tides_counts_trim, 
-                       aes(x = from_high, y = PG_count, group = site, col = site)) +
+#gam method; abs value
+ggplot(tides_counts_trim, aes(x = abs(from_hilo), y = PG_count, col = type, group = type)) +
   #geom_point() + 
   geom_smooth(se = F) +
-  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+  xlab("Minutes from Low or High Tide") + ylab("PG Count") + 
   fig_theme()
 
-#grid.arrange(from_low, from_high)
-
-# ggplot(tides_counts_trim %>% filter(type.1 == 'H'), aes(x = tide.1, y = PG_count)) +
-#   #geom_point() + 
-#   geom_smooth(se = T)
-# 
-# ggplot(tides_counts_trim %>% filter(type.1 == 'L'), aes(x = tide.1, y = PG_count)) +
-#   #geom_point() + 
-#   geom_smooth()
+ggplot(tides_counts_trim, aes(x = v, y = PG_count, col = type, group = type)) +
+  #geom_point() + 
+  geom_smooth(se = F) +
+  xlab("Tidal Height") + ylab("PG Count") + 
+  fig_theme()
 
 ```
 
@@ -246,17 +265,17 @@ from_high_col <- ggplot(tides_counts_trim,
 
 peak_mean <- data_count %>%
   filter(intern_data != 'Y') %>%
-  group_by(year, week) %>%
+  group_by(year, week, region) %>%
   summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T)) 
 
 peak_sum <- data_count %>%
   filter(intern_data != 'Y') %>%
-  select(year, week, site, PG_count) %>%
+  select(region, year, week, site, PG_count) %>%
   distinct() %>%
-  group_by(year, week) %>%
+  group_by(year, week, region) %>%
   summarize(sum_cnt = sum(PG_count, na.rm = T))
 
-peak_plot <- ggplot(peak_mean, aes(week, mean_cnt, group = year, color = year)) +
+peak_plot <- ggplot(peak_mean, aes(week, mean_cnt, group = region, color = region)) +
   geom_line() + 
   geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
   fig_theme(legend.position = 'none') + facet_wrap(~year) #+
@@ -285,17 +304,17 @@ peak_plot_sum <- ggplot(peak_sum, aes(week, sum_cnt, group = year, color = year)
 #trying max - this looks much better
 max_yr <- data_count %>%
   filter(intern_data != 'Y') %>%
-  select(year, week, site, PG_count) %>%
+  select(region, year, week, site, PG_count) %>%
   distinct() %>%
-  group_by(year, week) %>%
+  group_by(region, year, week) %>%
   summarize(sum = sum(PG_count, na.rm = T)) %>%
   group_by(year) %>%
   summarize(max_cnt = max(sum, na.rm = T)) 
 week_perc <- data_count %>%
   filter(intern_data != 'Y') %>%
-  select(year, week, site, PG_count) %>%
+  select(region, year, week, site, PG_count) %>%
   distinct() %>%
-  group_by(year, week) %>%
+  group_by(region, year, week) %>%
   summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
   merge(max_yr, by = c('year')) %>%
   transform(perc_week = cnt/max_cnt)
@@ -313,13 +332,13 @@ weekly_count_isl_trim <- week_perc %>%
 #colony level
 max_col_yr <- data_count %>%
   filter(intern_data != 'Y') %>%
-  select(year, week, site, PG_count) %>%
+  select(region, year, week, site, PG_count) %>%
   distinct() %>%
-  group_by(year, site) %>%
+  group_by(region, year, site) %>%
   summarize(max_cnt = max(PG_count, na.rm = T)) 
 week_perc_yr <- data_count %>%
   filter(intern_data != 'Y') %>%
-  select(year, week, site, PG_count) %>%
+  select(region, year, week, site, PG_count) %>%
   distinct() %>%
   merge(max_col_yr, by = c('year', 'site')) %>%
   transform(perc_week = PG_count/max_cnt)
