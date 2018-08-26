@@ -14,16 +14,14 @@ library(reshape2)
 setwd("~/Documents/SAFS/PigeonGuillemots")
 
 
-# data_ME <- read.csv("burrow_week_CH.csv", stringsAsFactors = F, header = T) %>%
-#   select(year, site, week, study_day, burrow_name, capt_hist)
-
 data_ME_day <- read.csv("burrow_day_CH.csv", stringsAsFactors = F, header = T) %>%
-  select(year, site, study_day, burrow_name, capt_hist)
+  select(region, year, site, study_day, burrow_name, capt_hist) %>%
+  distinct()
 
 # unique <- data_ME_day %>% distinct(year, site, burrow_name)
 # unique$id <- 1:nrow(unique)
-# 
-# test <- data_ME_day[duplicated(data_ME_day),]
+ 
+test <- data_ME_day[duplicated(data_ME_day),]
 
 
 ```
@@ -32,23 +30,30 @@ data_ME_day <- read.csv("burrow_day_CH.csv", stringsAsFactors = F, header = T) %
 
 #daily level
 data_ME_day_wide <- data_ME_day %>% 
-  distinct(year, site, burrow_name, study_day, capt_hist) %>% 
-  dcast(year + site + burrow_name ~ study_day, value.var = 'capt_hist', fill = 3) 
-        #fun.aggregate = mean)
-#data_ME_day_wide[is.na(data_ME_day_wide)] <- 3
+  distinct(region, year, site, burrow_name, study_day, capt_hist) %>% 
+  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist', fill = 3, fun.aggregate = mean)
+# data_ME_day_wide <- data_ME_day_wide %>%
+#   transform(exclude = ifelse())
+# 
+# data_ME_day_wide[,5:79]
+# 
+# test1 <- data_ME_day_wide %>%
+#   select(-c(region, year, site, burrow_name)) %>%
+#   rowSums(.[1:75]) %>%
+#   filter(sum >= 225)
 
-CH_PG_day <- as.matrix(data_ME_day_wide %>% select(-c(year, site, burrow_name)), rownames.force = F)
+CH_PG_day <- as.matrix(data_ME_day_wide %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
 colnames(CH_PG_day) <- NULL
-#CH_PG_day <- round(CH_PG_day, 0)
+CH_PG_day <- round(CH_PG_day, 0)
 
-data_ME_day_small <- data_ME_day_wide[sample(nrow(data_ME_day_wide), 200),]
+data_ME_day_small <- data_ME_day_wide[sample(nrow(data_ME_day_wide), 300),]
 
-CH_PG_day_small <- as.matrix(data_ME_day_small %>% select(-c(year, site, burrow_name)), rownames.force = F)
+CH_PG_day_small <- as.matrix(data_ME_day_small %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
 colnames(CH_PG_day_small) <- NULL
 
 #weekly level 
 # data_ME_wide <- data_ME %>% 
-#   distinct(year, site, burrow_name, week, capt_hist) %>% #yikes CHECK why there are duplicate year, site, burrow, week???
+#   distinct(year, site, burrow_name, week, capt_hist) %>% 
 #   dcast(year + site + burrow_name ~ week, value.var = 'capt_hist', fill = 0, fun.aggregate = mean)
 # data_ME_wide[is.na(data_ME_wide)] <- 0
 
@@ -186,10 +191,12 @@ me.known.z <- function(ch) {
 }
 
 # Function to create initial values for unknown z; explained on pg 181-2 of BPA
-me.init.z <- function(ch){
+me.init.z <- function(ch, f){
   inits <- ch
    for (i in 1:dim(inits)[1]) { 
-     if (sum(inits[i,] == 2) < 1) {   #If no prey deliveries, all 1s or 3s
+      fi <- ch[i,f[i]]
+      ch[i,1:f[i]-1] <- NA
+     if (sum(inits[i,] == 2) < 1) {   #If no prey deliveries, 3s
        inits[i,] <- rep(3, dim(ch)[2])
      } else {
     prey_first <- min(which(ch[i,] == 2)) #first prey delivery
@@ -203,7 +210,10 @@ me.init.z <- function(ch){
 }
 
 get.first <- function(x) min(which(x != 3))
-f <- apply(CH_PG_day_small, 1, get.first)
+f <- apply(CH_PG_day, 1, get.first)
+
+which(f > 1000) #101  239  600  604 1452 2162 2283
+
 
 # get.last <- function(x) max(which(x != 3))
 # last <- apply(CH_PG_day_small, 1, get.last)
@@ -219,7 +229,7 @@ jags.data <- list(y = CH_PG_day_small,
 inits <- function(){list(mean.phi = runif(2, 0, 1),
                          #mean.psi = runif(2, 0, 1),
                          mean.p = runif(2, 0, 1),
-                         z = me.init.z(CH_PG_day_small))}
+                         z = me.init.z(CH_PG_day))}
  
 # Parameters
 parameters <- c("mean.phi", "mean.psi", "mean.p", "mean.b", "mean.pi")

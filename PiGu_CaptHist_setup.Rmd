@@ -31,20 +31,20 @@ setwd("~/Documents/R/SAFS/PigeonGuillemots")
 
 #load data from PigeonGuillemot_whidbey.Rmd
 prey_weeks <- read.csv("prey_weeks.csv", header = T, stringsAsFactors = F)
-data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F)
+data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
+  select(-intern_data)
 
 #study start day per year, island-wide
 start_end_all <- data_burrow_all %>%
-  filter(intern_data != 'Y') %>%
-  group_by(year) %>%
+  group_by(year, region) %>%
   summarize(start_day = min(yday), end_day = max(yday))
 
-##CHECK that rows match in data_burrow_all (minus intern) and burrow once get all years in
 burrow <- data_burrow_all %>%
-  filter(intern_data != 'Y') %>%
+  distinct() %>%
   select(-c(Gunnel, Sculpin, Other)) %>%
-  merge(start_end_all, by = c('year'), all = T) %>%
-  transform(study_day = yday - start_day + 1)
+  merge(start_end_all, by = c('region', 'year'), all = T) %>%
+  transform(study_day = yday - start_day + 1) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016') %>% arrange(study_day)
 
 dup_test <- burrow[duplicated(burrow),]
 
@@ -54,37 +54,39 @@ dup_test <- burrow[duplicated(burrow),]
 
 #data frame of burrow-site-year combinations with no prey deliveries and 0 or 1 burrow visit
 #could be failed nest attempts, but could also be mistaken landings? 7/2018 Whidbey visit - Frances guesses these are probably birds going into potential burrows and then not using them, so should be excluded
-exclusions <- burrow %>%
-  group_by(burrow_name, year, site) %>%
-  summarize(cnt_pv = sum(tot_prey)) %>%
-  filter(cnt_pv < 1) %>%
-  merge(burrow, by = c('burrow_name', 'year', 'site'), all = F) %>%
-  group_by(burrow_name, year, site, date, week, yday) %>%
-  summarize(cnt_bv = sum(burrow_visit)) %>%
-  filter(cnt_bv < 2) %>%
-  transform(exclude = "Y") %>%
-  select(burrow_name, year, site, date, week, yday)
+# exclusions <- burrow %>%
+#   group_by(region, burrow_name, year, site) %>%
+#   summarize(cnt_pv = sum(tot_prey)) %>%
+#   filter(cnt_pv < 1) %>%
+#   merge(burrow, by = c('region', 'burrow_name', 'year', 'site'), all = F) %>%
+#   group_by(region, burrow_name, year, site, date, week, yday) %>%
+#   summarize(cnt_bv = sum(burrow_visit)) %>%
+#   filter(cnt_bv < 2) %>%
+#   transform(exclude = "Y") %>%
+#   select(region, burrow_name, year, site, date, week, yday)
 
 #burrow visit and prey visit start stops
 prey_start_end <- burrow %>%
   filter(tot_prey > 0) %>%
-  group_by(year, site, burrow_name) %>%
-  summarize(prey_start = min(study_day), prey_end = max(study_day))
+  group_by(region, year, site, burrow_name) %>%
+  summarize(prey_start = min(study_day), prey_end = max(study_day)) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016')
 
 bv_start_end <- burrow %>%
   filter(burrow_visit > 0) %>%
-  group_by(year, site, burrow_name) %>%
-  summarize(bv_start = min(study_day), bv_end = max(study_day))
+  group_by(region, year, site, burrow_name) %>%
+  summarize(bv_start = min(study_day), bv_end = max(study_day)) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016') 
 
 start_end_visits <- prey_start_end %>%
-  merge(bv_start_end, by = c('year', 'site', 'burrow_name'), all = T)
+  merge(bv_start_end, by = c('region', 'year', 'site', 'burrow_name'), all = T)
 # no_start <- start_end_visits %>%  #45% 8/1/18
 #   filter(prey_start > bv_start | is.na(bv_start)) %>% nrow()/nrow(start_end_visits)
-# no_end <- start_end_visits %>% $6% 8/1/18
+# no_end <- start_end_visits %>% #6% 8/1/18
 #   filter(prey_end == bv_start) %>% nrow()/nrow(start_end_visits)
 
 #df of all days to merge into actual observations below
-all_days <- data.frame(seq(1:75))
+all_days <- data.frame(seq(1:81))
 names(all_days) <- 'study_day'
 
 ```
@@ -97,30 +99,33 @@ names(all_days) <- 'study_day'
 #day-level
 
 burrow_1 <- burrow %>%
-  select(site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
-  select(-c(start_day, end_day, date, yday))
+  select(region, site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
+  select(-c(start_day, end_day, date, yday)) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016') %>% arrange(study_day)
 
 burrow_2 <- burrow_1 %>%
-  distinct(year, site, burrow_name) %>%
-  merge(all_days, all = T)
+  distinct(region, year, site, burrow_name) %>%
+  filter(!is.na(burrow_name)) %>% #remnant of merging on count dates where no visits
+  merge(all_days, all = T) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016') %>% arrange(study_day)
 
 burrow_day_CH <- burrow_2 %>%
-  merge(burrow_1, by = c('site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
-  # merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range),
-  #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  merge(start_end_visits, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+  merge(burrow_1, by = c('region', 'site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
+  merge(start_end_visits, by = c('region', 'year', 'site', 'burrow_name'), all.x = T) %>%
   #merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
   #filter(is.na(exclude)) %>%
   #select(-exclude) %>%
   #filter(!is.na(burrow_name)) %>%
   transform(prey_days = prey_end + 1 - prey_start) %>%
   transform(bv_days = bv_end + 1 - bv_start) %>%
+  #filter(!is.na(burrow_name)) %>% #remnant of merging on count dates where no visits
   transform(capt_hist =
               ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #not seen
                      ifelse(burrow_visit == 0 & tot_prey == 0, 3, #not seen
               ifelse(tot_prey > 0, 2,#nestling
               ifelse(burrow_visit > 0, 1, #egg
-                       100)))))
+                       100))))) #%>%
+  #filter(grepl("Totten Elizan A", site) & year == '2016') %>% arrange(study_day)
 
 test <- burrow_day_CH %>%
   #filter(capt_hist == 100)
@@ -131,7 +136,7 @@ table(burrow_day_CH$capt_hist)
 
 dup_test <- burrow_day_CH[duplicated(burrow_day_CH),]
 
-burrow_day_CH <- burrow_day_CH[!duplicated(burrow_day_CH),] #CHECK; still need to figure out what's going on here
+burrow_day_CH <- burrow_day_CH[!duplicated(burrow_day_CH),] #just two duplicates - living with that
 write.csv(burrow_day_CH, "burrow_day_CH.csv", row.names = F)
   
 ```
@@ -142,47 +147,47 @@ write.csv(burrow_day_CH, "burrow_day_CH.csv", row.names = F)
 # Week - level
 # Create a capture history column with three observed states and one unobserved 
 
-burrow_week_CH <- burrow %>%
-  select(site, year, week, study_day, burrow_name, burrow_visit, tot_prey) %>%
-  # merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range), 
-  #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  merge(start_end_visits, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  #merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
-  #filter(is.na(exclude)) %>%
-  #select(-exclude) %>%
-  #filter(!is.na(burrow_name)) %>%
-  transform(prey_days = prey_end + 1 - prey_start) %>%
-  transform(bv_days = bv_end + 1 - bv_start) %>%
-  transform(capt_hist =
-              ifelse(tot_prey > 0, 2, #nestling
-                ifelse(burrow_visit > 0, 1, #egg
-                       0))) %>%
-  transform(capt_hist = 
-              ifelse(capt_hist > 0, capt_hist,
-                            ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #not seen
-                                   ifelse(burrow_visit == 0 & tot_prey == 0, 3, #not seen
-                       100))))
-
-test <- burrow_week_CH %>%
-  #filter(tot_prey == 0 & burrow_visit == 0)
-  #filter(is.na(tot_prey))
-  #filter(capt_hist == 100) 
-  #filter(capt_hist == 'NA') %>%
-  filter(is.na(capt_hist))
-
-hist(burrow_week_CH$capt_hist)
-table(burrow_week_CH$capt_hist)
-
-write.csv(burrow_week_CH, "burrow_week_CH.csv", row.names = F)
-
-burrow_count_yr <- burrow_week_CH %>%
-  #transform(id = 1:nrow(burrow_week)) %>%
-  distinct(year, site, burrow_name) %>%
-  group_by(year, site) %>%
-  summarize(cnt = n_distinct(burrow_name)) %>%
-  group_by(year) %>%
-  summarize(cnt = sum(cnt)) %>%
-  summarize(avg = mean(cnt))
+# burrow_week_CH <- burrow %>%
+#   select(site, year, week, study_day, burrow_name, burrow_visit, tot_prey) %>%
+#   # merge(prey_weeks %>% select(year, site, burrow_name, prey_week_range), 
+#   #       by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+#   merge(start_end_visits, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+#   #merge(exclusions, by = c('year', 'site', 'burrow_name'), all.x = T) %>%
+#   #filter(is.na(exclude)) %>%
+#   #select(-exclude) %>%
+#   #filter(!is.na(burrow_name)) %>%
+#   transform(prey_days = prey_end + 1 - prey_start) %>%
+#   transform(bv_days = bv_end + 1 - bv_start) %>%
+#   transform(capt_hist =
+#               ifelse(tot_prey > 0, 2, #nestling
+#                 ifelse(burrow_visit > 0, 1, #egg
+#                        0))) %>%
+#   transform(capt_hist = 
+#               ifelse(capt_hist > 0, capt_hist,
+#                             ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #not seen
+#                                    ifelse(burrow_visit == 0 & tot_prey == 0, 3, #not seen
+#                        100))))
+# 
+# test <- burrow_week_CH %>%
+#   #filter(tot_prey == 0 & burrow_visit == 0)
+#   #filter(is.na(tot_prey))
+#   #filter(capt_hist == 100) 
+#   #filter(capt_hist == 'NA') %>%
+#   filter(is.na(capt_hist))
+# 
+# hist(burrow_week_CH$capt_hist)
+# table(burrow_week_CH$capt_hist)
+# 
+# write.csv(burrow_week_CH, "burrow_week_CH.csv", row.names = F)
+# 
+# burrow_count_yr <- burrow_week_CH %>%
+#   #transform(id = 1:nrow(burrow_week)) %>%
+#   distinct(year, site, burrow_name) %>%
+#   group_by(year, site) %>%
+#   summarize(cnt = n_distinct(burrow_name)) %>%
+#   group_by(year) %>%
+#   summarize(cnt = sum(cnt)) %>%
+#   summarize(avg = mean(cnt))
   
   
 ```
@@ -353,7 +358,7 @@ Archived Stuff (first capture history attempt w/ filled in days and intern captu
 # #no exclusions df for intern data - no incidences where only one burrow-site-year observation
 # 
 # burrow_int <- data_burrow_all %>%
-#   filter(intern_data == 'Y') %>%
+#   filter(intern_data == 'on') %>%
 #   filter(!is.na(burrow_name)) %>%
 #   select(-c(Gunnel, Sculpin, Other))
 # 
