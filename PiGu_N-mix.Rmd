@@ -1,0 +1,41 @@
+
+# Following example code from Kery & Schaub, implementing Conn & Cooch 2009
+
+```{r}
+
+library(rjags)
+#library(R2jags) #seems to fight with jagsUI
+library(jagsUI)
+library(R2OpenBUGS)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+
+setwd("~/Documents/SAFS/PigeonGuillemots")
+
+
+```
+
+
+```{r}
+
+
+
+```
+
+9/3/18
+
+In thinking about the multiple counts from South Sound for 2015-2017 and for all sites 2018 and onward, Sarah and I discussed how to apply the variation for what we have to the sites and years where we only have a single count. So, what we learn about the *distribution* of p[i,t,j] we can apply across all [i,t]. 
+
+Generally, when we are estimating detection, we have two parts: 
+(a) availability (present at site) and 
+(b) detection given availability
+
+N-mix model formulation: n[i,j,t] ~ rbinom(p[i,t,j], N[i,t]), where N[i,t] is of interest.
+i = site, t = year, j = day.
+
+We don't *expect* j to vary, but it does due to seasonal patterns, presence of non-breeders, and daily variation (who is there versus feeding, tides, etc). The latter could also have an associated seasonal pattern. If we trim the counts, we at least in theory eliminate variation due to seasonality and presence of non-breeders, but then left with daily variation, for which we assess with multiple counts/robust design.
+
+N-mixture models are identifiable due to relationship of variance to mean, despite critiques, it is what we have.
+
+Instead of N-mix models, people commonly use n[i,t,j] ~ rnorm(N[i], deviance), which states that you're equally likely to under-count as you are to over-count, which for some reason I didn't get is not right. 

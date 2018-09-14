@@ -1,0 +1,140 @@
+---
+title: "Ch. 7 CJS"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(data.table)
+library(ggfortify)
+library(broom) #tidy() augment()
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(lmerTest)
+library(scales)
+library(reshape2)
+library(stats) 
+library(zoo)
+library(sciplot)
+library(jagsUI)
+ 
+setwd("~/Documents/R/SAFS/PigeonGuillemots")
+
+# knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+
+#load data from PigeonGuillemot_whidbey.Rmd
+data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
+  select(-intern_data) #%>%
+  #filter(site %in% c('Amsterdam Bay', 'Shore Meadows'))
+
+#study start day per year, island-wide
+start_end_all <- data_burrow_all %>%
+  group_by(year, region) %>%
+  summarize(start_day = min(yday), end_day = max(yday))
+
+burrow <- data_burrow_all %>%
+  distinct() %>%
+  select(-c(Gunnel, Sculpin, Other)) %>%
+  merge(start_end_all, by = c('region', 'year'), all = T) %>%
+  transform(study_day = yday - start_day + 1)  
+
+dup_test <- burrow[duplicated(burrow),]
+
+#burrow visit and prey visit start stops
+prey_start_end <- burrow %>%
+  filter(tot_prey > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(prey_start = min(study_day), prey_end = max(study_day))  
+
+bv_start_end <- burrow %>%
+  filter(burrow_visit > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(bv_start = min(study_day), bv_end = max(study_day))  
+
+start_end_visits <- prey_start_end %>%
+  merge(bv_start_end, by = c('region', 'year', 'site', 'burrow_name'), all = T)
+# no_start <- start_end_visits %>%  #45% 8/1/18
+#   filter(prey_start > bv_start | is.na(bv_start)) %>% nrow()/nrow(start_end_visits)
+# no_end <- start_end_visits %>% #6% 8/1/18
+#   filter(prey_end == bv_start) %>% nrow()/nrow(start_end_visits)
+
+#df of all days to merge into actual observations below
+all_days <- data.frame(c(0, seq(1:81)))
+names(all_days) <- 'study_day'
+
+ 
+# Create capture history
+
+#df containing all unique site-burrow_name-study days where visits occured to create NAs for undetected burrows specifically when other burrows WERE seen
+burrow_00 <- burrow %>% 
+  filter(!is.na(burrow_name)) %>%
+  distinct(region, site, year, study_day)
+burrow_0 <- burrow %>%
+  filter(is.na(burrow_name)) %>%
+  distinct(region, site, year, study_day) %>%
+  bind_rows(burrow_00)
+
+burrow_name_expand <- burrow %>%
+  filter(!is.na(burrow_name)) %>%
+  distinct(region, site, year, burrow_name) %>%
+  merge(burrow_0, by = c('region', 'year', 'site')) 
+
+#df containing all data for only days observed
+burrow_1 <- burrow %>%
+  select(region, site, year, date, yday, study_day, start_day, end_day, burrow_name, burrow_visit, tot_prey) %>%
+  select(-c(start_day, end_day, date, yday)) %>%
+  merge(burrow_name_expand, by = c('region', 'year', 'site', 'burrow_name', 'study_day'), all = T) %>%
+  filter(!is.na(burrow_name)) %>%
+  transform(burrow_visit = ifelse(is.na(burrow_visit), 0, burrow_visit)) %>%
+  transform(tot_prey = ifelse(is.na(tot_prey), 0, tot_prey))
+
+#df containing all study days per year, region, site, burrow name - no data
+burrow_2 <- burrow_1 %>%
+  distinct(region, year, site, burrow_name) %>%
+  #filter(!is.na(burrow_name)) %>% #remnant of merging on count dates where no visits
+  merge(all_days, all = T)  #%>% arrange(burrow_name)
+
+#combining all data with dummy framework of all days
+burrow_CH <- burrow_2 %>%
+  merge(burrow_1, by = c('region', 'site', 'year', 'burrow_name', 'study_day'), all.x = T) %>%
+  merge(start_end_visits, by = c('region', 'year', 'site', 'burrow_name'), all.x = T) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) %>%
+  transform(capt_hist = ifelse(study_day == 0, 3,
+              ifelse(is.na(burrow_visit) & is.na(tot_prey), NA, #not observed
+                     ifelse(burrow_visit == 0 & tot_prey == 0, 3, #observed but not detected
+              ifelse(tot_prey > 0, 2, #nestling
+              ifelse(burrow_visit > 0, 1, #egg
+                       100)))))) %>%
+  select(region, year, site, study_day, burrow_name, capt_hist) %>%
+  distinct()
+
+test <- burrow_CH %>% 
+  #filter(capt_hist == 100)
+  #filter(capt_hist != 'NA')
+  filter(is.na(capt_hist))
+hist(burrow_CH$capt_hist)
+table(burrow_CH$capt_hist)
+
+dup_test <- burrow_CH[duplicated(burrow_CH),]
+
+write.csv(burrow_CH, "burrow_CH.csv", row.names = F)
+  
+```
+
+
+
+Questions
+- What to do when see one prey delivery and no other visits?
+  
+- Excluded single burrow visits, but included single date burrow visits where bv > 1
+
+- Haven't trimmed total "study length" to nest level (currently year level)
+
+- If last burrow visit was last prey delivery, could have just missed the rest of the visits?

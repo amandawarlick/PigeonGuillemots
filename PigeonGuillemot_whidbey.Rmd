@@ -97,13 +97,15 @@ data_count <- read.csv("PGdata_pre_proc_allyrs.csv", stringsAsFactors = F) %>%
   mutate(site = gsub("- ", " ", site)) %>%
   mutate(site = gsub("'", "", site)) %>%
   filter(intern_data != 'on') %>%
-  distinct()
+  distinct() %>%
+  filter(region == 'Whidbey')
 data_count[is.na(data_count)] <- 0
 
 #dates for empty burrow visits (non-visits not recorded in burrow-level data, so use dates of count data and merge in)
 count_dates <- data_count %>%
   filter(intern_data != 'on') %>%
-  distinct(region, site, date, year, week, yday) 
+  distinct(region, site, date, year, week, yday) %>%
+  filter(region == 'Whidbey')
 
 #cleaning website output for burrow-level data 2015-2017 so that it matches earlier years
 burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>%
@@ -122,7 +124,8 @@ burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>
                                     ifelse(visit_type == 'noprey', 'burrow_visit', 'Other')))) %>%
   dcast(region + site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
         fun.aggregate = mean, fill = 0) %>%
-  select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data)
+  select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data) %>%
+  filter(region == 'Whidbey')
 
 burrow_allyrs <- test <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
   distinct() %>%
@@ -130,7 +133,8 @@ burrow_allyrs <- test <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %
   mutate(Sculpin = coalesce(as.numeric(Sculpin), 0)) %>%
   mutate(Other = coalesce(as.numeric(Other), 0)) %>%
   mutate(burrow_visit = coalesce(as.numeric(burrow_visit), 0)) %>%
-  bind_rows(burrow_2015_18)
+  bind_rows(burrow_2015_18) %>%
+  filter(region == 'Whidbey')
   
 data_burrow <- burrow_allyrs %>%
   filter(intern_data != 'on') %>%
@@ -144,7 +148,11 @@ data_burrow <- burrow_allyrs %>%
   transform(tot_prey = Gunnel + Sculpin + Other) %>%
   select(region, site, year, date, yday, week, burrow_name, burrow_visit, burrow_visit,
          Gunnel, Sculpin, Other, tot_prey, intern_data) %>%
-  merge(count_dates, by = c('region', 'site', 'year', 'date', 'week', 'yday'), all = T) #check these get added on ALL burrow_name
+  merge(count_dates, by = c('region', 'site', 'year', 'date', 'week', 'yday'), all = T)  %>%
+  filter(region == 'Whidbey')
+
+# test <- data_burrow %>%
+#   filter(grepl("Forbes", site) & year == '2008') 
 # data_burrow <- data_burrow %>%
 #   transform(id = 1:nrow(data_burrow)) #%>%
   #filter(region != 'South Sound')
@@ -156,7 +164,8 @@ prey_weeks_range <- data_burrow %>%
   group_by(region, site, year, burrow_name) %>%
   filter(tot_prey > 0) %>%
   summarize(start_prey = min(week), end_prey = max(week)) %>%
-  transform(prey_week_range = end_prey - (start_prey-1))
+  transform(prey_week_range = end_prey - (start_prey-1)) %>%
+  filter(region == 'Whidbey')
 prey_weeks <- data_burrow %>% 
   group_by(region, site, year, burrow_name) %>%
   filter(tot_prey > 0) %>%
@@ -165,12 +174,13 @@ prey_weeks <- data_burrow %>%
   #transform(nest_succ = ifelse(prey_weeks > 2, 'Y', 'N')) %>%
   merge(prey_weeks_range, by = c('region', 'year', 'site', 'burrow_name')) %>%
   transform(prey_discrep = prey_week_range - prey_weeks) %>%
-  transform(nest_succ = ifelse(prey_week_range > 2, 'Y', 'N'))
+  transform(nest_succ = ifelse(prey_week_range > 2, 'Y', 'N')) %>%
+  filter(region == 'Whidbey')
 
 setwd("~/Documents/SAFS/PigeonGuillemots")
-write.csv(prey_weeks, "prey_weeks.csv", row.names = F)
-write.csv(data_burrow, "data_burrow.csv", row.names = F)
-write.csv(data_count, "data_count.csv", row.names = F)
+#write.csv(prey_weeks, "prey_weeks.csv", row.names = F)
+#write.csv(data_burrow, "data_burrow.csv", row.names = F)
+#write.csv(data_count, "data_count.csv", row.names = F)
 
 # test <- data_burrow %>% distinct(site)
 # test2 <- data_count %>% distinct(site)
@@ -221,18 +231,20 @@ PG_count_tides <- data_count %>% filter(intern_data != 'on' & PG_count != '') %>
   transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
                           ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
                                  ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
-  filter(rank == 2 | rank == 3) 
+  filter(rank == 2 | rank == 3) %>%
+  filter(region == 'Whidbey')
 
 table(PG_count_tides$rank)
 
-test <- PG_count_tides %>%
-  group_by(site, date) %>%
-  summarize(cnt = n_distinct(v)) %>%
-  filter(cnt < 2)
+# test <- PG_count_tides %>%
+#   group_by(site, date) %>%
+#   summarize(cnt = n_distinct(v)) %>%
+#   filter(cnt < 2)
 
 PG_count_tides_trim <- PG_count_tides %>%
   transform(month = month(date)) %>%
-  filter(month > 6 & month < 9)
+  filter(month > 6 & month < 9) %>%
+  filter(region == 'Whidbey')
 
 mod <- lm(PG_count ~ abs(from_hilo) + site, data = PG_count_tides_trim %>% filter(type == 'L'))
 summary(mod)
@@ -244,8 +256,16 @@ from_low <- ggplot(PG_count_tides_trim %>% filter(type == 'L'), aes(x = from_hil
   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
   fig_theme()
 
+#for frances
+from_high <- ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo, y = PG_count)) +
+  #geom_point() + 
+  geom_smooth(se = T) +
+  xlab("Minutes from High Tide" ) + ylab("Jul-Aug Guillemot Counts per Colony") + 
+  fig_theme()
+
 ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo)) + geom_histogram()
 #from low and high tide; loess
+
 ggplot(PG_count_tides_trim, aes(x = from_hilo, y = PG_count, col = type, group = type)) +
   #geom_point() + 
   geom_smooth(se = T) +
@@ -299,11 +319,12 @@ peak_plot_mean <- ggplot(peak_mean_w, aes(week, mean_cnt)) +
   fig_theme(legend.position = 'none') + facet_wrap(~year) #+
  #guides(color = guide_legend(override.aes=list(fill=NA)))
 
+#for frances
 #apparent seasonal peak when looking at sum counts across the regions each week
 peak_plot_sum <- ggplot(peak_sum_w, aes(week, sum_cnt)) +
-  geom_line() + 
+  geom_line() + xlab("Week of the Year") + ylab("Total Guillemot Count") +
   facet_wrap(~year) +
-  fig_theme(legend.position = 'none') 
+  fig_theme() 
 
 #taking max - this looks much better/clearer than the mean
 max_yr_w <- data_count %>%
@@ -454,8 +475,8 @@ weekly_count_isl_trim <- bind_rows(weekly_count_isl_trim_w, weekly_count_isl_tri
 weekly_count_col_trim <- bind_rows(weekly_count_col_trim_w, weekly_count_col_trim_SS)
 
 ### count data moving forward: weekly_count_col_trim and weekly_count_isl_trim
-write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
-write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
+##write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
+##write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
 ```
 
 
@@ -528,7 +549,7 @@ weeks_plot <- ggplot(weeks_plot_data,
 weeks_range <- ggplot(weeks_plot_data, 
                       aes(as.numeric(as.character(year)), study_length, group = region, col = region)) +
   geom_linerange(aes(ymin = ymin, ymax = ymax)) + geom_point() +
-  xlab("") + ylab("Number of Weeks") + scale_x_continuous(breaks = c(2008, 2010, 2012, 2014, 2016, 2017)) +
+  xlab("") + ylab("Number of Weeks") + scale_x_continuous(breaks = c(2008, 2010, 2012, 2014, 2016, 2018)) +
   facet_wrap(~site) + fig_theme()
 
 #differences in start weeks over years?
@@ -585,10 +606,10 @@ trim_compare_data <- island_count_yr %>%
   merge(island_count_yr_trim, by = c("region", "year"), suffixes = c("", ".trim")) %>%
   melt(id.vars = c("year", "region"))
 
-trim_compare_plot <- ggplot(tot_compare, aes(as.numeric(as.character(year)), as.numeric(value), group = variable, col = variable)) +
+trim_compare_plot <- ggplot(trim_compare_data, aes(as.numeric(as.character(year)), as.numeric(value), group = variable, col = variable)) +
   geom_point() + xlab("") + ylab("Season Mean of Regional Weekly Counts") +
   geom_line() + facet_wrap(~region) +
-  scale_x_continuous(breaks = 2008:2017) +
+  scale_x_continuous(breaks = 2008:2018) +
   fig_theme_1(legend.position = 'top')
 
 #I think this is less useful than the sum to the regional level
@@ -603,8 +624,70 @@ island_mean <- data_count %>%
 isl_mean <- ggplot(island_mean, aes(as.numeric(as.character(year)), mean_cnt, group = region, col = region)) +
   geom_line() +
   geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
-  xlab("") + ylab("Mean Daily Site Count") + scale_x_continuous(breaks = 2008:2017) +
+  xlab("") + ylab("Mean Daily Site Count") + scale_x_continuous(breaks = 2008:2018) +
   fig_theme_1()
+
+
+```
+
+```{r}
+
+#for frances
+countplotdata_isl <- weekly_count_isl_trim %>%
+  group_by(region, year) %>%
+  summarize(mean_cnt = mean(cnt), se = se(cnt))
+
+countplotdata_col <- weekly_count_col_trim %>%
+  group_by(region, year, site) %>%
+  summarize(mean_cnt = mean(PG_count), se = se(PG_count))
+
+ggplot(countplotdata_isl %>% filter(region == 'Whidbey'), aes(as.numeric(as.character(year)), mean_cnt, group = region, col = region)) +
+  geom_line(col = 'black') +
+  geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.5, linetype = 'blank') +
+  xlab("") + ylab("Mean Daily Island Count") + scale_x_continuous(breaks = 2008:2018) +
+  fig_theme_1(legend.position = 'none')
+
+ggplot(countplotdata_col %>% filter(region == 'Whidbey' & 
+                                      site != "Rolling Hills #2"), 
+       aes(as.numeric(as.character(year)), mean_cnt)) +
+  geom_line(col = 'black') +
+  geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.5, linetype = 'blank') +
+  xlab("") + ylab("Mean Daily Colony Count") + scale_x_continuous(breaks = c(2008, 2012, 2015, 2018)) +
+  fig_theme_1(legend.position = 'none') +
+  facet_wrap(~site)
+
+#prey deliveries
+head(data_burrow)
+
+# get start/stops for each colony and year, then average across years and then get length
+prey_stop_start_col_plot_data <- data_burrow %>%
+  filter(region == 'Whidbey' & intern_data != 'on') %>%
+  filter(tot_prey > 0 & !is.na(tot_prey)) %>%
+  group_by(site, year) %>%
+  summarize(start = min(yday), stop = max(yday)) %>%
+  group_by(site) %>%
+  summarize(start_mean = mean(start), stop_mean = mean(stop)) %>%
+  transform(length = stop_mean-start_mean) 
+
+ ggplot(prey_stop_start_col_plot_data, aes(site, length)) +
+  geom_linerange(aes(ymin = start_mean, ymax = stop_mean)) + coord_flip() +
+   xlab("") + ylab("Day of Year") +
+   scale_y_continuous(limits = c(170,230)) +
+   fig_theme()
+
+prey_stop_start_isl_plot_data <- data_burrow %>%
+  filter(region == 'Whidbey' & intern_data != 'on') %>%
+  filter(tot_prey > 0 & !is.na(tot_prey)) %>%
+  group_by(year) %>%
+  summarize(start = min(yday), stop = max(yday)) %>%
+  transform(length = stop-start)
+
+ggplot(prey_stop_start_isl_plot_data, aes(year, length)) +
+  geom_linerange(aes(ymin = start, ymax = stop)) + coord_flip() +
+  xlab("") + ylab("Day of Year") +
+  scale_y_continuous(limits = c(150,270)) +
+  fig_theme()
+
 
 
 ```
@@ -698,12 +781,15 @@ prey_dels_daily <- data_burrow %>% filter(as.numeric(year) < 8) %>%
   group_by(week, site) %>% 
   summarize(mean_dels = mean(tot_prey, na.rm = T), se = se(tot_prey, na.rm = T)) %>% #week averages across years
   filter(!is.na(mean_dels)) #taking out single-year rows, I think
+
+#for frances
 ggplot(prey_dels_daily, 
        aes(week, mean_dels, group = site, color = site)) +
-  geom_line() + geom_point() + scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
-                                                labels = c(3,6,9,12,15)) +
+  geom_line() + geom_point() + 
+  #scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
+                                                #labels = c(3,6,9,12,15)) +
   geom_ribbon(aes(ymin = mean_dels - se, ymax = mean_dels + se), alpha = 0.4, linetype = 'blank') +
-  xlab("Week") + ylab("Mean Weekly Prey Deliveries") +
+  xlab("Week of the Year") + ylab("Mean Weekly Prey Deliveries") +
   facet_wrap(~site) + 
   #scale_color_brewer(values = color3) +
   fig_theme_1(legend.position = 'none')
@@ -716,10 +802,20 @@ isl_prey_dels_weekly <- data_burrow %>% filter(as.numeric(year) < 8) %>%
   summarize(mean_dels = mean(tot_dels, na.rm = T), se = se(tot_dels, na.rm = T)) #mean of years
 ggplot(isl_prey_dels_weekly, 
        aes(week, mean_dels)) +
-  geom_line() + geom_point() + scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
-                                                labels = c(3,6,9,12,15)) +
+  geom_line() + geom_point() + 
+  #scale_x_continuous(limit = c(23,38), breaks = c(3,6,9,12,15),
+                                                #labels = c(3,6,9,12,15)) +
   geom_ribbon(aes(ymin = mean_dels - se, ymax = mean_dels + se), alpha = 0.4, linetype = 'blank') +
-  xlab("Week") + ylab("Mean Weekly Prey Deliveries") +
+  xlab("Week of the Year") + ylab("Mean Weekly Prey Deliveries") +
+  fig_theme_1(legend.position = 'none') 
+#for frances
+ggplot(isl_prey_dels_weekly, 
+       aes(week, mean_dels)) +
+  geom_line() + geom_point() + 
+  #scale_x_continuous(limit = c(23,38), breaks = c(3,6,9,12,15),
+                                                #labels = c(3,6,9,12,15)) +
+  geom_ribbon(aes(ymin = mean_dels - se, ymax = mean_dels + se), alpha = 0.4, linetype = 'blank') +
+  xlab("Week of the Year") + ylab("Mean Weekly Prey Deliveries") +
   fig_theme_1(legend.position = 'none') 
 
 ```
@@ -817,16 +913,9 @@ ggplot(perc_suc_isl, aes(year, perc_suc)) +
   geom_point() + geom_smooth() +
   fig_theme_1()
 
-# ggplot(prey_weeks, aes(burrow_name, prey_length)) +
-#   geom_linerange(aes(ymin = start_prey, ymax = end_prey)) + 
-#   geom_point() + coord_flip() + geom_hline(aes(yintercept = 3), lty = 3, col = 'grey30') +
-#   xlab("Burrow") + ylab("Weeks") + 
-#   facet_wrap(~year + site) + 
-#   scale_y_continuous(breaks = c(2, 4, 6, 8, 10, 12)) +
-#   fig_theme()
 
-write.csv(perc_suc_col, "perc_suc_col.csv", row.names = F)
-write.csv(perc_suc_isl, "perc_suc_isl.csv", row.names = F)
+##write.csv(perc_suc_col, "perc_suc_col.csv", row.names = F)
+##write.csv(perc_suc_isl, "perc_suc_isl.csv", row.names = F)
 
 
 ```
@@ -845,7 +934,7 @@ fledge_col <- prey_weeks %>%
   transform(year = as.numeric(as.character(year)))
 summary(lm(year ~ cnt, data = fledge)) #no change over time
 
-ggplot(fledge, aes(year, cnt)) +
+ggplot(fledge_col, aes(year, cnt)) +
   geom_point() +
   geom_smooth() +
   fig_theme_1()

@@ -38,7 +38,7 @@
 2009,"Limpet Lane",2,3,0.67
 2009,"Malmo Bluff",4,12,0.33
 2009,"Maylor Point",1,5,0.2
-2009,"Monroe Landing",1,2,0.5
+2009,"Monroe Landing",1,4,0.25
 2009,"Mutiny Sands",4,9,0.44
 2009,"Possession Point",3,5,0.6
 2009,"Pratts Bluff",6,10,0.6
@@ -165,62 +165,99 @@
 2014,"Rolling Hills #3",3,3,1
 2014,"Shore Meadows",2,11,0.18
 2014,"Swantown",5,7,0.71
+2015,"Amsterdam Bay",1,3,0.33
+2015,"Big Fish Trap",1,1,1
+2015,"Burfoot Park",3,5,0.6
 2015,"Cliffside",1,5,0.2
+2015,"Cole Pt",3,3,1
 2015,"Double Bluff North",2,12,0.17
 2015,"Double Bluff South",1,2,0.5
 2015,"Fort Casey North",5,14,0.36
 2015,"Harrington North",3,3,1
 2015,"Harrington South",1,1,1
-2015,"Hastie Lake South",3,6,0.5
+2015,"Hastie Lake",3,6,0.5
+2015,"Higgins Cove",1,2,0.5
 2015,"Lagoon North #1",2,7,0.29
 2015,"Lagoon South",3,5,0.6
 2015,"Ledgewood",4,10,0.4
 2015,"Malmo Bluff",5,10,0.5
 2015,"Maylor Point",1,1,1
 2015,"Monroe Landing",1,1,1
-2015,"Mutiny Sands",10,14,0.71
-2015,"Pratts Bluff",10,17,0.59
+2015,"Mutiny Sands",3,7,0.43
+2015,"Pratts Bluff",3,7,0.43
 2015,"Rolling Hills #1",8,12,0.67
 2015,"Rolling Hills #2",2,2,1
 2015,"Rolling Hills #3",2,2,1
 2015,"Shore Meadows",4,15,0.27
 2015,"Swantown",6,8,0.75
+2015,"Totten Elizan C",1,1,1
+2015,"Totten Legacy",1,1,1
+2015,"Walnut Rd A",1,1,1
+2015,"Youngs Cove B",2,2,1
+2015,"Youngs Cove C",1,1,1
+2015,"Youngs Cove D",1,1,1
+2015,"Zangle Cove A",2,2,1
+2016,"Briscoe Pt",3,4,0.75
+2016,"Burfoot Park",2,3,0.67
 2016,"Bush Point Dock",1,1,1
+2016,"Butterball Cove South A",3,3,1
 2016,"Cliffside",2,3,0.67
 2016,"Clinton Ferry Dock",1,1,1
+2016,"Cole Pt",1,3,0.33
 2016,"Double Bluff North",8,14,0.57
 2016,"Double Bluff South",1,1,1
+2016,"Flapjack",1,3,0.33
 2016,"Forbes Point",3,3,1
 2016,"Fort Casey North",3,12,0.25
 2016,"Hancock Lake",9,14,0.64
 2016,"Harrington North",3,3,1
 2016,"Harrington South",1,2,0.5
-2016,"Hastie Lake South",6,7,0.86
+2016,"Hastie Lake",6,7,0.86
+2016,"Higgins Cove",2,2,1
 2016,"Keystone",2,3,0.67
 2016,"Lagoon North #0",3,6,0.5
 2016,"Lagoon South",5,11,0.45
 2016,"Langley Marina",1,1,1
 2016,"Ledgewood",3,4,0.75
 2016,"Limpet Lane",1,5,0.2
+2016,"Lyle Point",2,4,0.5
 2016,"Malmo Bluff",6,13,0.46
 2016,"Maylor Point",3,3,1
+2016,"Mill Bight A",1,1,1
+2016,"Mill Bight B",1,2,0.5
 2016,"Monroe Landing",1,1,1
-2016,"Mutiny Sands",11,13,0.85
+2016,"Mutiny Sands",5,8,0.62
 2016,"Possession Point",2,2,1
-2016,"Pratts Bluff",10,16,0.62
+2016,"Pratts Bluff",6,11,0.55
 2016,"Rolling Hills #1",9,15,0.6
 2016,"Rolling Hills #3",3,3,1
 2016,"Shore Meadows",4,7,0.57
 2016,"Swantown",1,1,1
-2017,"Cliffside",6,7,0.86
+2016,"Totten Elizan C",1,1,1
+2016,"Totten Legacy",1,1,1
+2016,"Youngs Cove A",2,2,1
+2016,"Youngs Cove B",1,1,1
+2016,"Youngs Cove C",1,1,1
+2016,"Zangle Cove A",1,1,1
+2017,"Andys Marine Park South",3,3,1
+2017,"Andys Marine Park West",1,1,1
+2017,"Beachcrest",1,1,1
+2017,"Briscoe Pt",1,4,0.25
+2017,"Burfoot Park",3,4,0.75
+2017,"Butterball Cove South A",4,4,1
+2017,"Butterball North",1,2,0.5
+2017,"Cliffside",5,6,0.83
 2017,"Coupeville Wharf",1,1,1
 2017,"Double Bluff North",4,10,0.4
+2017,"Flapjack",1,2,0.5
 2017,"Forbes Point",1,2,0.5
 2017,"Fort Casey North",4,6,0.67
+2017,"Gull Harbor",1,2,0.5
 2017,"Hancock Lake",6,8,0.75
 2017,"Harrington North",1,1,1
 2017,"Harrington South",2,2,1
-2017,"Hastie Lake South",5,8,0.62
+2017,"Hastie Lake",5,8,0.62
+2017,"Ketron SE",1,1,1
 2017,"Keystone",6,8,0.75
 2017,"Lagoon North #1",1,3,0.33
 2017,"Lagoon South",2,6,0.33
@@ -228,10 +265,19 @@
 2017,"Ledgewood",4,6,0.67
 2017,"Limpet Lane",3,5,0.6
 2017,"Malmo Bluff",5,11,0.45
+2017,"Mill Bight A",1,1,1
+2017,"Mill Bight B",1,2,0.5
 2017,"Mutiny Sands",6,10,0.6
 2017,"Possession Point",1,1,1
 2017,"Pratts Bluff",2,9,0.22
-2017,"Rolling Hills #1",11,13,0.85
+2017,"Rolling Hills #1",8,12,0.67
 2017,"Rolling Hills #3",1,2,0.5
+2017,"Sandy Pt",3,3,1
 2017,"Shore Meadows",4,13,0.31
 2017,"Swantown",3,3,1
+2017,"Totten Legacy",1,2,0.5
+2017,"Walnut Rd A",1,3,0.33
+2017,"Youngs Cove A",1,2,0.5
+2017,"Youngs Cove C",1,1,1
+2017,"Youngs Cove E",2,2,1
+2017,"Zangle Cove A",1,1,1

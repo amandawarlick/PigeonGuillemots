@@ -1,0 +1,79 @@
+model
+{
+    b ~ dunif(0.00000E+00, 1)
+    mean.psiAB ~ dunif(0.00000E+00, 1)
+    alpha[1] ~ dunif(0.00000E+00, 1)
+    alphaKeep <- alpha[1]
+    for (u in 1:2) {
+        mean.phi[u] ~ dunif(0.00000E+00, 1)
+        mean.p[u] ~ dunif(0.00000E+00, 1)
+    }
+    for (t in 1:(n.occasions - 1)) {
+        phiA[t] <- mean.phi[1]
+        phiB[t] <- mean.phi[2]
+        gamma[t] ~ dunif(0.00000E+00, 1)
+        pA[t] <- mean.p[1]
+        pB[t] <- mean.p[2]
+        psiAB[t] <- mean.psiAB
+        alpha[t + 1] <- 0.00000E+00
+    }
+    for (i in 1:M) {
+        z[i, 1] <- 1
+        for (t in 2:n.occasions) {
+            z[i, t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+            y[i, t] ~ dcat(po[z[i, t], i, t - 1, ])
+            egg[i, t - 1] <- equals(z[i, t], 2)
+            chick[i, t - 1] <- equals(z[i, t], 3)
+            active[i, t - 1] <- max(egg[i, t - 1], chick[i, t - 
+                1])
+        }
+        everEgg[i] <- max(egg[i, ])
+        everChick[i] <- max(chick[i, ])
+        EverActive[i] <- max(everChick[i], everEgg[i])
+    }
+    for (i in 1:M) {
+        for (t in 1:(n.occasions - 1)) {
+            ps[1, i, t, 1] <- 1 - gamma[t]
+            ps[1, i, t, 2] <- gamma[t] * (1 - alpha[t])
+            ps[1, i, t, 3] <- gamma[t] * alpha[t]
+            ps[1, i, t, 4] <- 0.00000E+00
+            ps[2, i, t, 1] <- 0.00000E+00
+            ps[2, i, t, 2] <- phiA[t] * (1 - psiAB[t])
+            ps[2, i, t, 3] <- phiA[t] * psiAB[t]
+            ps[2, i, t, 4] <- 1 - phiA[t]
+            ps[3, i, t, 1] <- 0.00000E+00
+            ps[3, i, t, 2] <- 0.00000E+00
+            ps[3, i, t, 3] <- phiB[t]
+            ps[3, i, t, 4] <- 1 - phiB[t]
+            ps[4, i, t, 1] <- 0.00000E+00
+            ps[4, i, t, 2] <- 0.00000E+00
+            ps[4, i, t, 3] <- 0.00000E+00
+            ps[4, i, t, 4] <- 1
+            po[1, i, t, 1] <- 0.00000E+00
+            po[1, i, t, 2] <- 0.00000E+00
+            po[1, i, t, 3] <- 1
+            po[2, i, t, 1] <- pA[t] * eff[i, t]
+            po[2, i, t, 2] <- 0.00000E+00
+            po[2, i, t, 3] <- 1 - pA[t] * eff[i, t]
+            po[3, i, t, 1] <- b * pB[t] * eff[i, t]
+            po[3, i, t, 2] <- (1 - b) * pB[t] * eff[i, t]
+            po[3, i, t, 3] <- 1 - pB[t] * eff[i, t]
+            po[4, i, t, 1] <- 0.00000E+00
+            po[4, i, t, 2] <- 0.00000E+00
+            po[4, i, t, 3] <- 1
+        }
+    }
+    for (t in 1:(n.occasions - 1)) {
+        N.egg[t] <- sum(egg[1:M, t])
+        N.chick[t] <- sum(chick[1:M, t])
+        N.active[t] <- sum(active[1:M, t])
+        qgamma[t] <- 1 - gamma[t]
+        birthProb[t] <- cprob[t]/psi
+    }
+    cprob[1] <- gamma[1]
+    for (t in 2:(n.occasions - 1)) {
+        cprob[t] <- gamma[t] * prod(qgamma[1:(t - 1)])
+    }
+    psi <- sum(cprob[])
+    Nstar <- sum(EverActive[1:M])
+}
