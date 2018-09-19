@@ -469,7 +469,8 @@ prey_del_plot_data[is.na(prey_del_plot_data)] <- 0
  pv_minmax <- data_MEJS %>%
    filter(capt_hist == 2 & region != 'SS') %>%
    group_by(region, year, site, burrow_name) %>%
-   summarize(min_pv = min(study_day), max_pv = max(study_day))
+   summarize(min_pv = min(study_day), max_pv = max(study_day)) %>%
+   rename(FirstPreyVisit = min_pv, LastPreyVisit = max_pv)
 
  bv_minmax <- data_MEJS %>%
    filter(capt_hist == 1 & region != 'SS') %>%
@@ -480,15 +481,15 @@ prey_del_plot_data[is.na(prey_del_plot_data)] <- 0
    bind_rows(bv_minmax) %>%
    melt(id.vars = c('region', 'year', 'site', 'burrow_name'))
 
- by_year <- ggplot(minsmax %>% filter(grepl("pv", variable)), aes(factor(year), value), color = variable) +
+ by_year <- ggplot(minsmax %>% filter(grepl("Prey", variable)), aes(factor(year), value), color = variable) +
    geom_boxplot() + facet_wrap(~variable) + coord_flip() +
    xlab("") + ylab("Study Day") +
    fig_theme()
 
  by_site <- ggplot(minsmax %>%
-                    filter(grepl("pv", variable) & value != 'NA' & region == 'Whidbey'),
-                  aes(site, value, group = site, color = site)) +
-   geom_boxplot() +
+                    filter(grepl("Prey", variable) & value != 'NA' & region == 'Whidbey'),
+                  aes(site, value)) +
+   geom_boxplot() + coord_flip() +
    facet_wrap(~variable) +
    xlab("") + ylab("Study Day") +
    fig_theme(legend.position = 'none')

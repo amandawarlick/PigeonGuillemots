@@ -102,7 +102,7 @@ for (i in id_whid) {
   tides <- query_tides_data(
     station = i,
     start_date = '20080601',
-    end_date = '20170930',
+    end_date = '20180930',
     data_product = 'predictions',
     datum = 'MLLW',
     interval = 'hilo')
@@ -119,7 +119,7 @@ for (i in id_SS) {
   tides <- query_tides_data(
     station = i,
     start_date = '20150601',
-    end_date = '20170930',
+    end_date = '20180930',
     data_product = 'predictions',
     datum = 'MLLW',
     interval = 'hilo')
@@ -258,7 +258,7 @@ write.csv(tides_all, "tides_all.csv", row.names = F)
 # emo <- c("0630", "0731", "0831", "0930")
 # bmo <- c("0601")
 # emo <- c("0930")
-# year <- 2008:2017
+# year <- 2008:2018
 
 # url_old = data.frame()
 # 

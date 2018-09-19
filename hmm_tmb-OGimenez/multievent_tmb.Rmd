@@ -1,0 +1,173 @@
+---
+title: "Multievent/HMM capture-recapture with TMB"
+author: "Olivier Gimenez, with precious help from Mollie Brooks"
+date: "August 17, 2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Following my attempts to fit a HMM model to [capture-recapture data with Rcpp](https://github.com/oliviergimenez/multieventRcpp) and to [occupancy data with ADMB](https://github.com/oliviergimenez/occupancy_in_ADMB), a few colleagues suggested TMB as a potential alternative for several reasons (fast, allows for parallel computations, works with R, accomodates spatial stuff, easy implementation of random effects, and probably other reasons that I don't know).
+
+I found materials on the internet to teach myself TMB, at least what I needed to implement a simple HMM model. See [here](http://seananderson.ca/2014/10/17/tmb.html) for a linear regression and a Gompertz state space model examples, [here](https://www.youtube.com/watch?v=A5CLrhzNzVU) for the same linear regression example on Youtube (that's awesome!) and many other examples [here](http://kaskr.github.io/adcomp/examples.html). However, I got stuck and posted my desperate request for help on the [TMB forum](https://groups.google.com/forum/#!forum/tmb-users). Guess what, I got an answer less than a few hours after - thank you Mollie Brooks!
+
+First, let's read in the data.
+
+```{r}
+set.seed(1)
+
+# read in data
+data = read.table('titis2.txt')
+#data = rbind(data,data,data,data,data) # increase sample size artificially
+
+# define various quantities
+nh <- dim(data)[1]
+k <- dim(data)[2]
+km1 <- k-1
+
+# counts
+eff <- rep(1,nh)
+  
+# compute the date of first capture fc, and state at initial capture init.state
+fc <- NULL
+init.state <- NULL
+for (i in 1:nh){
+  temp <- 1:k
+  fc <- c(fc,min(which(data[i,]!=0)))
+  init.state <- c(init.state,data[i,fc[i]])
+}
+
+# init values
+binit <- runif(9)
+  
+# transpose data
+data <- t(data)
+```
+
+Now the TMB implementation:
+
+```{r}
+library(TMB)
+compile("multievent_tmb.cpp")
+dyn.load(dynlib("multievent_tmb"))
+```
+
+```{r message=FALSE, warning=FALSE}
+f <- MakeADFun(
+  data = list(ch = data, fc = fc, fs = init.state), 
+  parameters = list(b = binit),
+  DLL = "multievent_tmb")
+opt <- do.call("optim", f) # optimisation
+f$fn(binit) # evaluate likelihood at the inits
+f$report()$B # display B
+f$report()$BE # display BE
+f$report()$A # display A
+f$report()$PROP # display PROP
+rep <- sdreport(f)
+rep # get SEs
+```
+
+Now, let's implement the same model with standard R code:
+
+```{r message=FALSE, warning=FALSE}
+devMULTIEVENT <- function(b,data,eff,e,garb,nh,km1){
+    
+# data encounter histories, eff counts
+# e vector of dates of first captures
+# garb vector of initial states 
+# km1 nb of recapture occasions (nb of capture occ - 1)
+# nh nb ind
+    
+# OBSERVATIONS (+1)
+# 0 = non-detected
+# 1 = seen and ascertained as non-breeder
+# 2 = seen and ascertained as breeder
+# 3 = not ascertained
+    
+# STATES
+# 1 = alive non-breeder
+# 2 = alive breeder
+# 3 = dead
+    
+# PARAMETERS
+# phiNB  survival prob. of non-breeders
+# phiB  survival prob. of breeders
+# pNB  detection prob. of non-breeders
+# pB  detection prob. of breeders
+# psiNBB transition prob. from non-breeder to breeder
+# psiBNB transition prob. from breeder to non-breeder
+# piNB prob. of being in initial state non-breeder
+# deltaNB prob to ascertain the breeding status of an individual encountered as non-breeder
+# deltaB prob to ascertain the breeding status of an individual encountered as breeder
+    
+# logit link for all parameters
+# note: below, we decompose the state and obs process in two steps composed of binomial events, 
+# which makes the use of the logit link appealing; 
+# if not, a multinomial (aka generalised) logit link should be used
+    par = plogis(b)
+    piNB <- par[1]
+    phiNB <- par[2]
+    phiB <- par[3]
+    psiNBB <- par[4]
+    psiBNB <- par[5]
+    pNB <- par[6]
+    pB <- par[7]
+    deltaNB <- par[8]
+    deltaB <- par[9]
+    
+# prob of obs (rows) cond on states (col)
+    B1 = matrix(c(1-pNB,pNB,0,1-pB,0,pB,1,0,0),nrow=3,ncol=3,byrow=T)
+    B2 = matrix(c(1,0,0,0,0,deltaNB,0,1-deltaNB,0,0,deltaB,1-deltaB),nrow=3,ncol=4,byrow=T)
+    B = t(B1 %*% B2)
+
+# first encounter
+    BE1 = matrix(c(0,1,0,0,0,1,1,0,0),nrow=3,ncol=3,byrow=T)
+    BE2 = matrix(c(1,0,0,0,0,deltaNB,0,1-deltaNB,0,0,deltaB,1-deltaB),nrow=3,ncol=4,byrow=T)
+    BE = t(BE1 %*% BE2) 
+
+# prob of states at t+1 given states at t
+    A1 <- matrix(c(phiNB,0,1-phiNB,0,phiB,1-phiB,0,0,1),nrow=3,ncol=3,byrow=T)
+    A2 <- matrix(c(1-psiNBB,psiNBB,0,psiBNB,1-psiBNB,0,0,0,1),nrow=3,ncol=3,byrow=T)
+    A <- A1 %*% A2
+
+# init states
+    PI <- c(piNB,1-piNB,0)
+    
+# likelihood
+    l <- 0
+    for (i in 1:nh) # loop on ind
+   {
+      ei <- e[i] # date of first det
+      oe <- garb[i] + 1 # init obs
+      evennt <- data[,i] + 1 # add 1 to obs to avoid 0s in indexing
+      ALPHA <- PI*BE[oe,]
+     for (j in (ei+1):(km1+1)) # cond on first capture
+     {
+        if ((ei+1)>(km1+1)) {break}
+        ALPHA <- (ALPHA %*% A)*B[evennt[j],]
+      }
+      l <- l + log(sum(ALPHA))#*eff[i]
+    }
+    l <- -l
+    l
+  }
+```
+
+
+Let's do some benchmarking:
+```{r message=FALSE, warning=FALSE}
+# The optimization is not stochastic, but depending on what else I'm doing, 
+# computation times may vary, hence a benchmark
+library(microbenchmark)
+res = microbenchmark(
+  optim(binit,devMULTIEVENT,NULL,hessian=F,data,eff,fc,init.state,nh,km1,method="BFGS"),
+  do.call("optim", f),
+  times=5
+ )
+ res2 = summary(res)
+```
+
+Now the TMB code is `r res2$median[1]/res2$median[2]` times faster than basic R!!
+

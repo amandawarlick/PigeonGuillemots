@@ -101,6 +101,12 @@ data_count <- read.csv("PGdata_pre_proc_allyrs.csv", stringsAsFactors = F) %>%
   filter(region == 'Whidbey')
 data_count[is.na(data_count)] <- 0
 
+data_count_mult <- data_count %>%
+  filter(count_type != 'pg')
+
+data_count <- data_count %>%
+  filter(count_type == 'pg')
+
 #dates for empty burrow visits (non-visits not recorded in burrow-level data, so use dates of count data and merge in)
 count_dates <- data_count %>%
   filter(intern_data != 'on') %>%
@@ -125,9 +131,9 @@ burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>
   dcast(region + site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
         fun.aggregate = mean, fill = 0) %>%
   select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data) %>%
-  filter(region == 'Whidbey')
+  filter(region == 'Whidbey') 
 
-burrow_allyrs <- test <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
+burrow_allyrs <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
   distinct() %>%
   mutate(Gunnel = coalesce(as.numeric(Gunnel), 0)) %>% #forcing NAs to 0, other ways weren't working
   mutate(Sculpin = coalesce(as.numeric(Sculpin), 0)) %>%
@@ -178,9 +184,9 @@ prey_weeks <- data_burrow %>%
   filter(region == 'Whidbey')
 
 setwd("~/Documents/SAFS/PigeonGuillemots")
-#write.csv(prey_weeks, "prey_weeks.csv", row.names = F)
-#write.csv(data_burrow, "data_burrow.csv", row.names = F)
-#write.csv(data_count, "data_count.csv", row.names = F)
+write.csv(prey_weeks, "prey_weeks.csv", row.names = F)
+write.csv(data_burrow, "data_burrow.csv", row.names = F)
+write.csv(data_count, "data_count.csv", row.names = F)
 
 # test <- data_burrow %>% distinct(site)
 # test2 <- data_count %>% distinct(site)
@@ -218,9 +224,10 @@ tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
   transform(month = month(date)) %>%
   transform(time = as.POSIXct(time))
     
-PG_count_tides <- data_count %>% filter(intern_data != 'on' & PG_count != '') %>% 
-        select(region, site, date, PG_count, start_time) %>%
-      inner_join(tides, by = c('site', 'date', 'region')) %>%
+PG_count_tides <- data_count %>% 
+  filter(intern_data != 'on' & PG_count != '') %>% 
+  select(region, site, date, PG_count, start_time) %>%
+  inner_join(tides, by = c('site', 'date', 'region')) %>%
   transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
   transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
   transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
@@ -279,11 +286,11 @@ ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, gr
   xlab("Minutes from Low or High Tide") + ylab("PG Count") + 
   fig_theme()
 
-ggplot(PG_count_tides_trim, aes(x = v, y = PG_count, col = type, group = type)) +
-  #geom_point() + 
-  geom_smooth(se = F) +
-  xlab("Tidal Height") + ylab("PG Count") + 
-  fig_theme()
+# ggplot(PG_count_tides_trim, aes(x = v, y = PG_count, col = type, group = type)) +
+#   #geom_point() + 
+#   geom_smooth(se = F) +
+#   xlab("Tidal Height") + ylab("PG Count") + 
+#   fig_theme()
 
 ```
 
@@ -471,12 +478,14 @@ weekly_count_col_trim_SS <- week_perc_yr_SS %>%
 
 ########combined regions##########
 
-weekly_count_isl_trim <- bind_rows(weekly_count_isl_trim_w, weekly_count_isl_trim_SS)
-weekly_count_col_trim <- bind_rows(weekly_count_col_trim_w, weekly_count_col_trim_SS)
+weekly_count_isl_trim <- weekly_count_isl_trim_w
+weekly_count_col_trim <- weekly_count_col_trim_w
+# weekly_count_isl_trim <- bind_rows(weekly_count_isl_trim_w, weekly_count_isl_trim_SS)
+# weekly_count_col_trim <- bind_rows(weekly_count_col_trim_w, weekly_count_col_trim_SS)
 
 ### count data moving forward: weekly_count_col_trim and weekly_count_isl_trim
-##write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
-##write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
+write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
+write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
 ```
 
 
@@ -657,7 +666,6 @@ ggplot(countplotdata_col %>% filter(region == 'Whidbey' &
   facet_wrap(~site)
 
 #prey deliveries
-head(data_burrow)
 
 # get start/stops for each colony and year, then average across years and then get length
 prey_stop_start_col_plot_data <- data_burrow %>%
@@ -687,8 +695,6 @@ ggplot(prey_stop_start_isl_plot_data, aes(year, length)) +
   xlab("") + ylab("Day of Year") +
   scale_y_continuous(limits = c(150,270)) +
   fig_theme()
-
-
 
 ```
 
@@ -784,7 +790,7 @@ prey_dels_daily <- data_burrow %>% filter(as.numeric(year) < 8) %>%
 
 #for frances
 ggplot(prey_dels_daily, 
-       aes(week, mean_dels, group = site, color = site)) +
+       aes(week, mean_dels, group = site)) +
   geom_line() + geom_point() + 
   #scale_x_continuous(limit = c(0,16), breaks = c(3,6,9,12,15),
                                                 #labels = c(3,6,9,12,15)) +

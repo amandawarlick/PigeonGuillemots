@@ -1,0 +1,999 @@
+siteName,visitId,ymd,week,internOnly,burrow,prey,visits
+Shore Meadows,1205,6/11/18,24,,b.1,noprey,1
+Shore Meadows,1205,6/11/18,24,,b.31,noprey,1
+Shore Meadows,1205,6/11/18,24,,b.32,noprey,1
+Shore Meadows,1205,6/11/18,24,,b.33,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.3A,noprey,3
+Lagoon Point South,1208,6/12/18,24,,b.3B,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.3C,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.4A,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.4B,noprey,2
+Lagoon Point South,1208,6/12/18,24,,b.4C,noprey,2
+Lagoon Point South,1208,6/12/18,24,,b.4D,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.4E,noprey,2
+Lagoon Point South,1208,6/12/18,24,,b.4F,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.4G,noprey,2
+Lagoon Point South,1208,6/12/18,24,,b.4H,noprey,2
+Lagoon Point South,1208,6/12/18,24,,b.3D,noprey,1
+Lagoon Point South,1208,6/12/18,24,,b.3E,noprey,1
+Lagoon North #1,1211,6/12/18,24,,b.1,noprey,3
+Lake Hancock North,1212,6/14/18,24,,b.3,noprey,3
+Lake Hancock North,1212,6/14/18,24,,b.4,noprey,1
+Lake Hancock North,1212,6/14/18,24,,b.5,noprey,4
+Lake Hancock North,1212,6/14/18,24,,b.8,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.2,noprey,4
+Lake Hancock North,1212,6/14/18,24,,b.10,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.11,noprey,3
+Lake Hancock North,1212,6/14/18,24,,b.12,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.14,noprey,1
+Lake Hancock North,1212,6/14/18,24,,b.15,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.17,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.18,noprey,2
+Lake Hancock North,1212,6/14/18,24,,b.20,noprey,6
+Bush Point Dock,1213,6/14/18,24,,b.1,noprey,2
+Harrington South,1215,6/15/18,24,,b.7,noprey,1
+Fort Casey North,1217,6/16/18,24,,b.21,noprey,1
+Coupeville Wharf,1218,6/17/18,24,,b.1,noprey,1
+Coupeville Wharf,1218,6/17/18,24,,b.2,noprey,1
+Forbes Point,1222,6/16/18,24,,b.1,noprey,1
+Lagoon Point South,1224,6/19/18,25,,b.2A,noprey,1
+Lagoon Point South,1224,6/19/18,25,,b.3A,noprey,1
+Lagoon Point South,1224,6/19/18,25,,b.4C,noprey,2
+Lagoon Point South,1224,6/19/18,25,,b.4F,noprey,2
+Rolling Hills #1,1225,6/19/18,25,,b.3,gunnels,1
+Rolling Hills #1,1225,6/19/18,25,,b.8,gunnels,2
+Rolling Hills #1,1225,6/19/18,25,,b.8,other,1
+Rolling Hills #1,1225,6/19/18,25,,b.27a,gunnels,1
+Rolling Hills #1,1225,6/19/18,25,,b.31a,other,1
+Rolling Hills #1,1225,6/19/18,25,,b.33,gunnels,1
+Rolling Hills #1,1226,6/12/18,24,,b.10,noprey,1
+Rolling Hills #1,1226,6/12/18,24,,b.31a,gunnels,1
+Rolling Hills #1,1226,6/12/18,24,,b.33,gunnels,1
+Malmo Bluff,1228,6/19/18,25,,b.30,noprey,1
+Malmo Bluff,1228,6/19/18,25,,b.13,noprey,1
+Malmo Bluff,1228,6/19/18,25,,b.17,noprey,1
+Malmo Bluff,1228,6/19/18,25,,b.16,noprey,1
+Malmo Bluff,1228,6/19/18,25,,b.26,noprey,1
+Malmo Bluff,1228,6/19/18,25,,b.31,noprey,1
+Hastie Lake South,1229,6/16/18,24,,b.1,noprey,1
+Hastie Lake South,1229,6/16/18,24,,b.2,noprey,2
+Shore Meadows,1231,6/18/18,25,,b.1,noprey,2
+Shore Meadows,1231,6/18/18,25,,b.31,noprey,1
+Shore Meadows,1231,6/18/18,25,,b.61,noprey,1
+Shore Meadows,1231,6/18/18,25,,b.62,noprey,1
+Hastie Lake South,1234,6/20/18,25,,b.2,noprey,1
+Hastie Lake South,1234,6/20/18,25,,b.3,noprey,1
+Hastie Lake South,1234,6/20/18,25,,b.4,noprey,1
+Hastie Lake South,1234,6/20/18,25,,b.11,noprey,1
+Hastie Lake South,1234,6/20/18,25,,b.12,noprey,1
+Harrington North,1235,6/14/18,24,,b.13,noprey,1
+Clinton Ferry Dock,1236,6/13/18,24,,b.1,noprey,1
+Clinton Ferry Dock,1236,6/13/18,24,,b.1,gunnels,1
+Clinton Ferry Dock,1236,6/13/18,24,,b.2,noprey,2
+Clinton Ferry Dock,1236,6/13/18,24,,b.5,noprey,1
+Clinton Ferry Dock,1236,6/13/18,24,,b.4,noprey,2
+Limpet Lane,1239,6/13/18,24,,b.srm,noprey,4
+Swantown,1240,6/15/18,24,,b.1,noprey,1
+Lake Hancock North,1243,6/21/18,25,,b.10,gunnels,1
+Lake Hancock North,1243,6/21/18,25,,b.11,noprey,1
+Lake Hancock North,1243,6/21/18,25,,b.20,noprey,1
+Lake Hancock North,1243,6/21/18,25,,b.19,noprey,1
+Harrington South,1244,6/22/18,25,,b.7,noprey,1
+Mutiny Sands,1245,6/20/18,25,,b.22,noprey,1
+Mutiny Sands,1245,6/20/18,25,,b.2,noprey,2
+Mutiny Sands,1245,6/20/18,25,,b.18,noprey,3
+Double Bluff North,1246,6/22/18,25,,b.B1,noprey,1
+Double Bluff North,1246,6/22/18,25,,b.E1,noprey,1
+Swantown,1247,6/22/18,25,,b.1,noprey,2
+Swantown,1247,6/22/18,25,,b.2,noprey,1
+Swantown,1247,6/22/18,25,,b.3,noprey,4
+Swantown,1247,6/22/18,25,,b.4,noprey,2
+Langley Marina,1249,6/24/18,25,,b.2,noprey,3
+Shore Meadows,1251,6/25/18,26,,b.2,noprey,1
+Shore Meadows,1251,6/25/18,26,,b.2,sculpin,1
+Shore Meadows,1251,6/25/18,26,,b.3,gunnels,1
+Shore Meadows,1251,6/25/18,26,,b.4,noprey,1
+Shore Meadows,1251,6/25/18,26,,b.31,sculpin,2
+Fort Casey North,1255,6/23/18,25,,b.11,gunnels,1
+Fort Casey North,1255,6/23/18,25,,b.12,noprey,1
+Fort Casey North,1255,6/23/18,25,,b.22,gunnels,1
+Fort Casey North,1255,6/23/18,25,,b.23,noprey,2
+Fort Casey North,1255,6/23/18,25,,b.21,noprey,2
+Fort Casey North,1255,6/23/18,25,,b.24,noprey,1
+Fort Casey North,1255,6/23/18,25,,b.25,sculpin,1
+Monroe Landing,1259,6/26/18,26,,b.1,gunnels,3
+Malmo Bluff,1261,6/26/18,26,,b.30,noprey,2
+Malmo Bluff,1261,6/26/18,26,,b.13,noprey,2
+Malmo Bluff,1261,6/26/18,26,,b.16,noprey,2
+Malmo Bluff,1261,6/26/18,26,,b.17,noprey,2
+Malmo Bluff,1261,6/26/18,26,,b.19,noprey,2
+Malmo Bluff,1261,6/26/18,26,,b.2,noprey,1
+Malmo Bluff,1261,6/26/18,26,,b.3,noprey,1
+Malmo Bluff,1261,6/26/18,26,,b.3,other,1
+Malmo Bluff,1261,6/26/18,26,,b.4,noprey,1
+Malmo Bluff,1261,6/26/18,26,,b.18,noprey,1
+Malmo Bluff,1261,6/26/18,26,,b.15,noprey,1
+Ledgewood,1262,6/15/18,24,,b.3,noprey,1
+Ledgewood,1262,6/15/18,24,,b.11,noprey,1
+Ledgewood,1262,6/15/18,24,,b.12,noprey,1
+Ledgewood,1262,6/15/18,24,,b.7,noprey,1
+Mutiny Sands,1265,6/27/18,26,,b.24,gunnels,1
+Mutiny Sands,1265,6/27/18,26,,b.24,other,1
+Ledgewood,1266,6/20/18,25,,b.3,noprey,1
+Lagoon North #1,1267,6/28/18,26,,b.1,noprey,6
+Lagoon North #1,1267,6/28/18,26,,b.7,noprey,1
+Harrington South,1268,6/29/18,26,,b.7,noprey,1
+Harrington South,1268,6/29/18,26,,b.3,noprey,1
+Lake Hancock North,1270,6/28/18,26,,b.2,noprey,3
+Lake Hancock North,1270,6/28/18,26,,b.3,noprey,2
+Lake Hancock North,1270,6/28/18,26,,b.4,noprey,4
+Lake Hancock North,1270,6/28/18,26,,b.5,noprey,3
+Lake Hancock North,1270,6/28/18,26,,b.8,noprey,3
+Lake Hancock North,1270,6/28/18,26,,b.10,noprey,1
+Lake Hancock North,1270,6/28/18,26,,b.11,noprey,4
+Lake Hancock North,1270,6/28/18,26,,b.12,noprey,1
+Lake Hancock North,1270,6/28/18,26,,b.14,noprey,2
+Lake Hancock North,1270,6/28/18,26,,b.18,noprey,3
+Lake Hancock North,1270,6/28/18,26,,b.20,noprey,3
+Lake Hancock North,1270,6/28/18,26,,b.S2,noprey,3
+Fort Casey North,1271,6/30/18,26,,b.11,gunnels,1
+Fort Casey North,1271,6/30/18,26,,b.12,noprey,1
+Fort Casey North,1271,6/30/18,26,,b.13,noprey,1
+Fort Casey North,1271,6/30/18,26,,b.13,other,1
+Fort Casey North,1271,6/30/18,26,,b.14,sculpin,5
+Fort Casey North,1271,6/30/18,26,,b.25,sculpin,1
+Fort Casey North,1271,6/30/18,26,,b.26,sculpin,1
+Hastie Lake South,1272,6/26/18,26,,b.3,noprey,1
+Hastie Lake South,1272,6/26/18,26,,b.3,other,1
+Pratts Bluff,1274,7/2/18,27,,b.1,noprey,1
+Pratts Bluff,1274,7/2/18,27,,b.1,gunnels,1
+Pratts Bluff,1274,7/2/18,27,,b.2,noprey,2
+Pratts Bluff,1274,7/2/18,27,,b.3,noprey,1
+Pratts Bluff,1274,7/2/18,27,,b.5,noprey,1
+Pratts Bluff,1274,7/2/18,27,,b.6,noprey,1
+Pratts Bluff,1274,7/2/18,27,,b.9,gunnels,1
+Shore Meadows,1275,7/2/18,27,,b.2,sculpin,1
+Shore Meadows,1275,7/2/18,27,,b.2,gunnels,1
+Langley Marina,1276,7/3/18,27,,b.2,noprey,1
+Lagoon Point South,1277,7/3/18,27,,b.2B,noprey,1
+Lagoon Point South,1277,7/3/18,27,,b.3A,gunnels,2
+Lagoon Point South,1277,7/3/18,27,,b.3C,noprey,1
+Lagoon Point South,1277,7/3/18,27,,b.3E,noprey,2
+Lagoon Point South,1277,7/3/18,27,,b.4B,noprey,2
+Lagoon Point South,1277,7/3/18,27,,b.4C,noprey,2
+Lagoon Point South,1277,7/3/18,27,,b.4D,noprey,1
+Lagoon Point South,1277,7/3/18,27,,b.4F,noprey,2
+Ledgewood,1278,6/27/18,26,,b.10,sculpin,1
+Ledgewood,1278,6/27/18,26,,b.10,gunnels,1
+Ledgewood,1278,6/27/18,26,,b.SC1,noprey,1
+Ledgewood,1278,6/27/18,26,,b.7,noprey,2
+Lagoon North #0,1279,6/30/18,26,,b.1,noprey,4
+Lagoon North #0,1279,6/30/18,26,,b.2,noprey,2
+Lagoon North #0,1279,6/30/18,26,,b.3,noprey,7
+Lagoon North #0,1279,6/30/18,26,,b.4,noprey,4
+Lagoon North #0,1279,6/30/18,26,,b.5,noprey,3
+Lagoon North #0,1279,6/30/18,26,,b.6,noprey,2
+Lagoon North #0,1279,6/30/18,26,,b.7,noprey,2
+Lagoon North #0,1279,6/30/18,26,,b.8,noprey,1
+Malmo Bluff,1280,7/3/18,27,,b.19,other,1
+Malmo Bluff,1280,7/3/18,27,,b.30,noprey,4
+Malmo Bluff,1280,7/3/18,27,,b.30,gunnels,1
+Malmo Bluff,1280,7/3/18,27,,b.4,gunnels,2
+Coupeville Wharf,1282,7/1/18,26,,b.2,noprey,1
+Monroe Landing,1283,7/3/18,27,,b.1,gunnels,1
+Mutiny Sands,1284,7/4/18,27,,b.10,sculpin,1
+Lagoon North #1,1285,7/4/18,27,,b.1X,sculpin,2
+Harrington South,1286,7/6/18,27,,b.6,noprey,3
+Harrington South,1286,7/6/18,27,,b.7,noprey,1
+Harrington South,1286,7/6/18,27,,b.7,gunnels,1
+Rolling Hills #1,1287,7/3/18,27,,b.3,gunnels,1
+Rolling Hills #1,1287,7/3/18,27,,b.3,other,1
+Rolling Hills #1,1287,7/3/18,27,,b.5,gunnels,1
+Rolling Hills #1,1287,7/3/18,27,,b.8,gunnels,1
+Rolling Hills #1,1287,7/3/18,27,,b.31a,gunnels,1
+Lake Hancock North,1288,7/7/18,27,,b.3,sculpin,1
+Lake Hancock North,1288,7/7/18,27,,b.4,gunnels,1
+Lake Hancock North,1288,7/7/18,27,,b.8,sculpin,1
+Lake Hancock North,1288,7/7/18,27,,b.10,gunnels,2
+Hastie Lake South,1289,7/3/18,27,,b.5,gunnels,2
+Hastie Lake South,1289,7/3/18,27,,b.13,sculpin,1
+Fort Casey North,1290,7/7/18,27,,b.11,sculpin,1
+Fort Casey North,1290,7/7/18,27,,b.11,other,1
+Fort Casey North,1290,7/7/18,27,,b.14,gunnels,1
+Fort Casey North,1290,7/7/18,27,,b.22,sculpin,2
+Fort Casey North,1290,7/7/18,27,,b.22,other,1
+Fort Casey North,1290,7/7/18,27,,b.25,sculpin,3
+Fort Casey North,1290,7/7/18,27,,b.3,noprey,1
+Fort Casey North,1290,7/7/18,27,,b.4,noprey,1
+Fort Casey North,1290,7/7/18,27,,b.5,noprey,1
+Fort Casey North,1290,7/7/18,27,,b.15,sculpin,1
+Fort Casey North,1290,7/7/18,27,,b.15,gunnels,1
+Fort Casey North,1290,7/7/18,27,,b.15,other,1
+Fort Casey North,1290,7/7/18,27,,b.18,other,1
+Fort Casey North,1290,7/7/18,27,,b.27,other,1
+Ledgewood,1291,7/4/18,27,,b.7,noprey,2
+Ledgewood,1291,7/4/18,27,,b.8,noprey,2
+Ledgewood,1291,7/4/18,27,,b.10,gunnels,1
+Ledgewood,1291,7/4/18,27,,b.14,noprey,2
+Ledgewood,1291,7/4/18,27,,b.1,noprey,1
+Ledgewood,1291,7/4/18,27,,b.3,gunnels,2
+Ledgewood,1291,7/4/18,27,,b.SC1,noprey,1
+Clinton Ferry Dock,1292,6/22/18,25,,b.1,noprey,2
+Clinton Ferry Dock,1292,6/22/18,25,,b.2,noprey,4
+Clinton Ferry Dock,1292,6/22/18,25,,b.4,noprey,2
+Clinton Ferry Dock,1292,6/22/18,25,,b.5,noprey,4
+Clinton Ferry Dock,1293,6/29/18,26,,b.1,noprey,3
+Clinton Ferry Dock,1293,6/29/18,26,,b.4,noprey,2
+Clinton Ferry Dock,1293,6/29/18,26,,b.3,noprey,1
+Clinton Ferry Dock,1293,6/29/18,26,,b.7,noprey,3
+Clinton Ferry Dock,1294,7/6/18,27,,b.1,noprey,1
+Clinton Ferry Dock,1294,7/6/18,27,,b.5,noprey,1
+Clinton Ferry Dock,1294,7/6/18,27,,b.4,noprey,1
+Clinton Ferry Dock,1294,7/6/18,27,,b.7,noprey,2
+Swantown,1297,7/7/18,27,,b.2,noprey,1
+Swantown,1297,7/7/18,27,,b.4,gunnels,1
+Cliffside,1300,7/2/18,27,,b.6,noprey,1
+Cliffside,1300,7/2/18,27,,b.7,noprey,1
+Cliffside,1300,7/2/18,27,,b.1,gunnels,1
+Mutiny Sands- INTERN,1304,6/19/18,25,on,b.23,gunnels,1
+Mutiny Sands- INTERN,1304,6/19/18,25,on,b.23,other,1
+Mutiny Sands- INTERN,1305,6/21/18,25,on,b.23,sculpin,1
+Mutiny Sands- INTERN,1305,6/21/18,25,on,b.23,gunnels,3
+Mutiny Sands- INTERN,1306,6/25/18,26,on,b.24,gunnels,1
+Mutiny Sands- INTERN,1306,6/25/18,26,on,b.23,gunnels,1
+Mutiny Sands- INTERN,1306,6/25/18,26,on,b.23,other,1
+Mutiny Sands- INTERN,1306,6/25/18,26,on,b.10,sculpin,1
+Mutiny Sands- INTERN,1306,6/25/18,26,on,b.10,gunnels,1
+Mutiny Sands- INTERN,1307,6/27/18,26,on,b.24,gunnels,3
+Mutiny Sands- INTERN,1307,6/27/18,26,on,b.24,other,2
+Mutiny Sands- INTERN,1307,6/27/18,26,on,b.23,sculpin,2
+Mutiny Sands- INTERN,1307,6/27/18,26,on,b.23,gunnels,1
+Shore Meadows,1308,7/9/18,28,,b.2,sculpin,1
+Shore Meadows,1308,7/9/18,28,,b.5,noprey,1
+Shore Meadows,1308,7/9/18,28,,b.33,sculpin,1
+Shore Meadows,1308,7/9/18,28,,b.62,noprey,1
+Shore Meadows,1308,7/9/18,28,,b.62,sculpin,1
+Rolling Hills #3,1309,6/15/18,24,,b.51,sculpin,1
+Rolling Hills #3,1310,6/21/18,25,,b.51,gunnels,2
+Rolling Hills #3,1311,6/28/18,26,,b.51,sculpin,1
+Rolling Hills #3,1311,6/28/18,26,,b.51,gunnels,1
+Double Bluff North,1313,6/29/18,26,,b.E2,noprey,2
+Double Bluff North,1314,7/6/18,27,,b.B2,noprey,1
+Double Bluff North,1314,7/6/18,27,,b.C1,noprey,1
+Double Bluff North,1314,7/6/18,27,,b.C1,gunnels,1
+Double Bluff North,1314,7/6/18,27,,b.D1,noprey,1
+Possession Point,1315,7/9/18,28,,b.E-1,noprey,1
+Lagoon Point South,1316,7/10/18,28,,b.3A,sculpin,2
+Lagoon Point South,1316,7/10/18,28,,b.3A,gunnels,1
+Malmo Bluff,1317,7/10/18,28,,b.3,noprey,2
+Malmo Bluff,1317,7/10/18,28,,b.3,other,2
+Malmo Bluff,1317,7/10/18,28,,b.6,noprey,7
+Malmo Bluff,1317,7/10/18,28,,b.4,noprey,1
+Malmo Bluff,1317,7/10/18,28,,b.7,gunnels,1
+Malmo Bluff,1317,7/10/18,28,,b.30,noprey,2
+Malmo Bluff,1317,7/10/18,28,,b.30,gunnels,2
+Malmo Bluff,1317,7/10/18,28,,b.31,noprey,1
+Malmo Bluff,1317,7/10/18,28,,b.13,noprey,1
+Malmo Bluff,1317,7/10/18,28,,b.15,noprey,1
+Malmo Bluff,1317,7/10/18,28,,b.16,noprey,4
+Malmo Bluff,1317,7/10/18,28,,b.17,noprey,3
+Malmo Bluff,1317,7/10/18,28,,b.19,other,1
+Malmo Bluff,1317,7/10/18,28,,b.21,noprey,1
+Rolling Hills #1,1318,7/10/18,28,,b.3,noprey,1
+Rolling Hills #1,1318,7/10/18,28,,b.3,gunnels,1
+Rolling Hills #1,1318,7/10/18,28,,b.5,gunnels,2
+Rolling Hills #1,1318,7/10/18,28,,b.8,sculpin,1
+Forbes Point,1319,7/6/18,27,,b.2,sculpin,3
+Hastie Lake South,1320,7/10/18,28,,b.13,noprey,1
+Hastie Lake South,1320,7/10/18,28,,b.6,sculpin,1
+Hastie Lake South,1320,7/10/18,28,,b.6,gunnels,1
+Hastie Lake South,1320,7/10/18,28,,b.11,gunnels,1
+Hastie Lake South,1320,7/10/18,28,,b.11,other,1
+Mutiny Sands,1321,7/11/18,28,,b.24,other,3
+Lagoon North #1,1322,7/11/18,28,,b.1Y,sculpin,1
+Lagoon North #1,1322,7/11/18,28,,b.1Z,noprey,1
+Lagoon North #1,1322,7/11/18,28,,b.7,noprey,2
+Lagoon North #1,1322,7/11/18,28,,b.5,noprey,1
+Lagoon North #1,1322,7/11/18,28,,b.4,noprey,1
+Lagoon North #1,1322,7/11/18,28,,b.1C,noprey,2
+Lagoon North #1,1322,7/11/18,28,,b.1A,noprey,1
+Lagoon North #1,1322,7/11/18,28,,b.1,noprey,3
+Monroe Landing,1323,7/10/18,28,,b.1,gunnels,2
+Rolling Hills #1 -- INTERN,1324,6/12/18,24,on,b.8,gunnels,6
+Rolling Hills #1 -- INTERN,1325,6/15/18,24,on,b.8,gunnels,3
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.26,gunnels,3
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.8,sculpin,3
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.8,gunnels,3
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.32,gunnels,1
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.33,sculpin,2
+Rolling Hills #1 -- INTERN,1326,6/18/18,25,on,b.33,gunnels,3
+Lagoon North #0,1327,7/8/18,27,,b.9,noprey,2
+Lagoon North #0,1327,7/8/18,27,,b.9,sculpin,1
+Lagoon North #0,1327,7/8/18,27,,b.9,gunnels,1
+Harrington North,1331,6/27/18,26,,b.SM,noprey,1
+Harrington North,1331,6/27/18,26,,b.TM,noprey,1
+Harrington North,1331,6/27/18,26,,b.14,noprey,1
+Harrington South,1334,7/13/18,28,,b.3,noprey,1
+Harrington South,1334,7/13/18,28,,b.3,gunnels,1
+Harrington South,1334,7/13/18,28,,b.7,other,2
+Lake Hancock North,1335,7/13/18,28,,b.S10,noprey,1
+Lake Hancock North,1335,7/13/18,28,,b.2,noprey,2
+Lake Hancock North,1335,7/13/18,28,,b.8,noprey,3
+Lake Hancock North,1335,7/13/18,28,,b.12,noprey,5
+Lake Hancock North,1335,7/13/18,28,,b.18,noprey,2
+Lake Hancock North,1335,7/13/18,28,,b.15,noprey,2
+Lake Hancock North,1335,7/13/18,28,,b.15,sculpin,1
+Lake Hancock North,1335,7/13/18,28,,b.11,noprey,2
+Lake Hancock North,1335,7/13/18,28,,b.11,sculpin,1
+Lake Hancock North,1335,7/13/18,28,,b.14,noprey,4
+Lake Hancock North,1335,7/13/18,28,,b.14,sculpin,1
+Lake Hancock North,1335,7/13/18,28,,b.4,noprey,3
+Lake Hancock North,1335,7/13/18,28,,b.4,gunnels,1
+Lake Hancock North,1335,7/13/18,28,,b.3,noprey,3
+Lake Hancock North,1335,7/13/18,28,,b.10,noprey,1
+Lake Hancock North,1335,7/13/18,28,,b.5,noprey,1
+Lake Hancock North,1335,7/13/18,28,,b.19,noprey,1
+Coupeville Wharf,1337,7/15/18,28,,b.1,noprey,3
+Coupeville Wharf,1337,7/15/18,28,,b.2,noprey,1
+Rolling Hills #1 -- INTERN,1338,6/20/18,25,on,b.8,gunnels,3
+Rolling Hills #1 -- INTERN,1339,6/22/18,25,on,b.8,gunnels,10
+Rolling Hills #1 -- INTERN,1339,6/22/18,25,on,b.33,gunnels,3
+Rolling Hills #1 -- INTERN,1340,6/26/18,26,on,b.8,gunnels,1
+Rolling Hills #1 -- INTERN,1341,6/28/18,26,on,b.8,sculpin,1
+Rolling Hills #1 -- INTERN,1341,6/28/18,26,on,b.8,gunnels,5
+Rolling Hills #1 -- INTERN,1341,6/28/18,26,on,b.5,gunnels,3
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.5,gunnels,4
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.8,sculpin,1
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.8,gunnels,3
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.8,other,2
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.32,sculpin,2
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.32,gunnels,6
+Rolling Hills #1 -- INTERN,1343,7/5/18,27,on,b.33,gunnels,1
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.5,sculpin,1
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.5,gunnels,3
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.8,sculpin,1
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.8,gunnels,3
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.8,other,1
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.32,sculpin,2
+Rolling Hills #1 -- INTERN,1344,7/7/18,27,on,b.33,gunnels,6
+Fort Casey North,1345,7/14/18,28,,b.1,gunnels,1
+Fort Casey North,1345,7/14/18,28,,b.2,other,1
+Fort Casey North,1345,7/14/18,28,,b.3,sculpin,2
+Fort Casey North,1345,7/14/18,28,,b.3,gunnels,1
+Fort Casey North,1345,7/14/18,28,,b.5,noprey,1
+Fort Casey North,1345,7/14/18,28,,b.6,sculpin,3
+Fort Casey North,1345,7/14/18,28,,b.7,noprey,4
+Fort Casey North,1345,7/14/18,28,,b.7,other,1
+Fort Casey North,1345,7/14/18,28,,b.8,noprey,1
+Fort Casey North,1345,7/14/18,28,,b.13,noprey,1
+Fort Casey North,1345,7/14/18,28,,b.14,noprey,1
+Fort Casey North,1345,7/14/18,28,,b.14,sculpin,1
+Fort Casey North,1345,7/14/18,28,,b.14,gunnels,1
+Fort Casey North,1345,7/14/18,28,,b.15,gunnels,1
+Fort Casey North,1345,7/14/18,28,,b.15,other,1
+Fort Casey North,1345,7/14/18,28,,b.16,noprey,2
+Fort Casey North,1345,7/14/18,28,,b.17,gunnels,1
+Fort Casey North,1345,7/14/18,28,,b.17,other,1
+Fort Casey North,1345,7/14/18,28,,b.19,noprey,2
+Fort Casey North,1345,7/14/18,28,,b.22,other,1
+Fort Casey North,1345,7/14/18,28,,b.23,noprey,3
+Fort Casey North,1345,7/14/18,28,,b.28,noprey,1
+Fort Casey North,1345,7/14/18,28,,b.29,noprey,1
+Mutiny Sands- INTERN,1346,6/29/18,26,on,b.23,sculpin,1
+Mutiny Sands- INTERN,1346,6/29/18,26,on,b.23,gunnels,2
+Mutiny Sands- INTERN,1346,6/29/18,26,on,b.24,sculpin,1
+Mutiny Sands- INTERN,1346,6/29/18,26,on,b.10,sculpin,2
+Mutiny Sands- INTERN,1346,6/29/18,26,on,b.10,gunnels,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.24,sculpin,3
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.24,gunnels,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.24,other,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.23,sculpin,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.23,gunnels,3
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.23,other,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.10,sculpin,3
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.10,gunnels,1
+Mutiny Sands- INTERN,1347,7/4/18,27,on,b.10,other,1
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.10,sculpin,3
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.10,gunnels,1
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.10,other,1
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.24,sculpin,4
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.24,gunnels,1
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.23,sculpin,3
+Mutiny Sands- INTERN,1348,7/6/18,27,on,b.23,gunnels,2
+Rolling Hills #3,1349,7/8/18,27,,b.50,noprey,3
+Pratts Bluff,1350,7/11/18,28,,b.11,noprey,3
+Pratts Bluff,1350,7/11/18,28,,b.3,noprey,1
+Pratts Bluff,1350,7/11/18,28,,b.3,gunnels,1
+Pratts Bluff,1350,7/11/18,28,,b.1,noprey,1
+Pratts Bluff,1350,7/11/18,28,,b.9,noprey,1
+Monroe Landing,1351,7/16/18,29,,b.1,gunnels,1
+Monroe Landing,1351,7/16/18,29,,b.1,other,3
+Monroe Landing,1351,7/16/18,29,,b.2,gunnels,1
+Lagoon Point South,1353,7/17/18,29,,b.2B,noprey,4
+Lagoon Point South,1353,7/17/18,29,,b.3A,noprey,1
+Lagoon Point South,1353,7/17/18,29,,b.3A,gunnels,1
+Lagoon Point South,1353,7/17/18,29,,b.4B,noprey,1
+Lagoon Point South,1353,7/17/18,29,,b.4B,sculpin,1
+Lagoon Point South,1353,7/17/18,29,,b.4B,gunnels,1
+Lagoon Point South,1353,7/17/18,29,,b.4F,noprey,2
+Lagoon Point South,1353,7/17/18,29,,b.4G,noprey,1
+Rolling Hills #1,1354,7/17/18,29,,b.3,gunnels,3
+Malmo Bluff,1355,7/17/18,29,,b.2,noprey,3
+Malmo Bluff,1355,7/17/18,29,,b.2,gunnels,1
+Malmo Bluff,1355,7/17/18,29,,b.3,noprey,4
+Malmo Bluff,1355,7/17/18,29,,b.4,gunnels,1
+Malmo Bluff,1355,7/17/18,29,,b.4,other,1
+Malmo Bluff,1355,7/17/18,29,,b.6,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.7,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.7,other,2
+Malmo Bluff,1355,7/17/18,29,,b.16,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.17,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.15,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.30,noprey,4
+Malmo Bluff,1355,7/17/18,29,,b.30,gunnels,1
+Malmo Bluff,1355,7/17/18,29,,b.31,noprey,1
+Malmo Bluff,1355,7/17/18,29,,b.31,gunnels,1
+Limpet Lane,1356,7/12/18,28,,b.sllm,noprey,1
+Limpet Lane,1356,7/12/18,28,,b.1a,noprey,2
+Limpet Lane,1356,7/12/18,28,,b.2,noprey,1
+Limpet Lane,1356,7/12/18,28,,b.3,noprey,2
+Limpet Lane,1356,7/12/18,28,,b.3,gunnels,1
+Limpet Lane,1356,7/12/18,28,,b.3,other,1
+Limpet Lane,1356,7/12/18,28,,b.4,noprey,1
+Limpet Lane,1356,7/12/18,28,,b.4,other,2
+Limpet Lane,1357,7/4/18,27,,b.SLM,noprey,2
+Limpet Lane,1357,7/4/18,27,,b.srm,noprey,5
+Limpet Lane,1357,7/4/18,27,,b.BL,noprey,2
+Limpet Lane,1357,7/4/18,27,,b.2,other,2
+Limpet Lane,1357,7/4/18,27,,b.4,noprey,1
+Limpet Lane,1357,7/4/18,27,,b.4,other,3
+Limpet Lane,1358,7/18/18,29,,b.SLM,noprey,1
+Limpet Lane,1358,7/18/18,29,,b.3,gunnels,3
+Limpet Lane,1358,7/18/18,29,,b.4,noprey,1
+Limpet Lane,1358,7/18/18,29,,b.4,other,1
+Limpet Lane,1359,6/27/18,26,,b.SLM,noprey,2
+Limpet Lane,1359,6/27/18,26,,b.4,noprey,4
+Limpet Lane,1359,6/27/18,26,,b.6,noprey,4
+Limpet Lane,1359,6/27/18,26,,b.2,noprey,1
+Limpet Lane,1359,6/27/18,26,,b.5,noprey,3
+Mutiny Sands,1363,7/18/18,29,,b.2,noprey,2
+Mutiny Sands,1363,7/18/18,29,,b.6,noprey,1
+Mutiny Sands,1363,7/18/18,29,,b.9,noprey,4
+Mutiny Sands,1363,7/18/18,29,,b.10,sculpin,1
+Mutiny Sands,1363,7/18/18,29,,b.23,noprey,4
+Mutiny Sands,1363,7/18/18,29,,b.24,sculpin,2
+Mutiny Sands,1363,7/18/18,29,,b.25,sculpin,1
+Mutiny Sands,1363,7/18/18,29,,b.25,other,1
+Forbes Point,1364,7/13/18,28,,b.2,gunnels,1
+Forbes Point,1364,7/13/18,28,,b.2,other,1
+Shore Meadows,1366,7/16/18,29,,b.3,gunnels,2
+Shore Meadows,1366,7/16/18,29,,b.33,noprey,1
+Shore Meadows,1366,7/16/18,29,,b.33,sculpin,1
+Shore Meadows,1366,7/16/18,29,,b.62,gunnels,2
+Shore Meadows,1366,7/16/18,29,,b.62,other,1
+Shore Meadows,1366,7/16/18,29,,b.63,sculpin,1
+Shore Meadows,1366,7/16/18,29,,b.91,sculpin,2
+Shore Meadows,1366,7/16/18,29,,b.92,gunnels,1
+Shore Meadows,1366,7/16/18,29,,b.93,other,1
+Lagoon North #0,1367,7/14/18,28,,b.1,noprey,17
+Lagoon North #0,1367,7/14/18,28,,b.2,noprey,5
+Lagoon North #0,1367,7/14/18,28,,b.3,noprey,7
+Lagoon North #0,1367,7/14/18,28,,b.4,noprey,10
+Lagoon North #0,1367,7/14/18,28,,b.6,noprey,4
+Lagoon North #0,1367,7/14/18,28,,b.7,noprey,7
+Lagoon North #0,1367,7/14/18,28,,b.8,noprey,5
+Lagoon North #0,1367,7/14/18,28,,b.9,noprey,33
+Lagoon North #0,1367,7/14/18,28,,b.10,noprey,9
+Forbes Point,1368,7/20/18,29,,b.2,sculpin,1
+Forbes Point,1368,7/20/18,29,,b.2,gunnels,2
+Ledgewood,1369,7/11/18,28,,b.4,noprey,1
+Ledgewood,1369,7/11/18,28,,b.1,noprey,1
+Ledgewood,1369,7/11/18,28,,b.5A,noprey,4
+Ledgewood,1369,7/11/18,28,,b.7,noprey,2
+Ledgewood,1369,7/11/18,28,,b.10,noprey,3
+Ledgewood,1369,7/11/18,28,,b.11,noprey,1
+Ledgewood,1369,7/11/18,28,,b.14,noprey,1
+Ledgewood,1369,7/11/18,28,,b.5B,noprey,5
+Ledgewood,1369,7/11/18,28,,b.15,noprey,1
+Ledgewood,1370,7/18/18,29,,b.1,noprey,2
+Ledgewood,1370,7/18/18,29,,b.3,noprey,1
+Ledgewood,1370,7/18/18,29,,b.4,noprey,1
+Ledgewood,1370,7/18/18,29,,b.4,gunnels,1
+Ledgewood,1370,7/18/18,29,,b.5A,noprey,2
+Ledgewood,1370,7/18/18,29,,b.7,noprey,1
+Ledgewood,1370,7/18/18,29,,b.8,noprey,1
+Ledgewood,1370,7/18/18,29,,b.6,noprey,2
+Ledgewood,1370,7/18/18,29,,b.10,noprey,3
+Ledgewood,1370,7/18/18,29,,b.11,noprey,4
+Ledgewood,1370,7/18/18,29,,b.14,noprey,1
+Lagoon North #1,1371,7/19/18,29,,b.7,noprey,2
+Lagoon North #1,1371,7/19/18,29,,b.1,noprey,4
+Lagoon North #1,1371,7/19/18,29,,b.1Z,sculpin,1
+Lagoon North #1,1371,7/19/18,29,,b.1Q,noprey,1
+Lagoon North #1,1371,7/19/18,29,,b.1D,noprey,2
+Lagoon North #1,1371,7/19/18,29,,b.1B,noprey,1
+Lagoon North #1,1371,7/19/18,29,,b.1A,noprey,1
+Double Bluff North,1372,7/13/18,28,,b.B2,sculpin,1
+Double Bluff North,1373,7/20/18,29,,b.B2,sculpin,3
+Double Bluff North,1373,7/20/18,29,,b.C1,sculpin,3
+Double Bluff North,1373,7/20/18,29,,b.D2,sculpin,1
+Double Bluff North,1373,7/20/18,29,,b.D3,sculpin,1
+Possession Point,1374,7/16/18,29,,b.E-1,noprey,1
+Lake Hancock North,1375,7/21/18,29,,b.S10,noprey,1
+Lake Hancock North,1375,7/21/18,29,,b.2,noprey,4
+Lake Hancock North,1375,7/21/18,29,,b.8,noprey,2
+Lake Hancock North,1375,7/21/18,29,,b.4,noprey,6
+Lake Hancock North,1375,7/21/18,29,,b.3,noprey,3
+Lake Hancock North,1375,7/21/18,29,,b.5,noprey,1
+Lake Hancock North,1375,7/21/18,29,,b.11,noprey,3
+Lake Hancock North,1375,7/21/18,29,,b.12,noprey,2
+Lake Hancock North,1375,7/21/18,29,,b.13,noprey,2
+Lake Hancock North,1375,7/21/18,29,,b.14,noprey,1
+Lake Hancock North,1375,7/21/18,29,,b.14,sculpin,1
+Lake Hancock North,1375,7/21/18,29,,b.19,noprey,2
+Lake Hancock North,1375,7/21/18,29,,b.18,noprey,2
+Lake Hancock North,1375,7/21/18,29,,b.23,noprey,1
+Lake Hancock North,1375,7/21/18,29,,b.24,gunnels,1
+Fort Casey North,1376,7/21/18,29,,b.1,other,1
+Fort Casey North,1376,7/21/18,29,,b.4,sculpin,2
+Fort Casey North,1376,7/21/18,29,,b.6,sculpin,2
+Fort Casey North,1376,7/21/18,29,,b.6,other,1
+Fort Casey North,1376,7/21/18,29,,b.9,noprey,1
+Fort Casey North,1376,7/21/18,29,,b.14,gunnels,1
+Fort Casey North,1376,7/21/18,29,,b.15,noprey,1
+Fort Casey North,1376,7/21/18,29,,b.15,sculpin,3
+Fort Casey North,1376,7/21/18,29,,b.15,gunnels,1
+Fort Casey North,1376,7/21/18,29,,b.17,sculpin,1
+Fort Casey North,1376,7/21/18,29,,b.22,other,1
+Fort Casey North,1376,7/21/18,29,,b.25,other,1
+Fort Casey North,1376,7/21/18,29,,b.26,sculpin,1
+Fort Casey North,1376,7/21/18,29,,b.28,noprey,4
+Coupeville Wharf,1377,7/22/18,29,,b.2,noprey,1
+Coupeville Wharf,1377,7/22/18,29,,b.2,gunnels,1
+Shore Meadows,1379,7/23/18,30,,b.1,gunnels,2
+Shore Meadows,1379,7/23/18,30,,b.3,sculpin,1
+Shore Meadows,1379,7/23/18,30,,b.5,sculpin,1
+Shore Meadows,1379,7/23/18,30,,b.61,noprey,2
+Shore Meadows,1379,7/23/18,30,,b.63,noprey,2
+Shore Meadows,1379,7/23/18,30,,b.63,sculpin,1
+Shore Meadows,1379,7/23/18,30,,b.63,gunnels,1
+Shore Meadows,1379,7/23/18,30,,b.91,sculpin,1
+Shore Meadows,1379,7/23/18,30,,b.91,gunnels,1
+Shore Meadows,1379,7/23/18,30,,b.93,noprey,1
+Shore Meadows,1379,7/23/18,30,,b.93,other,1
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.23,sculpin,2
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.23,gunnels,5
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.23,other,1
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.24,sculpin,1
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.24,other,3
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.10,sculpin,1
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.10,other,1
+Mutiny Sands- INTERN,1380,7/10/18,28,on,b.25,sculpin,2
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.24,sculpin,3
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.24,other,1
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.23,sculpin,2
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.23,gunnels,1
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.23,other,4
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.25,sculpin,2
+Mutiny Sands- INTERN,1381,7/12/18,28,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.23,sculpin,3
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.23,gunnels,2
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.25,sculpin,2
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.25,gunnels,1
+Mutiny Sands- INTERN,1382,7/14/18,28,on,b.25,other,1
+Monroe Landing,1383,7/23/18,30,,b.1,gunnels,2
+Monroe Landing,1383,7/23/18,30,,b.2,gunnels,1
+Monroe Landing,1383,7/23/18,30,,b.3,gunnels,1
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.25,sculpin,5
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.25,other,1
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.24,sculpin,7
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.24,gunnels,1
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.23,sculpin,1
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.23,gunnels,1
+Mutiny Sands- INTERN,1384,7/18/18,29,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.2,gunnels,2
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.24,sculpin,6
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.24,other,2
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.23,sculpin,5
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.23,gunnels,4
+Mutiny Sands- INTERN,1385,7/20/18,29,on,b.25,sculpin,3
+Cliffside,1386,7/9/18,28,,b.5,gunnels,1
+Cliffside,1387,7/16/18,29,,b.5,gunnels,1
+Cliffside,1387,7/16/18,29,,b.5,other,2
+Cliffside,1387,7/16/18,29,,b.6,gunnels,1
+Cliffside,1387,7/16/18,29,,b.1,other,1
+Swantown,1389,7/20/18,29,,b.1,gunnels,1
+Swantown,1389,7/20/18,29,,b.1,other,1
+Swantown,1389,7/20/18,29,,b.2,gunnels,1
+Swantown,1389,7/20/18,29,,b.3,gunnels,3
+Swantown,1389,7/20/18,29,,b.4,gunnels,1
+Swantown,1389,7/20/18,29,,b.4,other,1
+Possession Point,1391,7/23/18,30,,b.E-1,gunnels,1
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.32,sculpin,2
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.32,gunnels,3
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.32,other,1
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.33,gunnels,1
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.33,other,1
+Rolling Hills #1 -- INTERN,1392,7/11/18,28,on,b.5,gunnels,3
+Rolling Hills #1 -- INTERN,1393,7/13/18,28,on,b.5,gunnels,1
+Rolling Hills #1 -- INTERN,1393,7/13/18,28,on,b.32,gunnels,1
+Rolling Hills #1 -- INTERN,1396,7/21/18,29,on,b.3,sculpin,1
+Rolling Hills #1 -- INTERN,1396,7/21/18,29,on,b.3,gunnels,2
+Hastie Lake South,1397,7/17/18,29,,b.2,gunnels,2
+Hastie Lake South,1397,7/17/18,29,,b.2,other,1
+Hastie Lake South,1397,7/17/18,29,,b.3,other,2
+Hastie Lake South,1397,7/17/18,29,,b.1,gunnels,1
+Hastie Lake South,1397,7/17/18,29,,b.7,noprey,1
+Hastie Lake South,1397,7/17/18,29,,b.4,other,2
+Hastie Lake South,1397,7/17/18,29,,b.13,noprey,2
+Hastie Lake South,1397,7/17/18,29,,b.13,other,1
+Hastie Lake South,1398,7/24/18,30,,b.7,gunnels,1
+Hastie Lake South,1398,7/24/18,30,,b.13,gunnels,2
+Hastie Lake South,1398,7/24/18,30,,b.4,sculpin,1
+Hastie Lake South,1398,7/24/18,30,,b.4,gunnels,1
+Hastie Lake South,1398,7/24/18,30,,b.14,other,1
+Lagoon Point South,1400,7/24/18,30,,b.4B,sculpin,1
+Limpet Lane,1401,7/25/18,30,,b.4,sculpin,1
+Mutiny Sands,1403,7/25/18,30,,b.22,gunnels,2
+Malmo Bluff,1404,7/24/18,30,,b.30,noprey,6
+Malmo Bluff,1404,7/24/18,30,,b.30,gunnels,1
+Malmo Bluff,1404,7/24/18,30,,b.31,noprey,4
+Malmo Bluff,1404,7/24/18,30,,b.31,gunnels,2
+Malmo Bluff,1404,7/24/18,30,,b.13,noprey,1
+Malmo Bluff,1404,7/24/18,30,,b.17,noprey,1
+Malmo Bluff,1404,7/24/18,30,,b.16,noprey,1
+Malmo Bluff,1404,7/24/18,30,,b.2,other,2
+Malmo Bluff,1404,7/24/18,30,,b.4,noprey,1
+Malmo Bluff,1404,7/24/18,30,,b.4,other,2
+Malmo Bluff,1404,7/24/18,30,,b.3,noprey,4
+Malmo Bluff,1404,7/24/18,30,,b.3,gunnels,1
+Malmo Bluff,1404,7/24/18,30,,b.3,other,2
+Malmo Bluff,1404,7/24/18,30,,b.7,noprey,2
+Malmo Bluff,1404,7/24/18,30,,b.7,sculpin,1
+Malmo Bluff,1404,7/24/18,30,,b.7,other,1
+Pratts Bluff,1405,7/17/18,29,,b.3,noprey,3
+Pratts Bluff,1405,7/17/18,29,,b.3,gunnels,1
+Pratts Bluff,1405,7/17/18,29,,b.2,noprey,3
+Pratts Bluff,1405,7/17/18,29,,b.5,noprey,5
+Pratts Bluff,1405,7/17/18,29,,b.1,noprey,5
+Pratts Bluff,1405,7/17/18,29,,b.7,noprey,3
+Pratts Bluff,1405,7/17/18,29,,b.6,noprey,2
+Pratts Bluff,1405,7/17/18,29,,b.6,gunnels,1
+Pratts Bluff,1405,7/17/18,29,,b.9,noprey,1
+Pratts Bluff,1405,7/17/18,29,,b.11,noprey,4
+Pratts Bluff,1406,7/23/18,30,,b.9,noprey,1
+Rolling Hills #3,1407,7/19/18,29,,b.50,sculpin,1
+Lake Hancock North,1408,7/24/18,30,,b.S10,gunnels,1
+Lake Hancock North,1408,7/24/18,30,,b.3,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.4,noprey,2
+Lake Hancock North,1408,7/24/18,30,,b.8,sculpin,1
+Lake Hancock North,1408,7/24/18,30,,b.8,other,1
+Lake Hancock North,1408,7/24/18,30,,b.2,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.2,gunnels,1
+Lake Hancock North,1408,7/24/18,30,,b.11,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.11,sculpin,1
+Lake Hancock North,1408,7/24/18,30,,b.12,noprey,3
+Lake Hancock North,1408,7/24/18,30,,b.14,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.15,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.25,noprey,1
+Lake Hancock North,1408,7/24/18,30,,b.25,sculpin,2
+Harrington South,1410,7/20/18,29,,b.3,other,1
+Bush Point Dock,1412,6/22/18,25,,b.1,noprey,1
+Bush Point Dock,1413,6/28/18,26,,b.1,noprey,1
+Bush Point Dock,1414,7/5/18,27,,b.1,noprey,1
+Bush Point Dock,1415,7/12/18,28,,b.1,noprey,1
+Bush Point Dock,1416,7/20/18,29,,b.1,noprey,1
+Bush Point Dock,1416,7/20/18,29,,b.1,gunnels,1
+Bush Point Dock,1417,7/26/18,30,,b.1,noprey,1
+Bush Point Dock,1417,7/26/18,30,,b.1,gunnels,2
+Cliffside,1418,7/25/18,30,,b.13A,other,1
+Swantown,1419,7/27/18,30,,b.1,gunnels,1
+Swantown,1419,7/27/18,30,,b.3,gunnels,1
+Fort Casey North,1420,7/28/18,30,,b.1,noprey,4
+Fort Casey North,1420,7/28/18,30,,b.1,sculpin,1
+Fort Casey North,1420,7/28/18,30,,b.1,other,1
+Fort Casey North,1420,7/28/18,30,,b.3,noprey,2
+Fort Casey North,1420,7/28/18,30,,b.3,sculpin,1
+Fort Casey North,1420,7/28/18,30,,b.4,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.6,noprey,7
+Fort Casey North,1420,7/28/18,30,,b.5,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.9,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.15,noprey,3
+Fort Casey North,1420,7/28/18,30,,b.15,gunnels,2
+Fort Casey North,1420,7/28/18,30,,b.17,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.17,other,1
+Fort Casey North,1420,7/28/18,30,,b.18,noprey,2
+Fort Casey North,1420,7/28/18,30,,b.21,sculpin,1
+Fort Casey North,1420,7/28/18,30,,b.27,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.30,noprey,3
+Fort Casey North,1420,7/28/18,30,,b.10,noprey,1
+Fort Casey North,1420,7/28/18,30,,b.20,noprey,1
+Coupeville Wharf,1421,7/29/18,30,,b.2,noprey,2
+Lake Hancock North,1423,7/30/18,31,,b.2,sculpin,1
+Lake Hancock North,1423,7/30/18,31,,b.11,sculpin,1
+Lake Hancock North,1423,7/30/18,31,,b.25,gunnels,1
+Lake Hancock North,1423,7/30/18,31,,b.12,sculpin,1
+Rolling Hills #1,1424,7/31/18,31,,b.3,noprey,3
+Rolling Hills #1,1424,7/31/18,31,,b.4a,noprey,2
+Rolling Hills #1,1424,7/31/18,31,,b.5,noprey,3
+Rolling Hills #1,1424,7/31/18,31,,b.4,noprey,1
+Rolling Hills #1,1424,7/31/18,31,,b.8,noprey,2
+Rolling Hills #1,1424,7/31/18,31,,b.10,noprey,2
+Rolling Hills #1,1424,7/31/18,31,,b.17,noprey,1
+Rolling Hills #1,1424,7/31/18,31,,b.18,noprey,1
+Rolling Hills #1,1424,7/31/18,31,,b.19,noprey,3
+Rolling Hills #1,1424,7/31/18,31,,b.26,noprey,1
+Rolling Hills #1,1424,7/31/18,31,,b.28,noprey,1
+Malmo Bluff,1425,7/31/18,31,,b.2,other,2
+Malmo Bluff,1425,7/31/18,31,,b.7,noprey,1
+Malmo Bluff,1425,7/31/18,31,,b.7,other,2
+Malmo Bluff,1425,7/31/18,31,,b.30,sculpin,1
+Lagoon North #0,1426,7/29/18,30,,b.9,noprey,3
+Lagoon North #0,1426,7/29/18,30,,b.9,sculpin,3
+Lagoon North #0,1426,7/29/18,30,,b.9,other,1
+Lagoon North #0,1426,7/29/18,30,,b.10,noprey,2
+Hastie Lake South,1427,7/31/18,31,,b.14,gunnels,1
+Hastie Lake South,1427,7/31/18,31,,b.7,gunnels,1
+Hastie Lake South,1427,7/31/18,31,,b.13,gunnels,1
+Ledgewood,1428,7/27/18,30,,b.3,sculpin,1
+Ledgewood,1428,7/27/18,30,,b.4,sculpin,2
+Ledgewood,1428,7/27/18,30,,b.4,gunnels,3
+Ledgewood,1428,7/27/18,30,,b.5A,sculpin,1
+Ledgewood,1428,7/27/18,30,,b.5A,gunnels,1
+Ledgewood,1428,7/27/18,30,,b.6,noprey,1
+Ledgewood,1428,7/27/18,30,,b.6,sculpin,2
+Ledgewood,1428,7/27/18,30,,b.6,other,1
+Ledgewood,1428,7/27/18,30,,b.8,noprey,1
+Ledgewood,1428,7/27/18,30,,b.10,noprey,1
+Ledgewood,1428,7/27/18,30,,b.7,noprey,1
+Lagoon Point South,1429,7/31/18,31,,b.3C,sculpin,1
+Mutiny Sands,1431,8/1/18,31,,b.2,sculpin,1
+Mutiny Sands,1431,8/1/18,31,,b.2,other,1
+Mutiny Sands,1431,8/1/18,31,,b.22,sculpin,1
+Mutiny Sands,1431,8/1/18,31,,b.22,other,1
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.25,sculpin,5
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.25,gunnels,1
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.24,sculpin,4
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.24,gunnels,3
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.18,sculpin,3
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.17,sculpin,1
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1435,7/24/18,30,on,b.2,gunnels,1
+Mutiny Sands- INTERN,1436,7/26/18,30,on,b.17,gunnels,2
+Mutiny Sands- INTERN,1436,7/26/18,30,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1436,7/26/18,30,on,b.2,gunnels,1
+Mutiny Sands- INTERN,1436,7/26/18,30,on,b.24,sculpin,2
+Mutiny Sands- INTERN,1436,7/26/18,30,on,b.25,sculpin,4
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.18,sculpin,3
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.25,sculpin,3
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.25,gunnels,2
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.24,sculpin,2
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.2,sculpin,3
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.17,sculpin,1
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.17,gunnels,1
+Mutiny Sands- INTERN,1437,7/28/18,30,on,b.17,other,1
+Mutiny Sands- INTERN,1438,7/31/18,31,on,b.2,sculpin,4
+Mutiny Sands- INTERN,1438,7/31/18,31,on,b.17,sculpin,1
+Mutiny Sands- INTERN,1438,7/31/18,31,on,b.25,sculpin,2
+Possession Point,1439,7/30/18,31,,b.E-1,noprey,3
+Possession Point,1439,7/30/18,31,,b.E-1,sculpin,2
+Possession Point,1439,7/30/18,31,,b.E-1,gunnels,1
+Pratts Bluff,1440,7/30/18,31,,b.9,sculpin,1
+Pratts Bluff,1440,7/30/18,31,,b.9,gunnels,1
+Pratts Bluff,1440,7/30/18,31,,b.2,noprey,1
+Pratts Bluff,1440,7/30/18,31,,b.3,noprey,1
+Pratts Bluff,1440,7/30/18,31,,b.5,noprey,1
+Monroe Landing,1441,7/31/18,31,,b.2,gunnels,1
+Monroe Landing,1441,7/31/18,31,,b.3,noprey,2
+Monroe Landing,1441,7/31/18,31,,b.3,sculpin,1
+Monroe Landing,1441,7/31/18,31,,b.4,noprey,1
+Forbes Point,1442,8/3/18,31,,b.2,gunnels,1
+Harrington South,1443,8/3/18,31,,b.3,other,2
+Harrington South,1443,8/3/18,31,,b.7,other,2
+Shore Meadows,1444,7/30/18,31,,b.1,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.2,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.3,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.6,noprey,2
+Shore Meadows,1444,7/30/18,31,,b.31,noprey,6
+Shore Meadows,1444,7/30/18,31,,b.33,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.34,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.35,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.36,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.62,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.62,other,1
+Shore Meadows,1444,7/30/18,31,,b.64,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.65,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.91,noprey,1
+Shore Meadows,1444,7/30/18,31,,b.91,sculpin,1
+Shore Meadows,1444,7/30/18,31,,b.91,gunnels,3
+Shore Meadows,1444,7/30/18,31,,b.93,other,1
+Shore Meadows,1444,7/30/18,31,,b.94,noprey,2
+Keystone,1445,7/24/18,30,,b.1,other,1
+Keystone,1445,7/24/18,30,,b.2,other,1
+Keystone,1445,7/24/18,30,,b.3,other,1
+Limpet Lane,1447,8/1/18,31,,b.4,noprey,1
+Limpet Lane,1447,8/1/18,31,,b.4,other,1
+Limpet Lane,1447,8/1/18,31,,b.SLM,noprey,1
+Lagoon North #1,1448,8/4/18,31,,b.1Y,noprey,1
+Lagoon North #1,1448,8/4/18,31,,b.1Y,sculpin,1
+Lagoon North #1,1448,8/4/18,31,,b.1T,sculpin,1
+Double Bluff North,1449,7/27/18,30,,b.B2,sculpin,3
+Double Bluff North,1449,7/27/18,30,,b.B3,noprey,2
+Double Bluff North,1450,8/3/18,31,,b.B2,sculpin,1
+Double Bluff North,1450,8/3/18,31,,b.C1,noprey,2
+Double Bluff North,1450,8/3/18,31,,b.C1,sculpin,1
+Double Bluff North,1450,8/3/18,31,,b.D2,noprey,1
+Double Bluff North,1450,8/3/18,31,,b.D2,gunnels,1
+Double Bluff North,1450,8/3/18,31,,b.D4,sculpin,1
+Swantown,1451,7/30/18,31,,b.1,gunnels,2
+Swantown,1451,7/30/18,31,,b.4,gunnels,1
+Swantown,1451,7/30/18,31,,b.5,noprey,1
+Swantown,1451,7/30/18,31,,b.6,other,1
+Fort Casey North,1453,8/4/18,31,,b.3,sculpin,2
+Fort Casey North,1453,8/4/18,31,,b.3,other,1
+Fort Casey North,1453,8/4/18,31,,b.6,sculpin,2
+Fort Casey North,1453,8/4/18,31,,b.6,other,1
+Fort Casey North,1453,8/4/18,31,,b.21,other,1
+Fort Casey North,1453,8/4/18,31,,b.23,noprey,1
+Lagoon North #1,1455,8/7/18,32,,b.1T,sculpin,1
+Bush Point Dock,1456,8/2/18,31,,b.1,noprey,3
+Cliffside,1457,7/29/18,30,,b.3,other,1
+Cliffside,1457,7/29/18,30,,b.6,gunnels,2
+Cliffside,1457,7/29/18,30,,b.7,gunnels,1
+Lagoon North #0,1458,8/4/18,31,,b.9,sculpin,1
+Shore Meadows,1460,8/6/18,32,,b.1,noprey,1
+Shore Meadows,1460,8/6/18,32,,b.5,sculpin,2
+Shore Meadows,1460,8/6/18,32,,b.66,noprey,1
+Shore Meadows,1460,8/6/18,32,,b.91,gunnels,2
+Mutiny Sands,1461,8/8/18,32,,b.22,other,1
+Cliffside,1462,8/8/18,32,,b.7,gunnels,1
+Cliffside,1462,8/8/18,32,,b.7,other,1
+Cliffside,1462,8/8/18,32,,b.11,noprey,1
+Cliffside,1462,8/8/18,32,,b.11,other,1
+Cliffside,1462,8/8/18,32,,b.6,gunnels,1
+Cliffside,1462,8/8/18,32,,b.6,other,1
+Cliffside,1462,8/8/18,32,,b.8,gunnels,2
+Cliffside,1462,8/8/18,32,,b.10B,other,1
+Cliffside,1462,8/8/18,32,,b.13A,gunnels,1
+Possession Point,1463,8/6/18,32,,b.E-1,sculpin,1
+Harrington South,1466,8/10/18,32,,b.3,other,2
+Harrington South,1466,8/10/18,32,,b.7,other,2
+Monroe Landing,1467,8/6/18,32,,b.3,gunnels,1
+Hastie Lake South,1468,8/7/18,32,,b.7,gunnels,1
+Hastie Lake South,1468,8/7/18,32,,b.4,sculpin,1
+Hastie Lake South,1468,8/7/18,32,,b.5,other,1
+Swantown,1469,8/10/18,32,,b.2,gunnels,1
+Swantown,1469,8/10/18,32,,b.3,gunnels,1
+Swantown,1469,8/10/18,32,,b.4,sculpin,1
+Clinton Ferry Dock,1471,7/13/18,28,,b.1,noprey,4
+Clinton Ferry Dock,1471,7/13/18,28,,b.2,noprey,1
+Clinton Ferry Dock,1472,7/20/18,29,,b.1,noprey,2
+Clinton Ferry Dock,1472,7/20/18,29,,b.2,noprey,1
+Clinton Ferry Dock,1472,7/20/18,29,,b.3,noprey,1
+Clinton Ferry Dock,1472,7/20/18,29,,b.6,noprey,1
+Clinton Ferry Dock,1473,7/27/18,30,,b.1,noprey,2
+Clinton Ferry Dock,1474,8/3/18,31,,b.1,noprey,6
+Clinton Ferry Dock,1475,8/10/18,32,,b.1,noprey,3
+Clinton Ferry Dock,1475,8/10/18,32,,b.2,noprey,3
+Clinton Ferry Dock,1475,8/10/18,32,,b.4,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.3,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.6,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.6,sculpin,2
+Fort Casey North,1476,8/11/18,32,,b.21,noprey,1
+Fort Casey North,1476,8/11/18,32,,b.21,sculpin,3
+Fort Casey North,1476,8/11/18,32,,b.22,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.25,noprey,1
+Fort Casey North,1476,8/11/18,32,,b.26,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.28,noprey,1
+Fort Casey North,1476,8/11/18,32,,b.29,noprey,2
+Fort Casey North,1476,8/11/18,32,,b.30,noprey,2
+Double Bluff North,1477,8/10/18,32,,b.D4,sculpin,1
+Double Bluff North,1477,8/10/18,32,,b.D4,gunnels,1
+Coupeville Wharf,1478,8/5/18,31,,b.2,gunnels,1
+Coupeville Wharf,1479,8/12/18,32,,b.2,noprey,1
+Lagoon North #0,1480,7/22/18,29,,b.9,noprey,1
+Lagoon North #0,1480,7/22/18,29,,b.9,sculpin,4
+Lagoon North #0,1480,7/22/18,29,,b.9,other,2
+Lake Hancock North,1481,8/6/18,32,,b.S10,sculpin,1
+Lake Hancock North,1481,8/6/18,32,,b.S10,gunnels,1
+Lake Hancock North,1481,8/6/18,32,,b.8,sculpin,2
+Lake Hancock North,1481,8/6/18,32,,b.8,gunnels,1
+Lake Hancock North,1481,8/6/18,32,,b.11,gunnels,2
+Lake Hancock North,1481,8/6/18,32,,b.25,gunnels,2
+Lake Hancock North,1482,8/13/18,33,,b.8,sculpin,1
+Monroe Landing,1484,8/13/18,33,,b.2,sculpin,1
+Monroe Landing,1484,8/13/18,33,,b.3,gunnels,1
+Ledgewood,1485,8/1/18,31,,b.1,noprey,2
+Ledgewood,1485,8/1/18,31,,b.1,sculpin,1
+Ledgewood,1485,8/1/18,31,,b.4,sculpin,1
+Ledgewood,1485,8/1/18,31,,b.11,noprey,4
+Ledgewood,1485,8/1/18,31,,b.11,sculpin,1
+Ledgewood,1485,8/1/18,31,,b.11,gunnels,1
+Ledgewood,1485,8/1/18,31,,b.10,gunnels,1
+Ledgewood,1485,8/1/18,31,,b.10,other,1
+Ledgewood,1485,8/1/18,31,,b.8,noprey,3
+Ledgewood,1485,8/1/18,31,,b.7,noprey,1
+Ledgewood,1486,8/8/18,32,,b.1,noprey,1
+Ledgewood,1486,8/8/18,32,,b.1,sculpin,2
+Ledgewood,1486,8/8/18,32,,b.4,sculpin,2
+Ledgewood,1486,8/8/18,32,,b.4,gunnels,1
+Hastie Lake South,1490,8/14/18,33,,b.7,noprey,3
+Hastie Lake South,1490,8/14/18,33,,b.7,sculpin,2
+Hastie Lake South,1490,8/14/18,33,,b.7,gunnels,1
+Hastie Lake South,1490,8/14/18,33,,b.7,other,1
+Hastie Lake South,1490,8/14/18,33,,b.13,noprey,2
+Hastie Lake South,1490,8/14/18,33,,b.13,gunnels,2
+Hastie Lake South,1490,8/14/18,33,,b.1,noprey,4
+Hastie Lake South,1490,8/14/18,33,,b.3,noprey,5
+Hastie Lake South,1490,8/14/18,33,,b.3,gunnels,1
+Hastie Lake South,1490,8/14/18,33,,b.4,noprey,3
+Hastie Lake South,1490,8/14/18,33,,b.2,noprey,1
+Shore Meadows,1491,8/13/18,33,,b.36,noprey,2
+Shore Meadows,1491,8/13/18,33,,b.91,sculpin,2
+Shore Meadows,1491,8/13/18,33,,b.91,gunnels,2
+Mutiny Sands,1494,8/15/18,33,,b.2,sculpin,2
+Mutiny Sands,1494,8/15/18,33,,b.7,sculpin,1
+Mutiny Sands,1494,8/15/18,33,,b.7,gunnels,1
+Mutiny Sands,1494,8/15/18,33,,b.17,other,2
+Keystone,1495,8/7/18,32,,b.1,other,1
+Keystone,1495,8/7/18,32,,b.4,other,1
+Possession Point,1497,8/13/18,33,,b.E-1,sculpin,1
+Possession Point,1497,8/13/18,33,,b.E-1,gunnels,3
+Lagoon North #0,1498,8/18/18,33,,b.10,sculpin,1
+Swantown,1502,8/13/18,33,,b.1,sculpin,1
+Swantown,1502,8/13/18,33,,b.1,other,1
+Swantown,1502,8/13/18,33,,b.3,sculpin,1
+Swantown,1502,8/13/18,33,,b.5,gunnels,1
+Swantown,1502,8/13/18,33,,b.6,sculpin,1
+Swantown,1502,8/13/18,33,,b.6,other,1
+Ledgewood,1510,8/17/18,33,,b.11,noprey,1
+Ledgewood,1510,8/17/18,33,,b.11,sculpin,1
+Ledgewood,1510,8/17/18,33,,b.11,gunnels,1
+Harrington South,1513,8/17/18,33,,b.3,other,1
+Clinton Ferry Dock,1519,8/17/18,33,,b.1,noprey,3
+Clinton Ferry Dock,1519,8/17/18,33,,b.2,noprey,2
+Mutiny Sands- INTERN,1524,8/2/18,31,on,b.17,sculpin,3
+Mutiny Sands- INTERN,1524,8/2/18,31,on,b.25,sculpin,3
+Mutiny Sands- INTERN,1524,8/2/18,31,on,b.2,sculpin,4
+Mutiny Sands- INTERN,1524,8/2/18,31,on,b.2,other,1
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.17,sculpin,2
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.17,gunnels,1
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.7,sculpin,3
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.7,gunnels,1
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.2,sculpin,5
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.2,gunnels,2
+Mutiny Sands- INTERN,1525,8/4/18,31,on,b.25,sculpin,3
+Mutiny Sands- INTERN,1526,8/8/18,32,on,b.17,sculpin,2
+Mutiny Sands- INTERN,1526,8/8/18,32,on,b.7,sculpin,1
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.25,sculpin,1
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.7,sculpin,1
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.2,sculpin,2
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.17,sculpin,1
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.17,gunnels,2
+Mutiny Sands- INTERN,1527,8/10/18,32,on,b.17,other,1
+Mutiny Sands- INTERN,1528,8/14/18,33,on,b.17,sculpin,3
+Mutiny Sands- INTERN,1528,8/14/18,33,on,b.17,gunnels,2
+Mutiny Sands- INTERN,1528,8/14/18,33,on,b.2,sculpin,5
+Mutiny Sands- INTERN,1528,8/14/18,33,on,b.7,sculpin,1
+Mutiny Sands- INTERN,1528,8/14/18,33,on,b.7,gunnels,1
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.7,sculpin,1
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.7,gunnels,2
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.17,sculpin,2
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.17,gunnels,1
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.17,other,1
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.2,sculpin,1
+Mutiny Sands- INTERN,1529,8/18/18,33,on,b.2,other,1
+Mutiny Sands,1534,8/29/18,35,,b.7,sculpin,2
+Mutiny Sands- INTERN,1539,8/24/18,34,on,b.7,sculpin,1
+Mutiny Sands- INTERN,1540,8/28/18,35,on,b.7,sculpin,8
+Mutiny Sands- INTERN,1545,8/30/18,35,on,b.7,sculpin,4
+Mutiny Sands- INTERN,1545,8/30/18,35,on,b.7,gunnels,1
+Double Bluff North,1546,8/17/18,33,,b.D4,gunnels,1
+Double Bluff North,1547,8/24/18,34,,b.E3,sculpin,1
+Mutiny Sands- INTERN,1548,8/16/18,33,on,b.2,sculpin,1
+Mutiny Sands- INTERN,1548,8/16/18,33,on,b.2,other,1
+Double Bluff North,1549,8/31/18,35,,b.E4,sculpin,2
+Mutiny Sands,1551,9/5/18,36,,b.7,sculpin,1
+Cliffside,1556,8/16/18,33,,b.10B,other,2
