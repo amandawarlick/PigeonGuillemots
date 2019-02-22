@@ -3,6 +3,10 @@
 
 ```{r}
 
+#install.packages('rstudioapi')
+# install.packages(c('rjags', 'jagsUI', 'R2OpenBUGS', 'dplyr', 'tidyr', 'reshape2', 'data.table', 'ggplot2', 'scales', 'knitr', 'stringr', 'lubridate', 'stats', 'zoo'))
+
+library(rstudioapi)
 library(rjags)
 #library(R2jags) #seems to fight with jagsUI
 library(jagsUI)
@@ -10,42 +14,57 @@ library(R2OpenBUGS)
 library(dplyr)
 library(tidyr)
 library(reshape2)
+library(data.table)
+library(ggplot2)
+#library(cowplot) 
+library(loo)
+library(scales)
+library(knitr)
+library(stringr)
+library(lubridate)
+library(stats) 
+library(zoo)
 
-setwd("~/Documents/SAFS/PigeonGuillemots")
+path <- getActiveDocumentContext()$path 
+setwd(dirname(path))
+#print(getwd())
+
+#setwd("~/Documents/SAFS/PigeonGuillemots")
 #setwd("C:\\Nathan\\UW\\projects\\PigeonGuillemotNestSurvival\\data")
 
 ```
 
-```{r}
+```{r data}
 #load data from PigeonGuillemot_whidbey.Rmd
 
+#long version of capture history, spread out so there is one row per nest per day per year
 data_MEJS <- read.csv("burrow_CH.csv", header = T, stringsAsFactors = F)
 #data_MEJS <-subset(data_MEJS, site == "Double Bluff North" &  year == 2016)
 #data_MEJS <-subset(data_MEJS, site == "Double Bluff North")
 
- 
+#capture histories per day across columns
 data_MEJS_wide <- data_MEJS %>% 
   distinct(region, year, site, burrow_name, study_day, capt_hist) %>% 
-  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist', fun.aggregate = mean)
+  #transform(capt_hist = ifelse(is.na(capt_hist), 4, capt_hist)) %>% #leave NAs for unobs days
+  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist', 
+        fun.aggregate = mean)
+data_MEJS_wide <- data_MEJS_wide[sample(nrow(data_MEJS_wide), 100),]
 
-CH_MEJS <- as.matrix(data_MEJS_wide %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
-colnames(CH_MEJS) <- NULL
-CH_MEJS <- round(CH_MEJS, 0)
+#matrix of just capture histories, 82 days
+ch <- as.matrix(data_MEJS_wide %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
+colnames(ch) <- NULL
+ch <- round(ch, 0)
 
 ## Create binary effort matrix with 1 if site surveyed on day t, 0 otherwise.
-EFFORT_MEJS <- matrix(0, nr = dim(CH_MEJS)[1], nc = dim(CH_MEJS)[2])
-EFFORT_MEJS[!is.na(CH_MEJS)] <- 1
+EFFORT_MEJS <- matrix(0, nr = dim(ch)[1], nc = dim(ch)[2])
+EFFORT_MEJS[!is.na(ch)] <- 1
 
 #test <- data_MEJS[duplicated(data_MEJS),]
-#table(CH_MEJS)
+#table(ch)
 
 ```
 
-```{r}
-
-# Specify model in jags
-
-model_MEJS_njh <- function () {
+```{r description}
 
 # -------------------------------------------------
 # Parameters:
@@ -54,32 +73,43 @@ model_MEJS_njh <- function () {
 # psiAB: probability of transitioning from egg to chick
 # pA: detection probability of egg burrow
 # pB: detection probability of chick burrow
-# b: conditional on observing a visit to a chick burrow, probability the delivery was a 'burrow visit' 
+# b: conditional on there being a chick, probability of seeing just a burrow visit
 # gamma: entry probability
 # alpha: conditional on entry at occasion 1, probability burrow had a chick. alpha set to 0 for t>1. So if a burrow is initiated after day one, it must start as an egg burrow.  
 
 # -------------------------------------------------
-# States (S):
+# States:
 # 1 not entered
 # 2 alive as egg
 # 3 alive as chick
 # 4 terminated; dead or fledged
-# Observations (O):  
+
+# Observations:  
 # 1 Burrow visit
 # 2 Prey visit
 # 3 not seen
+# 4 not observed - no survey that day
 # -------------------------------------------------
 
+```
+
+```{r model}
+
+# Specify model in jags
+
+model_MEJS <- function () {
+
 # Priors and constraints
-b ~ dunif(0,1)            ## start with simple constant model; 
-mean.psiAB ~ dunif(0,1)   ## start with simple constant model
-alpha[1] ~ dunif(0,1)     ## if enter at occasion 1, probability entered as chick burrow
-alphaKeep <- alpha[1]      ## this is the only one we want to keep 
+b ~ dunif(0,1)            #
+mean.psiAB ~ dunif(0,1)   #
+alpha[1] ~ dunif(0,1)     # if enter at occasion 1, probability entered as chick burrow
+alphaKeep <- alpha[1]      # this is the only one we want to keep 
 
 for (u in 1:2){
  mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
  mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
 }
+
 for (t in 1:(n.occasions-1)){
  phiA[t]     <- mean.phi[1]   # egg survival
  phiB[t]     <- mean.phi[2]   # chick survival
@@ -93,23 +123,22 @@ for (t in 1:(n.occasions-1)){
 # Likelihood 
 for (i in 1:M){
  # Define latent state at first occasion
- z[i,1] <- 1            # Make sure that all M individuals are in state 1 at t=1 (e.g., one day prior to season)
+ z[i,1] <- 1            #all M individuals are in state 1 at t=1 (e.g., one day prior to season)
  for (t in 2:n.occasions){
   # State process: draw S(t) given S(t-1)
   z[i,t] ~ dcat(ps[z[i,t-1], i, t-1,])
   # Observation process: draw O(t) given S(t)
   y[i,t] ~ dcat(po[z[i,t], i, t-1,])  
-   #this follow Kery and Schaub 10.3.2, indexing is tricky. e.g., y[i,2] is a function of state[i,2] and observation array t=1
-   #so if detection covariates are used, DO NOT ADD DUMMY OCCASION to detection covariates as detection data at occasion t uses array t-1
+   #this follow Kery and Schaub 10.3.2, indexing is tricky. e.g., y[i,2] is a function of state[i,2] and observation array t=1; if detection covariates are used, don't add dummy occasion to detection covariates as detection data at occasion t uses array t-1
 
-  # Derive some stuff along the way
-  egg[i,t-1]    <- equals(z[i,t], 2)
-  chick[i,t-1]  <- equals(z[i,t], 3)
-  active[i,t-1] <- max(egg[i,t-1],chick[i,t-1]) #egg or chick
- } #t
- everEgg[i]    <- max(egg[i,])
- everChick[i]  <- max(chick[i,])
- EverActive[i] <- max(everChick[i],everEgg[i])
+#   # Derive some stuff along the way
+#   egg[i,t-1]    <- equals(z[i,t], 2)
+#   chick[i,t-1]  <- equals(z[i,t], 3)
+#   active[i,t-1] <- max(egg[i,t-1],chick[i,t-1]) #egg or chick
+} #t
+#  everEgg[i]    <- max(egg[i,])
+#  everChick[i]  <- max(chick[i,])
+#  EverActive[i] <- max(everChick[i],everEgg[i])
 } #i
 
 # Define transition and observation matrices
@@ -125,18 +154,18 @@ for (i in 1:M){
       ps[2,i,t,3] <- phiA[t]*psiAB[t]         #probability of surviving egg state and hatching
       ps[2,i,t,4] <- 1-phiA[t]                #probability of a failed egg
       ps[3,i,t,1] <- 0                        #probability chick goes to 'not entered'
-      ps[3,i,t,2] <- 0                        #probability chickgoes to egg
+      ps[3,i,t,2] <- 0                        #probability chick goes to egg
       ps[3,i,t,3] <- phiB[t]                  #probability of surviving chick stage
       ps[3,i,t,4] <- 1-phiB[t]                #probability of failed chick
       ps[4,i,t,1] <- 0                        #probability terminated goes to 'not entered'
-      ps[4,i,t,2] <- 0                        #probability terminated goes to egg (maybe?)
+      ps[4,i,t,2] <- 0                        #probability terminated goes to egg (maybe this does happen)
       ps[4,i,t,3] <- 0                        #probability terminated goes to chick
       ps[4,i,t,4] <- 1                        #probability terminated goes to terminated
       
-      # Define probabilities of O(t) given S(t); #help - where do you create eff[i,t]?
-      po[1,i,t,1] <- 0                        #probability an 'not entered' burrow is detected with a burrow visit
-      po[1,i,t,2] <- 0                        #probability an 'not entered' burrow is detected with a prey visit
-      po[1,i,t,3] <- 1                        #probability an 'not entered' burrow is not detected
+      # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 0                        #probability a 'not entered' burrow is detected with a burrow visit
+      po[1,i,t,2] <- 0                        #probability a 'not entered' burrow is detected with a prey visit
+      po[1,i,t,3] <- 1                        #probability a 'not entered' burrow is not detected
       po[2,i,t,1] <- pA[t]*eff[i,t]           #probability an egg burrow is detected with a burrow visit
       po[2,i,t,2] <- 0                        #probability an egg burrow is detected with a prey visit
       po[2,i,t,3] <- 1-pA[t]*eff[i,t]         #probability an egg burrow is not detected
@@ -150,55 +179,83 @@ for (i in 1:M){
  }#M
 
 #derive abundances (lots of options here, e.g., site specific, annual, etc.) 
- for (t in 1:(n.occasions-1)){
-  N.egg[t]    <- sum(egg[1:M,t])
-  N.chick[t]  <- sum(chick[1:M,t])
-  N.active[t] <- sum(active[1:M,t])
-  qgamma[t] <- 1-gamma[t]
-  birthProb[t] <- cprob[t] / psi      # Entry probability
+#  for (t in 1:(n.occasions-1)){
+#   N.egg[t]    <- sum(egg[1:M,t])
+#   N.chick[t]  <- sum(chick[1:M,t])
+#   N.active[t] <- sum(active[1:M,t])
+#   qgamma[t] <- 1-gamma[t]
+#   birthProb[t] <- cprob[t] / psi      # Entry probability
+# }
+#  cprob[1] <- gamma[1]
+#  for (t in 2:(n.occasions-1)){
+#   cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
+#  }#t
+#  psi <- sum(cprob[])            # Inclusion probability
+# 
+# Nstar<-sum(EverActive[1:M])
+#  
 }
- cprob[1] <- gamma[1]
- for (t in 2:(n.occasions-1)){
-  cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
- }#t
- psi <- sum(cprob[])            # Inclusion probability
 
-Nstar<-sum(EverActive[1:M])
- 
-}
+write.model(model_MEJS, "model_MEJS.txt")
+model.file = paste(getwd(),"model_MEJS.txt", sep="/")
 
-write.model(model_MEJS_njh, "model_MEJS_njh.txt")
-model.file = paste(getwd(),"model_MEJS_njh.txt", sep="/")
+
+```
+
+```{r aug inits}
      
 # Augment data
-nz <- 500
-CH.aug <- rbind(CH_MEJS, matrix(3, nrow = nz, ncol = dim(CH_MEJS)[2])) #3 for not seen
+nz <- 200
+CH.aug <- rbind(ch, matrix(3, nrow = nz, ncol = dim(ch)[2])) #3 for not seen
 
 #augmented effort - not finished
 eff.aug <- rbind(EFFORT_MEJS, matrix(EFFORT_MEJS[1,], nrow = nz, ncol = dim(EFFORT_MEJS)[2], byrow=T))
 eff.aug <- eff.aug[,-1] #remove first column (dummy column), because detection goes off of t-1?
 
-# Bundle data
-jags.data <- list(y = CH.aug, n.occasions = dim(CH.aug)[2], M = dim(CH.aug)[1], eff = eff.aug)
-
 get.first <- function(x) min(which(x < 3))
-f <- apply(CH.aug, 1, get.first)
+f <- apply(ch, 1, get.first)
 #a <- match(Inf, f)
      
 get.last <- function(x) max(which(x < 3))
-l <- apply(CH.aug, 1, get.last)
+l <- apply(ch, 1, get.last)
 
-# Initial values
-# "1" for the latent state at all places before an individual was observed, "2/3" at all places when the individual was observed; #help - NA in occasions where you know the true state? aug get init values?
-# Divided into if else statements based on whether there was one or both bv and/or pv, since otherwise there are
-# a lot of 'Inf' values if try to make it all in one statement
+# latent z
+# all obs of 1,3,4 are unk state, NA
+# 2 obs means state 3, chick
+z.st <- ch
+z.st[which(z.st != 2)] <- NA
+z.st[which(z.st == 2)] <- 3
+# for(i in 1:dim(ch)[1]) {
+# z.st[i, 2:f[i]-1] <- 1
+# }
+z.st[,1] <- NA #this is set to 1 in the model, so need to revert to NA
 
+first.pv <- function(x) min(which(x == 3))
+fpv <- apply(z.st, 1, first.pv)
+
+last.pv <- function(x) max(which(x == 3))
+lpv <- apply(z.st, 1, last.pv)
+
+first.bv <- function(x) min(which(x == 2))
+fbv <- apply(ch, 1, first.bv)
+
+last.bv <- function(x) max(which(x == 2))
+lbv <- apply(ch, 1, last.bv)
+
+for (i in 1:dim(z.st)[1]) {
+  if (fpv[i] != Inf) {
+  z.st[i, (fpv[i]+1):lpv[i]] <- 3 #chick between pv observations
+  }
+}
+
+# Initial z values -
+#ch <- ch
 js.me.init <- function(ch, f, l){
   inits <- matrix(NA, nr = dim(ch)[1], nc = dim(ch)[2])
-  inits[,1] <- NA  #deterministic on occasion 1
+  #inits[,1] <- NA  #deterministic on occasion 1; commented out or else indexing is out of bounds
 
   for(i in 1:dim(ch)[1]) { 
-    inits[i, 1:f[i]-1] <- 1  #1 before first capture 
+    inits[i, 1:(f[i]-1)] <- 1  #1 before first capture 
     if(l[i] < dim(ch)[2]){ #for all cases
      inits[i, (l[i]+1):dim(ch)[2]] <- rep(3, (dim(ch)[2]-l[i])) #3 from last obs to end
     }
@@ -220,14 +277,55 @@ js.me.init <- function(ch, f, l){
   return(inits)
 }
 
-zInitsObs = js.me.init(CH_MEJS, f, l)
-zInits <- rbind(zInitsObs, matrix(1, nr = nz, nc = dim(CH_MEJS)[2]))
-zInits[,1] <- NA  #don't initialize dummy day; #help - isn't this already covered in inits function above?
+z.init = js.me.init(ch, f, l)
+z.init[,1] <- NA #deterministic on dummy occasion
+z.init[which(z.st == 3)] <- NA #deterministic, don't initialize where z is known as chick between pvs
+
+# z.init <- rbind(zInitsObs, matrix(1, nr = nz, nc = dim(ch)[2]))
+# z.init[,1] <- NA  #don't initialize dummy day
+
+###### #simpler z.init ########
+# everything that is deterministic gets NA (obs = 2).
+# everything that is unknown (1, 3, NA) gets inits
+## for unknown states:
+#### 1 obs (bv) can get 2 (egg)
+#### NA and 3 obs (not det) can get 1 (NE) before fc, 2 after first bv, 3 after first pv
+
+#z.init <- ch
+#z.init[which(z.init == 2)] <- NA #deterministic
+# z.init[,1] <- NA #deterministic on dummy occasion
+# z.init[which(z.init == 1)] <- 2 #bv observation can be egg state
+# 
+# for (i in 1:dim(z.init)[1]) {
+#   z.init[i,2:(f[i]-1)] <- 1 #NE before first capture
+#     if (fbv[i] != Inf & fpv[i] == -Inf) {
+#       z.init[i,(fbv[i]-1):(lpv[i]-1)] <- 2 #egg after first bv
+#     }
+#   if (fbv[i] != Inf) {
+#       z.init[i,(fbv[i]-1):(fpv[i]-1)] <- 2 #egg after first bv
+#     }
+#   if (fpv[i] != Inf) {
+#   z.init[i, (fpv[i]):lpv[i]] <- NA #chick between pv observations, deterministic
+#   }
+# }
+
+###########
+z <- z.st
+y <- ch
+
+```
+
+```{r run}
+
+# Bundle data
+jags.data <- list(y = y, n.occasions = dim(ch)[2], 
+                  z = z.st, 
+                  M = dim(ch)[1], eff = EFFORT_MEJS)
+
 
 inits <- function(){list(mean.phi = runif(2, 0, 1), 
-                         mean.p = runif(2, 0, 1), 
-                         z = zInits)}    
- 
+                         z = z.init,
+                         mean.p = runif(2, 0, 1))}  
      
 # Parameters monitored
 parameters <- c("mean.phi", "mean.p", "b", "gamma", "alphaKeep", "mean.psiAB", "N.egg", "N.chick",
@@ -235,20 +333,103 @@ parameters <- c("mean.phi", "mean.p", "b", "gamma", "alphaKeep", "mean.psiAB", "
 
      
 # MCMC settings
-ni <- 2000; nt <- 3; nb <- 500; nc <- 3
+ni <- 10; nt <- 1; nb <- 5; nc <- 2
      
-js_me <- jags(jags.data, inits, parameters, model.file = model.file,
-              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb)
+out <- jags(jags.data, inits, parameters, model.file = model.file,
+              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
      
-print(js_me, digits = 3)
-
-outmat<-as.matrix(js_me$samples)
-plot(apply(outmat[,grep("N.active\\[", colnames(outmat))],2,median), pch=16, type="b", ylab="Number", xlab=c("Day of season"))
-points(apply(outmat[,grep("N.egg\\[", colnames(outmat))],2,median), pch=16, type="b", col="red")
-points(apply(outmat[,grep("N.chick\\[", colnames(outmat))],2,median), pch=16, type="b", col="blue")
-legend("topleft", legend=c("Active","Egg", "Chick"), text.col=c("black", "red", "blue"), bty="n")
+#print(js_me, digits = 3)
+# outmat<-as.matrix(js_me$samples)
+# plot(apply(outmat[,grep("N.active\\[", colnames(outmat))],2,median), pch=16, type="b", ylab="Number", xlab=c("Day of season"))
+# points(apply(outmat[,grep("N.egg\\[", colnames(outmat))],2,median), pch=16, type="b", col="red")
+# points(apply(outmat[,grep("N.chick\\[", colnames(outmat))],2,median), pch=16, type="b", col="blue")
+# legend("topleft", legend=c("Active","Egg", "Chick"), text.col=c("black", "red", "blue"), bty="n")
 
 ```
+
+```{r plots}
+#2 is nestling, 1 is egg, 3 is obs not seen, 0 is not observed
+prey_del_plot_data <- data_MEJS_wide %>%
+  filter(region == 'Whidbey')
+prey_del_plot_data[is.na(prey_del_plot_data)] <- 0
+
+ get.first.pv <- function(x) min(which(x == 2))
+ first_pv <- apply(prey_del_plot_data, 1, get.first.pv)
+
+ get.first.bv <- function(x) min(which(x == 1))
+ first_bv <- apply(prey_del_plot_data, 1, get.first.bv)
+
+ get.last.pv <- function(x) max(which(x == 2))
+ last_pv <- apply(prey_del_plot_data, 1, get.last.pv)
+
+ get.last.bv <- function(x) max(which(x == 1))
+ last_bv <- apply(prey_del_plot_data, 1, get.last.bv)
+
+ par(mfrow = c(2, 2), mar = c(5, 4, 2, 1), cex.lab = 1, cex.axis = .8)
+ hist(first_pv, breaks = 81, main = '')
+ hist(first_bv, breaks = 81, main = '')
+ hist(last_pv, breaks = 81, main = '')
+ hist(last_bv, breaks = 81, main = '')
+
+ as.data.frame(table(first_pv))
+
+ pv_minmax <- data_MEJS %>%
+   filter(capt_hist == 2 & region != 'SS') %>%
+   group_by(region, year, site, burrow_name) %>%
+   summarize(min_pv = min(study_day), max_pv = max(study_day)) %>%
+   rename(FirstPreyVisit = min_pv, LastPreyVisit = max_pv)
+
+ bv_minmax <- data_MEJS %>%
+   filter(capt_hist == 1 & region != 'SS') %>%
+   group_by(region, year, site, burrow_name) %>%
+   summarize(min_bv = min(study_day), max_bv = max(study_day))
+
+ minsmax <- pv_minmax %>%
+   bind_rows(bv_minmax) %>%
+   melt(id.vars = c('region', 'year', 'site', 'burrow_name'))
+
+ by_year <- ggplot(minsmax %>% filter(grepl("Prey", variable)), aes(factor(year), value), color = variable) +
+   geom_boxplot() + facet_wrap(~variable) + coord_flip() +
+   xlab("") + ylab("Study Day") +
+   fig_theme()
+
+ by_site <- ggplot(minsmax %>%
+                    filter(grepl("Prey", variable) & value != 'NA' & region == 'Whidbey'),
+                  aes(site, value)) +
+   geom_boxplot() + coord_flip() +
+   facet_wrap(~variable) +
+   xlab("") + ylab("Study Day") +
+   fig_theme(legend.position = 'none')
+
+ # by_reg <- ggplot(minsmax %>%
+ #                    filter(value != 'NA'),
+ #                  aes(region, value, group = region, color = variable)) +
+ #   geom_boxplot() +
+ #   facet_wrap(~variable) +
+ #   xlab("") + ylab("Study Day") +
+ #   fig_theme(legend.position = 'none') +
+ #   scale_color_manual(values = c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c"))
+
+ density <- ggplot(data = data_MEJS, aes(study_day)) +
+   geom_line(data = data_MEJS %>% filter(capt_hist == 1 & region != 'SS'), aes(study_day, col = 'BV'),
+             stat = 'density') +
+   geom_line(data = data_MEJS %>% filter(capt_hist == 2 & region != 'SS'), aes(study_day, col = 'PV'),
+             stat = 'density') +
+   #geom_vline(aes(xintercept = 40), linetype = 'dotted', col = 'darkgrey') +
+   #geom_vline(aes(xintercept = 20), linetype = 'dotted', col = 'darkgrey') +
+   scale_y_continuous(limit = c(0, 0.025)) +
+   ylab("Relative Frequency Density") + xlab("Study Day") + 
+   #facet_wrap(~region) +
+   scale_color_manual(values = c("#e45f56", "#363e7e")) +
+   fig_theme(legend.position = 'top')
+
+
+ # capt_hist_day <- ggplot(data_MEJS %>% filter(region == 'Whidbey' & capt_hist < 3),
+ #                 aes(y = capt_hist, x = study_day)) +
+ #                 geom_point(position = 'jitter')
+
+```
+
 
 ```{r}
 
@@ -415,7 +596,7 @@ parameters <- c("mean.phi", "mean.p", "beta", "gamma", "alphaKeep", "mean.psiAB"
 # MCMC settings
 nc <- 3; nAdapt <- 500; nb <- 100;  ni <- 1000; nt <- 1
 
-# Run!
+# Run
 js_me <- jags(jags.data, inits, parameters, model.file = "model_JS_MS_ME.txt",
               n.chains = nc, n.adapt=nAdapt, n.thin = nt, n.iter = ni, n.burnin = nb, parallel=T)
 
@@ -437,88 +618,5 @@ plot(apply(outmat[,grep("b\\[", colnames(outmat))],2,median), pch=16, type="b", 
  points(b, pch=0) #true values
 
 
-
-```
-
-```{r}
-#2 is nestling, 1 is egg, 3 is obs not seen, 0 is not observed
-prey_del_plot_data <- data_MEJS_wide %>%
-  filter(region == 'Whidbey')
-prey_del_plot_data[is.na(prey_del_plot_data)] <- 0
-
- get.first.pv <- function(x) min(which(x == 2))
- first_pv <- apply(prey_del_plot_data, 1, get.first.pv)
-
- get.first.bv <- function(x) min(which(x == 1))
- first_bv <- apply(prey_del_plot_data, 1, get.first.bv)
-
- get.last.pv <- function(x) max(which(x == 2))
- last_pv <- apply(prey_del_plot_data, 1, get.last.pv)
-
- get.last.bv <- function(x) max(which(x == 1))
- last_bv <- apply(prey_del_plot_data, 1, get.last.bv)
-
- par(mfrow = c(2, 2), mar = c(5, 4, 2, 1), cex.lab = 1, cex.axis = .8)
- hist(first_pv, breaks = 81, main = '')
- hist(first_bv, breaks = 81, main = '')
- hist(last_pv, breaks = 81, main = '')
- hist(last_bv, breaks = 81, main = '')
-
- as.data.frame(table(first_pv))
-
- pv_minmax <- data_MEJS %>%
-   filter(capt_hist == 2 & region != 'SS') %>%
-   group_by(region, year, site, burrow_name) %>%
-   summarize(min_pv = min(study_day), max_pv = max(study_day)) %>%
-   rename(FirstPreyVisit = min_pv, LastPreyVisit = max_pv)
-
- bv_minmax <- data_MEJS %>%
-   filter(capt_hist == 1 & region != 'SS') %>%
-   group_by(region, year, site, burrow_name) %>%
-   summarize(min_bv = min(study_day), max_bv = max(study_day))
-
- minsmax <- pv_minmax %>%
-   bind_rows(bv_minmax) %>%
-   melt(id.vars = c('region', 'year', 'site', 'burrow_name'))
-
- by_year <- ggplot(minsmax %>% filter(grepl("Prey", variable)), aes(factor(year), value), color = variable) +
-   geom_boxplot() + facet_wrap(~variable) + coord_flip() +
-   xlab("") + ylab("Study Day") +
-   fig_theme()
-
- by_site <- ggplot(minsmax %>%
-                    filter(grepl("Prey", variable) & value != 'NA' & region == 'Whidbey'),
-                  aes(site, value)) +
-   geom_boxplot() + coord_flip() +
-   facet_wrap(~variable) +
-   xlab("") + ylab("Study Day") +
-   fig_theme(legend.position = 'none')
-
- # by_reg <- ggplot(minsmax %>%
- #                    filter(value != 'NA'),
- #                  aes(region, value, group = region, color = variable)) +
- #   geom_boxplot() +
- #   facet_wrap(~variable) +
- #   xlab("") + ylab("Study Day") +
- #   fig_theme(legend.position = 'none') +
- #   scale_color_manual(values = c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c"))
-
- density <- ggplot(data = data_MEJS, aes(study_day)) +
-   geom_line(data = data_MEJS %>% filter(capt_hist == 1 & region != 'SS'), aes(study_day, col = 'BV'),
-             stat = 'density') +
-   geom_line(data = data_MEJS %>% filter(capt_hist == 2 & region != 'SS'), aes(study_day, col = 'PV'),
-             stat = 'density') +
-   #geom_vline(aes(xintercept = 40), linetype = 'dotted', col = 'darkgrey') +
-   #geom_vline(aes(xintercept = 20), linetype = 'dotted', col = 'darkgrey') +
-   scale_y_continuous(limit = c(0, 0.025)) +
-   ylab("Relative Frequency Density") + xlab("Study Day") + 
-   #facet_wrap(~region) +
-   scale_color_manual(values = c("#e45f56", "#363e7e")) +
-   fig_theme(legend.position = 'top')
-
-
- # capt_hist_day <- ggplot(data_MEJS %>% filter(region == 'Whidbey' & capt_hist < 3),
- #                 aes(y = capt_hist, x = study_day)) +
- #                 geom_point(position = 'jitter')
 
 ```

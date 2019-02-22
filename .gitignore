@@ -2,3 +2,9 @@
 .Rhistory
 .RData
 .Ruserdata
+Archive/
+marked/
+.rds
+.Rdata
+*.pptx
+*.ppt

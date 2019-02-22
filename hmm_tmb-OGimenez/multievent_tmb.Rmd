@@ -19,21 +19,25 @@ First, let's read in the data.
 set.seed(1)
 
 # read in data
-data = read.table('titis2.txt')
-#data = rbind(data,data,data,data,data) # increase sample size artificially
+data = read.table('titis2.txt', skip = 10) %>%
+  select(-V7) %>%
+  transform(sum = V1+V2+V3+V4+V5+V6) %>%
+  filter(sum > 0) %>% select(-sum)
+  
+data = rbind(data,data,data,data,data) # increase sample size artificially
 
 # define various quantities
-nh <- dim(data)[1]
+n_col <- dim(data)[1]
 k <- dim(data)[2]
 km1 <- k-1
 
 # counts
-eff <- rep(1,nh)
+eff <- rep(1,n_col)
   
 # compute the date of first capture fc, and state at initial capture init.state
 fc <- NULL
 init.state <- NULL
-for (i in 1:nh){
+for (i in 1:n_col){
   temp <- 1:k
   fc <- c(fc,min(which(data[i,]!=0)))
   init.state <- c(init.state,data[i,fc[i]])
@@ -72,13 +76,14 @@ rep # get SEs
 Now, let's implement the same model with standard R code:
 
 ```{r message=FALSE, warning=FALSE}
-devMULTIEVENT <- function(b,data,eff,e,garb,nh,km1){
+devMULTIEVENT <- function(b,data,eff,e,garb,n_col,km1){
     
-# data encounter histories, eff counts
+# data encounter histories, 
+  # eff counts
 # e vector of dates of first captures
 # garb vector of initial states 
 # km1 nb of recapture occasions (nb of capture occ - 1)
-# nh nb ind
+# n_col nb ind
     
 # OBSERVATIONS (+1)
 # 0 = non-detected
@@ -106,16 +111,25 @@ devMULTIEVENT <- function(b,data,eff,e,garb,nh,km1){
 # note: below, we decompose the state and obs process in two steps composed of binomial events, 
 # which makes the use of the logit link appealing; 
 # if not, a multinomial (aka generalised) logit link should be used
-    par = plogis(b)
-    piNB <- par[1]
-    phiNB <- par[2]
-    phiB <- par[3]
-    psiNBB <- par[4]
-    psiBNB <- par[5]
-    pNB <- par[6]
-    pB <- par[7]
-    deltaNB <- par[8]
-    deltaB <- par[9]
+    # par = plogis(b)
+    # piNB <- par[1]
+    # phiNB <- par[2]
+    # phiB <- par[3]
+    # psiNBB <- par[4]
+    # psiBNB <- par[5]
+    # pNB <- par[6]
+    # pB <- par[7]
+    # deltaNB <- par[8]
+    # deltaB <- par[9]
+    piNB <- 0.5
+    phiNB <- 0.4
+    phiB <- 0.6
+    psiNBB <- 0.5
+    psiBNB <- 0.5
+    pNB <- 0.5
+    pB <- 0.5
+    deltaNB <- 0.5
+    deltaB <- 0.5
     
 # prob of obs (rows) cond on states (col)
     B1 = matrix(c(1-pNB,pNB,0,1-pB,0,pB,1,0,0),nrow=3,ncol=3,byrow=T)
@@ -137,12 +151,12 @@ devMULTIEVENT <- function(b,data,eff,e,garb,nh,km1){
     
 # likelihood
     l <- 0
-    for (i in 1:nh) # loop on ind
+    for (i in 1:n_col) # loop on ind
    {
       ei <- e[i] # date of first det
       oe <- garb[i] + 1 # init obs
       evennt <- data[,i] + 1 # add 1 to obs to avoid 0s in indexing
-      ALPHA <- PI*BE[oe,]
+      ALPHA <- PI*BE[oe,] #initial state prob * first encounter observation +1 indexing
      for (j in (ei+1):(km1+1)) # cond on first capture
      {
         if ((ei+1)>(km1+1)) {break}
@@ -160,9 +174,11 @@ Let's do some benchmarking:
 ```{r message=FALSE, warning=FALSE}
 # The optimization is not stochastic, but depending on what else I'm doing, 
 # computation times may vary, hence a benchmark
+
+#order of params for devM: b,data,eff,e,garb,n_col,km1
 library(microbenchmark)
 res = microbenchmark(
-  optim(binit,devMULTIEVENT,NULL,hessian=F,data,eff,fc,init.state,nh,km1,method="BFGS"),
+  optim(binit,devMULTIEVENT,NULL,hessian=F,data,eff,fc,init.state,n_col,km1,method="BFGS"),
   do.call("optim", f),
   times=5
  )

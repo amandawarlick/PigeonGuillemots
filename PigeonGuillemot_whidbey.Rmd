@@ -31,41 +31,22 @@ library(sciplot) #se()
 library(gvlma) #universal assumptions test gvlma(mod)
 library(chron) #times()
 
-fig_theme <- function(...) {
-  theme(text = element_text(family = 'Times'),
+plot_theme <- function(...) {
+  theme(
     #text = element_text(size = 11),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 10),
-    axis.text.y = element_text(vjust = 0.5, color = "black", size = 10), 
-    axis.title = element_text(size = 10),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 10), 
+    axis.text = element_text(vjust = 0.5, color = "black", size = 10), 
+    axis.title = element_text(size = 11),
     axis.line.y = element_line(colour = "black"), 
     axis.line.x = element_line(colour = "black"), 
     plot.background = element_rect(), 
-    strip.text = element_text(size = 10),
-    #strip.background = element_blank(),
-    panel.background = element_blank(), 
+    panel.background = element_rect(fill = 'white'),
+    panel.border = element_rect(fill = NA),
     panel.grid = element_blank(), 
-    legend.title = element_blank(),
     legend.key = element_blank(),
-    legend.text = element_text(size = 8),
-    ...)
-}
-
-fig_theme_1 <- function(...) {
-  theme(text = element_text(family = 'Times'),
-    #text = element_text(size = 11),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 11),
-    axis.text.y = element_text(vjust = 0.5, color = "black", size = 11), 
-    axis.title = element_text(size = 12),
-    axis.line.y = element_line(colour = "black"), 
-    axis.line.x = element_line(colour = "black"), 
-    plot.background = element_rect(), 
+    strip.background = element_blank(), 
     strip.text = element_text(size = 10),
-    #strip.background = element_blank(),
-    panel.background = element_blank(), 
-    panel.grid = element_blank(), 
-    legend.title = element_blank(),
-    legend.key = element_blank(),
-    legend.text = element_text(size = 10),
+    legend.text = element_text(size = 9),
     ...)
 }
 
@@ -215,43 +196,41 @@ write.csv(data_count, "data_count.csv", row.names = F)
 
 ```{r}
 # bringing in tide data
-# tides <- read.csv("tides_tidy.csv", stringsAsFactors = F, header = T) %>%
+
+#MOVED TO ME_SETUP
+# tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
 #   transform(date = as.Date(date)) %>%
-#   transform(month = month(date))
-
-tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
-  transform(date = as.Date(date)) %>%
-  transform(month = month(date)) %>%
-  transform(time = as.POSIXct(time))
-    
-PG_count_tides <- data_count %>% 
-  filter(intern_data != 'on' & PG_count != '') %>% 
-  select(region, site, date, PG_count, start_time) %>%
-  inner_join(tides, by = c('site', 'date', 'region')) %>%
-  transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
-  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
-  transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
-            from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
-  transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
-  select(-c(t, month, from_low, from_high)) %>%
-  transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
-  transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
-                          ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
-                                 ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
-  filter(rank == 2 | rank == 3) %>%
-  filter(region == 'Whidbey')
-
-table(PG_count_tides$rank)
-
-# test <- PG_count_tides %>%
-#   group_by(site, date) %>%
-#   summarize(cnt = n_distinct(v)) %>%
-#   filter(cnt < 2)
-
-PG_count_tides_trim <- PG_count_tides %>%
-  transform(month = month(date)) %>%
-  filter(month > 6 & month < 9) %>%
-  filter(region == 'Whidbey')
+#   transform(month = month(date)) %>%
+#   transform(time = as.POSIXct(time))
+#     
+# PG_count_tides <- data_count %>% 
+#   filter(intern_data != 'on' & PG_count != '') %>% 
+#   select(region, site, date, PG_count, start_time) %>%
+#   inner_join(tides, by = c('site', 'date', 'region')) %>%
+#   transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
+#   transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
+#   transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
+#             from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
+#   transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
+#   select(-c(t, month, from_low, from_high)) %>%
+#   transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
+#   transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
+#                           ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
+#                                  ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
+#   filter(rank == 2 | rank == 3) %>%
+#   filter(region == 'Whidbey')
+# 
+# table(PG_count_tides$rank)
+# 
+# # test <- PG_count_tides %>%
+# #   group_by(site, date) %>%
+# #   summarize(cnt = n_distinct(v)) %>%
+# #   filter(cnt < 2)
+# 
+# PG_count_tides_trim <- PG_count_tides %>%
+#   transform(month = month(date)) %>%
+#   filter(month > 6 & month < 9) %>%
+#   filter(region == 'Whidbey')
 
 mod <- lm(PG_count ~ abs(from_hilo) + site, data = PG_count_tides_trim %>% filter(type == 'L'))
 summary(mod)
@@ -263,34 +242,60 @@ from_low <- ggplot(PG_count_tides_trim %>% filter(type == 'L'), aes(x = from_hil
   xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
   fig_theme()
 
+############
 #for frances
-from_high <- ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo, y = PG_count)) +
-  #geom_point() + 
-  geom_smooth(se = T) +
-  xlab("Minutes from High Tide" ) + ylab("Jul-Aug Guillemot Counts per Colony") + 
-  fig_theme()
-
-ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo)) + geom_histogram()
-#from low and high tide; loess
-
-ggplot(PG_count_tides_trim, aes(x = from_hilo, y = PG_count, col = type, group = type)) +
-  #geom_point() + 
-  geom_smooth(se = T) +
-  xlab("Minutes from Low or High Tide" ) + ylab("PG Count") + 
-  fig_theme()
-
-#gam method; abs value
-ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, group = type)) +
-  #geom_point() + 
-  geom_smooth(se = F) +
-  xlab("Minutes from Low or High Tide") + ylab("PG Count") + 
-  fig_theme()
-
-# ggplot(PG_count_tides_trim, aes(x = v, y = PG_count, col = type, group = type)) +
+# from_high <- ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo, y = PG_count)) +
+#   #geom_point() + 
+#   geom_smooth(se = T) +
+#   xlab("Minutes from High Tide" ) + ylab("Jul-Aug Guillemot Counts per Colony") + 
+#   fig_theme()
+# 
+# ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo)) + geom_histogram()
+# #from low and high tide; loess
+# 
+# ggplot(PG_count_tides_trim, aes(x = from_hilo, y = PG_count, col = type, group = type)) +
+#   #geom_point() + 
+#   geom_smooth(se = T) +
+#   xlab("Minutes from Low or High Tide" ) + ylab("PG Count") + 
+#   fig_theme()
+# 
+# #gam method; abs value
+# ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, group = type)) +
 #   #geom_point() + 
 #   geom_smooth(se = F) +
-#   xlab("Tidal Height") + ylab("PG Count") + 
+#   xlab("Minutes from Low or High Tide") + ylab("PG Count") + 
 #   fig_theme()
+# 
+# ggplot(PG_count_tides_trim, aes(x = v, y = PG_count, col = type, group = type)) +
+#   #geom_point() +
+#   geom_smooth(se = F) +
+#   xlab("Tidal Height") + ylab("PG Count") +
+#   fig_theme()
+
+################
+
+
+```
+
+```{r}
+#temp data
+
+sst <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
+  transform(year = factor(year))
+
+ggplot(sst, aes(y = temp, x = yday, group = yday)) +
+  geom_boxplot() + xlab('Day of Year') + ylab('Mean Daily SST') +
+  facet_grid(~station) + theme_bw()
+
+ggplot(sst, aes(y = temp, x = yday, group = year, col = year)) +
+  geom_line() + ylab('Mean Daily SST') + xlab('Day of Year') +
+  scale_color_brewer(palette = 'Set3', name = '') + facet_grid(~station) +
+  theme_bw()
+
+ggplot(sst, aes(y = temp, x = day, group = factor(month), col = factor(month))) +
+  geom_line() + xlab('Day') + ylab('Mean Daily SST') +
+  facet_wrap(~year+station) + scale_color_brewer(palette = 'Set1') + 
+  theme_bw()
 
 ```
 
@@ -488,6 +493,29 @@ write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
 write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
 ```
 
+```{r}
+
+#read in upwelling and SST data; https://www.pfeg.noaa.gov/products/PFEL/modeled/indices/upwelling/NA/data_download.html
+#surface pressure, cubic meters per second per 100m coastline
+#average daily value; #monthly anomalies relative to mean monthly value from 1948-1967 
+
+setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
+
+upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
+  transform(year = year(as.Date(date, format = '%m/%d/%y'))) %>%
+  filter(year > 2007)
+upwell_anom <- read.csv("Upwell_anom.csv", header = T, stringsAsFactors = F) %>%
+  filter(year > 2007) %>%
+  filter(lat != '60N') %>%
+  melt(id.vars = c('lat', 'long', 'year'), variable.name = 'month', value.name = 'up_anom')
+SST_44 <- read.csv("SST_44N.csv", header = T, stringsAsFactors = F) %>%
+  transform(date = as.Date(date), year = year(date)) %>%
+  filter(year > 2007)
+
+setwd("~/Documents/SAFS/PigeonGuillemots")
+
+```
+
 
 #Data Availability and Status
 
@@ -576,13 +604,43 @@ burrow_count_plot <- ggplot(burrow_count, aes(as.numeric(as.character(year)), cn
   xlab("") + ylab("Number of Burrows") +
   facet_wrap(~site) + fig_theme()
 
+#number of prey burrows per site/year - for scott
+#need count of active burrows per site per year
+#site level
+prey_burrows <- prey_weeks %>%
+  filter(region == 'Whidbey') %>% 
+  transform(id = 1:1792) %>%
+  group_by(site, year) %>% 
+  summarize(cnt = n_distinct(id)) %>%
+  transform(year = as.numeric(as.character(year)))
+
+ggplot(prey_burrows, aes(year, cnt)) +
+  geom_point() + geom_line() +
+  facet_wrap(~site) +
+  xlab('') + ylab('Active Burrows') +
+  theme(axis.text.x = element_text(size = 10, angle = 90)) +
+  scale_x_continuous(breaks = c(seq(2008,2018, 5)))
+
+#all sites combined
+prey_burrows <- prey_weeks %>%
+  filter(region == 'Whidbey') %>% 
+  #filter(nest_succ == 'Y') %>%
+  transform(id = 1:1792) %>%
+  #transform(id = 1:911) %>%
+  group_by(year) %>% 
+  summarize(cnt = n_distinct(id)) %>%
+  transform(year = as.numeric(as.character(year)))
+
+ggplot(prey_burrows, aes(year, cnt)) + 
+  geom_point() + geom_line() + xlab('') + ylab('Active Burrows') +
+  scale_x_continuous(breaks = c(seq(2008,2018, 2)))
+
 #number of years of data per site: 30 of the 40 unique site names have more than two years of data
 site_yrs <- data_count %>%
   group_by(site, region) %>%
   summarize(cnt = n_distinct(year)) %>%
   filter(cnt > 2) %>% nrow()
   
-
 ```
 
 ###Burrow counts and study length  
