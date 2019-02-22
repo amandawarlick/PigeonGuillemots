@@ -75,8 +75,8 @@ Type objective_function<Type>::operator() () {
   // which makes the use of the logit link appealing; 
   // if not, a multinomial (aka generalised) logit link should be used
 
-  int km = ch.rows();
-  int nh = ch.cols();  
+  int n_ind = ch.rows();
+  int n_occ = ch.cols();  
   int npar = b.size();
   vector<Type> par(npar);
   for (int i = 0; i < npar; i++) {
@@ -118,9 +118,9 @@ Type objective_function<Type>::operator() () {
   B2(2,2) = deltaB;
   B2(2,3) = Type(1.0)-deltaB;
   
-  matrix<Type> BB(4, 3);
+  matrix<Type> BB(4, 3); // I feel like these dimensions should be switched to (3, 4)
   BB = B1 * B2;
-  matrix<Type> B(3, 4);
+  matrix<Type> B(4, 3);
   B = BB.transpose();
   REPORT(B);
   
@@ -185,20 +185,21 @@ Type objective_function<Type>::operator() () {
   
   // init states
   vector<Type> PROP(3);
-  PROP(0) = piNB;
-  PROP(1) = Type(1.0)-piNB;
-  PROP(2) = Type(0.0);
+  PROP(0) = piNB; //prob of initial state being NB
+  PROP(1) = Type(1.0)-piNB; //prob of initial state being B
+  PROP(2) = Type(0.0); //prob of inital state being dead
   REPORT(PROP);
   
   // likelihood
   Type ll;
   Type nll;
   array<Type> ALPHA(3);
-  for (int i = 0; i < nh; i++) {
-    int ei = fc(i)-1;
-    vector<int> evennt = ch.col(i);
+  for (int i = 0; i < n_occ; i++) { //for every column/occasion
+    int ei = fc(i)-1;   //find occasion/date integer at t-1
+    vector<int> evennt = ch.col(i); //date/occasion at time = 1?
     ALPHA = PROP * vector<Type>(BE.row(fs(i))); // element-wise vector product
-    for (int j = ei+1; j < km; j++) {
+    
+    for (int j = ei+1; j < n_ind; j++) {
       ALPHA = multvecmat(ALPHA,A) * vector<Type>(B.row(evennt(j))); // vector matrix product, then element-wise vector product
     }
     ll += log(sum(ALPHA));
