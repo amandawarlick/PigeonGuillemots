@@ -4,9 +4,11 @@
 .Ruserdata
 Archive/
 marked/
-.rds
+*.rds
 .Rdata
 *.pptx
-*.ppt
-.csv
 *.csv
+*.ppt
+Photos/
+*.bib
+*.rda

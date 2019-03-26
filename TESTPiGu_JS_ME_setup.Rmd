@@ -1,0 +1,323 @@
+---
+title: ""
+output: word_document
+---
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(data.table)
+library(ggfortify)
+library(broom) #tidy() augment()
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(lmerTest)
+library(scales)
+library(reshape2)
+library(stats) 
+library(zoo)
+library(sciplot)
+library(jagsUI)
+library(chron)
+ 
+setwd("~/Documents/R/SAFS/PigeonGuillemots")
+path <- getActiveDocumentContext()$path 
+setwd(dirname(path))
+
+# knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r set up long df}
+
+#load data from PigeonGuillemot_whidbey.Rmd
+#contains single row where burrow_name == NA when no activity was detected, but survey started
+data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
+  filter(region == 'Whidbey') %>%
+  #dplyr::select(-intern_data) %>%
+  dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
+  #filter(site %in% c('Double Bluff North')) %>%
+  #filter(site %in% c('Mutiny Sands') & year == 2018) %>%
+  #filter(site %in% c('Mutiny Sands', 'Double Bluff North') & year == 2018) %>%
+  filter(year > 2017) %>%
+  #dplyr::select(region, site, year, yday, burrow_name, burrow)
+  distinct()  #2 duplicates, all lagoon south 2017
+
+# test <- data_burrow_all %>%
+#   distinct(region, site, year, week, yday, burrow_name, tot_prey) %>%
+#   group_by(site, year, week, burrow_name) %>%
+#   summarize(cnt = n_distinct(yday)) %>%
+#   filter(cnt > 1)
+# tail(test)
+# data_count <- read.csv("data_count.csv", header = T, stringsAsFactors = F) %>%
+#   select(-intern_data)
+
+#study start day per year, island-wide
+start_end_all <- data_burrow_all %>%
+  group_by(year, region) %>%
+  summarize(start_day = min(yday), end_day = max(yday))
+
+# no_vis <- data_burrow_all %>%
+#   filter(is.na(burrow_name)) %>%
+#   dplyr::select(region, year, site, week, yday)
+#   #dplyr::select(region, year, site, yday)
+# name_expand <- data_burrow_all %>%
+#   filter(!is.na(burrow_name)) %>% #use all unique burrow names per year to expand each per week
+#   distinct(region, year, site, week, burrow_name) %>%
+#   #merge(no_vis, all = T) %>%
+#   merge(no_vis) %>%
+#   #transform(capt_hist = 3) %>%
+#   filter(!is.na(week)) %>% #remove cases where there aren't any missings, took week out since something was awry
+#   dplyr::select(region, site, year, burrow_name, yday, week)
+
+no_vis <- data_burrow_all %>%
+  filter(is.na(burrow_name)) %>%
+  dplyr::select(region, year, site, week, yday)
+name_expand <- data_burrow_all %>%
+  filter(!is.na(burrow_name)) %>% #use all unique burrow names per year to expand each per week
+  distinct(region, year, site, burrow_name) %>%
+  merge(no_vis, all = T) %>%
+  filter(!is.na(week))
+
+all_days <- data_burrow_all %>%
+  #filter(is.na(burrow_name)) %>%
+  group_by(region, year, site) %>%
+  distinct(yday)
+fill <- data_burrow_all %>%  #all day-burrow combinations
+  filter(!is.na(burrow_name)) %>%
+  group_by(region, year, site, burrow_name) %>%
+  distinct(burrow_name) %>%
+  merge(all_days, all = T) #%>%
+  #transform(capt_hist = 3) #%>%
+
+burrow <- data_burrow_all %>%
+  filter(!is.na(burrow_name)) %>% #remove all dummy rows where no burrows were seen
+  bind_rows(fill) %>%
+  #distinct() %>%
+  merge(start_end_all, by = c('region', 'year'), all = T) %>%
+  transform(study_day = yday - start_day + 1) #%>% arrange(burrow_name)
+
+# year_burrow <- burrow %>%
+#   transform(id = paste(burrow_name, year))
+
+
+
+
+
+
+
+#burrow visit and prey visit start stops
+prey_start_end <- burrow %>%
+  filter(tot_prey > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(prey_start = min(study_day), prey_end = max(study_day))  
+
+bv_start_end <- burrow %>%
+  filter(burrow_visit > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(bv_start = min(study_day), bv_end = max(study_day))  
+
+start_end_visits <- prey_start_end %>%
+  merge(bv_start_end, by = c('region', 'year', 'site', 'burrow_name'), all = T)
+
+day_range <- burrow %>%
+  group_by(region, year, site) %>%
+  summarize(min_day = min(study_day), max_day = max(study_day))
+
+week_range <- burrow %>%
+  group_by(region, year, site) %>%
+  summarize(min_week = min(week), max_week = max(week))
+
+n_visits <- burrow %>%
+  group_by(region, year, site) %>% #don't include burrow here, since hasn't been expanded yet
+  summarize(n_visits = n_distinct(study_day)) #use study_day instead of date - NAs in date
+
+#looking at where these long week ranges are coming from:
+#ledgewood 2016 is the long one, otherwise mostly 8-11 weeks - fixed
+# test <- week_range %>%
+#   transform(range = max_week-min_week) #%>%
+#   filter(range > 11)
+# hist(test$range)
+# table(test$range)
+
+#combining all data with dummy framework of all days
+burrow_CH <- burrow %>%
+  merge(start_end_visits, by = c('region', 'year', 'site', 'burrow_name'), all.x = T) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) %>%
+  group_by(region, year, site) %>%
+  merge(day_range, by = c('region', 'year', 'site')) %>%
+  merge(n_visits, by = c('region', 'year', 'site')) %>% #arrange(burrow_name)
+  #transform(effort = ifelse(is.na(burrow_visit) & is.na(tot_prey), 0, 1)) %>%
+  transform(capt_hist = ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #observed but not detected
+                     ifelse(burrow_visit == 0 & tot_prey == 0, 3, #observed but not detected
+              ifelse(tot_prey > 0, 2, #prey visit
+              ifelse(burrow_visit > 0, 1, #burrow visit
+                       100))))) %>% 
+  select(region, year, site, week, yday, start_day, study_day, n_visits, 
+         min_day, max_day, burrow_name, capt_hist) %>%
+  distinct() %>% 
+  # distinct(region, year, site, burrow_name, min_week, max_week, yday, study_day, week, capt_hist) %>% 
+  # distinct() %>%
+  dcast(region + year + site + burrow_name + min_day + max_day ~ study_day, value.var = 'capt_hist', 
+        fun.aggregate = mean) %>%
+  filter(!is.na(burrow_name))
+
+#now we have ch df, but too many 3s - need to make NA outside site-specific start/stop weeks
+burrow_CH <- burrow_CH %>%
+  melt(id.vars = c('region', 'year', 'site', 'burrow_name', 'min_day', 'max_day')) %>%
+  transform(study_day = as.numeric(as.character(variable))) %>%
+  transform(capt_hist = ifelse(study_day < min_day | study_day > max_day, NA, value)) %>%
+  dplyr::select(region, year, site, burrow_name, study_day, capt_hist) %>% #arrange(study_day)
+  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist') 
+
+#augment - need to add X individuals prop to # of nests with the same days at a site but all obs == 3
+max_recap <- dim(burrow_CH[1, -c(1:4)])[2] #max number of resights for ncol
+ 
+# num_nests <- burrow %>%
+#   group_by(region, year, site) %>%
+#   summarize(nest_cnt = n_distinct(burrow_name)) %>%
+#   transform(burrow_name = 'XXX') %>%
+#   merge(n_visits, by = c('region', 'year', 'site')) %>%
+#   transform(aug = round(0.2*nest_cnt)) %>%
+#   transform(aug = ifelse(aug < 1, 1, aug)) %>%
+#   dplyr::select(-nest_cnt)
+# 
+# aug_dat <- matrix(NA, nrow = sum(num_nests$aug), ncol = max_recap)
+# 
+# for (i in 1:dim(aug_dat)[1]) {
+# #aug_dat[i,c(1:4)] <- unlist(c(burrow_CH[i,c(1:4)]))
+#   num_vis <- num_nests[1,'n_visits']
+#   temp <- as.numeric(rep(3, num_vis))
+# aug_dat[i,] <- c(temp, rep(NA, max_recap-num_vis))
+# 
+# }
+
+#need matrix(dim(aug), region, year, site, burrow_name, rep(3, n_visits) + NA)
+
+##collapse
+ch_dat <- matrix(NA, nrow = dim(burrow_CH)[1], ncol = max_recap)
+
+for (i in 1:dim(burrow_CH)[1]) {
+  temp <- as.numeric(burrow_CH[i, 4 + c(which(!is.na(burrow_CH[i,5:dim(burrow_CH)[2]])))])
+  num <- length(temp)
+  ch_dat[i,] <- c(temp, rep(NA, max_recap-num))
+}
+
+```
+
+```{r}
+
+#df of survey days at site-day level
+# days_site <- burrow %>%
+#   merge(n_visits, by = c('region', 'year', 'site')) %>%
+#   merge(week_range, by = c('region', 'year', 'site')) %>%
+#   #transform(occ = week-min_week+1) %>%
+#   distinct(region, year, site, study_day, n_visits) %>%
+#   #distinct(region, year, site + burrow_name, study_day, n_visits) %>%
+#   #dcast(region + year + site + n_visits + burrow_name ~ study_day, value.var = 'study_day', 
+#           #fun.aggregate = mean)
+#   dcast(region + year + site + n_visits ~ study_day, value.var = 'study_day', fun.aggregate = mean)
+
+#df of survey days at burrow-week level
+survey <- burrow %>%
+  merge(n_visits, by = c('region', 'year', 'site')) %>%
+  merge(week_range, by = c('region', 'year', 'site')) %>%
+  #transform(occ = week-min_week) %>%
+  dplyr::select(region, year, site, yday, burrow_name, study_day, n_visits, week, max_week) %>%
+  dcast(region + year + site + burrow_name + n_visits ~ week, value.var = 'study_day', fun.aggregate = mean)
+
+
+  
+#for unique year-site combination, need vector of study_day that is length of n_visits
+max_visits <- dim(survey[1, -c(1:5)])[2]
+
+survey_days <- matrix(NA, nrow = dim(survey)[1], ncol = max_visits)
+
+for (i in 1:dim(survey)[1]) {
+  temp <- as.numeric(survey[i, 5 + c(which(!is.na(survey[i,6:dim(survey)[2]])))])
+  #num <- survey[i,5]
+  num <- length(temp)
+  survey_days[i,] <- c(temp, rep(NA, max_visits-num))
+}
+
+site_i <- survey$site
+visits_i <- survey$n_visits
+
+```
+
+```{r}
+
+write.csv(survey_days, 'survey_days.csv', row.names = F)
+
+write.csv(ch_dat, 'ch_dat.csv', row.names = F)
+
+```
+
+
+```{r covariates}
+
+#sst
+sst <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
+  #transform(year = factor(year)) %>%
+  filter(station == 9444900) %>% #CHECK if this is the north seattle station!
+  dplyr::select(-c(station, month, day)) %>%
+  merge(burrow %>% dplyr::select(yday, year, study_day) %>% distinct(), by = c('year', 'yday')) 
+
+#tides
+tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
+  transform(date = as.Date(date)) %>%
+  transform(month = month(date)) %>%
+  transform(time = as.POSIXct(time)) 
+    
+#high and low tides, dim from data_count doubles
+## problematic to use the count data since some dates are missing compared to burrow (maylor 2008)
+PG_covs <- burrow %>% 
+  filter(region == 'Whidbey') %>%
+  #filter(PG_count != '') %>% 
+  select(region, year, site, date, start_time, week, yday, burrow_name, burrow_visit, tot_prey,
+         start_day, end_day, study_day) %>%
+  transform(date = as.Date(date)) %>%
+  merge(tides %>% filter(region == 'Whidbey'), by = c('site', 'date', 'region'), all.x = T) %>%
+  transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
+  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
+  transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
+            from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
+  transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
+  select(-c(t, month, from_low, from_high)) %>%
+  transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
+  transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
+                          ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
+                                 ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
+  filter(rank == 2 | rank == 3) %>%
+  filter(type == 'H') %>%
+  dplyr::select(region, year, site, date, v, from_hilo,
+                burrow_name, burrow_visit, tot_prey, start_day, end_day, study_day) %>%
+  merge(sst, by = c('study_day', 'year'), all.x = T) %>%
+  dplyr::select(region, year, site, study_day, burrow_name, from_hilo, v, temp)
+
+```
+
+
+```{r ch} 
+
+# all_dat <- burrow_CH %>%
+#   merge(PG_covs, by = c('region', 'year', 'site', 'study_day', 'burrow_name'), all = T)
+
+# write.csv(days_since, "days_since.csv", row.names = F) 
+# write.csv(burrow_CH, "burrow_CH.csv", row.names = F) 
+# write.csv(all_dat, 'all_dat.csv', row.names = F)
+  
+```
+
+
+
+Questions
+- What to do when see one prey delivery and no other visits?
+  
+- Excluded single burrow visits, but included single date burrow visits where bv > 1
+
+- Haven't trimmed total "study length" to nest level (currently year level)
+
+- If last burrow visit was last prey delivery, could have just missed the rest of the visits?

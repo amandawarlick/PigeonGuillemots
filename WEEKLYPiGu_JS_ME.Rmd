@@ -24,6 +24,7 @@ library(stringr)
 library(lubridate)
 library(stats) 
 library(zoo)
+library(magrittr)
 
 path <- getActiveDocumentContext()$path 
 setwd(dirname(path))
@@ -35,32 +36,123 @@ setwd(dirname(path))
 ```
 
 ```{r data}
-#load data from PigeonGuillemot_whidbey.Rmd
+#load data from PiGu_JS_ME_setup.Rmd
 
-#long version of capture history, spread out so there is one row per nest per day per year
-data_MEJS <- read.csv("burrow_CH.csv", header = T, stringsAsFactors = F)
-#data_MEJS <-subset(data_MEJS, site == "Double Bluff North" &  year == 2016)
-#data_MEJS <-subset(data_MEJS, site == "Double Bluff North")
+effort <- read.csv("days_since.csv", header = T, stringsAsFactors = F)
+effort[,1] <- as.numeric(effort[,1])
 
-#capture histories per day across columns
-data_MEJS_wide <- data_MEJS %>% 
-  distinct(region, year, site, burrow_name, study_day, capt_hist) %>% 
-  #transform(capt_hist = ifelse(is.na(capt_hist), 4, capt_hist)) %>% #leave NAs for unobs days
-  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist', 
-        fun.aggregate = mean)
-data_MEJS_wide <- data_MEJS_wide[sample(nrow(data_MEJS_wide), 100),]
+#long version of capture history, spread out so there is one row per nest per week per year
+data_MEJS_wide <- read.csv("burrow_CH.csv", header = T, stringsAsFactors = F)
+data_MEJS_wide[,5:18] <- round(data_MEJS_wide[,5:18], 0)
 
-#matrix of just capture histories, 82 days
-ch <- as.matrix(data_MEJS_wide %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
-colnames(ch) <- NULL
-ch <- round(ch, 0)
+#combined from which to subsample 
+all_dat <- data_MEJS_wide %>% bind_cols(effort)
+all_dat <- all_dat[sample(nrow(all_dat), 20),]
+data_MEJS_wide <- all_dat[,1:22]
+effort <- all_dat[,23:dim(all_dat)[2]]
 
-## Create binary effort matrix with 1 if site surveyed on day t, 0 otherwise.
-EFFORT_MEJS <- matrix(0, nr = dim(ch)[1], nc = dim(ch)[2])
-EFFORT_MEJS[!is.na(ch)] <- 1
+#matrix of just capture histories, weeks
+dummy_day <- matrix(NA, dim(data_MEJS_wide)[1], 1)  #dummy day is NA for obs/data, 1 for z not entered
+ch <- cbind2(dummy_day, as.matrix(data_MEJS_wide %>% select(-c(region, year, site, burrow_name))))
 
-#test <- data_MEJS[duplicated(data_MEJS),]
-#table(ch)
+dummy_eff <- matrix(NA, dim(data_MEJS_wide)[1], 1) 
+eff <- as.matrix(data.frame(cbind(as.numeric(dummy_eff), effort)))
+#eff[is.na(eff)] <- 'NA'  #help, what to do with NAs between surveys?
+
+#try some very very basic perfect data
+sim_dat <- matrix(sample(c(1:3, NA), 1400, replace = T, prob = c(0.5, 0.05, 0.4, 0.1)), 
+                  ncol = 14, nrow = 100)
+sim_dat[,1] <- NA
+sim_dat[,14] <- NA
+
+sim_eff <- matrix(sample(c(6:7), 1400, replace = T), ncol = 14, nrow = 100)
+# sim_eff[,1] <- NA
+# sim_eff[,14] <- NA
+
+eff <- sim_eff
+ch <- sim_dat
+
+```
+
+
+```{r aug inits}
+     
+# Augment data
+# nz <- 200
+# CH.aug <- rbind(ch, matrix(3, nrow = nz, ncol = dim(ch)[2])) #3 for not seen
+# 
+# #augmented effort - not finished
+# eff.aug <- rbind(eff, matrix(eff[1,], nrow = nz, ncol = dim(EFFORT_MEJS)[2], byrow=T))
+# eff.aug <- eff.aug[,-1] #remove first column (dummy column), because detection goes off of t-1
+
+get.first <- function(x) min(which(x < 3))
+f <- apply(ch, 1, get.first)
+#a <- match(Inf, f)
+     
+get.last <- function(x) max(which(x < 3))
+l <- apply(ch, 1, get.last)
+
+# latent z; all obs of 1,3,4 are unk state, NA
+# 2 obs means state 3, chick
+z.st <- ch
+z.st[which(z.st != 2)] <- NA
+z.st[which(z.st == 2)] <- 3
+
+first.pv <- function(x) min(which(x == 3))
+fpv <- apply(z.st, 1, first.pv)
+
+last.pv <- function(x) max(which(x == 3))
+lpv <- apply(z.st, 1, last.pv)
+
+first.bv <- function(x) min(which(x == 2))
+fbv <- apply(ch, 1, first.bv)
+
+last.bv <- function(x) max(which(x == 2))
+lbv <- apply(ch, 1, last.bv)
+
+for (i in 1:dim(z.st)[1]) {
+  if (fpv[i] != Inf) {
+  z.st[i, (fpv[i]):lpv[i]] <- 3 #chick between pv observations
+  }
+}
+
+# Initial z values -
+#ch <- ch
+js.me.init <- function(ch, f, l){
+  inits <- z.st
+
+  for(i in 1:dim(ch)[1]) { 
+    if (f[i] != Inf) {
+    inits[i, 1:(f[i]-1)] <- 1  #1 before first capture 
+    if(l[i] < dim(ch)[2]){ #for all cases
+     inits[i, (l[i]+1):dim(ch)[2]] <- rep(3, (dim(ch)[2]-l[i])) #3 from last obs to end
+    }
+    if(sum(ch[i,] == 2, na.rm = T) > 0){ #nests with observed prey delivery
+       if(f[i] == min(which(ch[i,] == 2))){  #if first obs is a prey delivery
+        inits[i, f[i]:l[i]] <- 3              #chick until end of study 
+        if(f[i] > 2) inits[i, 2:(f[i]-1)] <- 2  #egg prior to chick; couldn't it be not entered as well?
+
+       } else { #if first obs is burrow visit
+        inits[i, f[i]:(min(which(ch[i,] == 2))-1)] <- 2 #egg between f[i] and first pv
+        inits[i, min(which(ch[i,] == 2)):l[i]] <- 3 #chick from first pv to last observation
+       }
+    } else { #never detected a prey delivery
+      if(sum(ch[i,] == 2, na.rm = T) == 0){      
+        inits[i, f[i]:(max(which(ch[i,] == 1)))] <- 2 #egg for all occasions between first and last bv
+      }
+    }
+    }
+   } #i
+  return(inits)
+}
+
+z.init = js.me.init(ch, f, l)
+z.init[,1] <- NA #deterministic on dummy occasion
+z.init[which(z.st == 3)] <- NA #deterministic, don't initialize where z is known as chick between pvs
+
+###########
+z <- z.st
+y <- ch
 
 ```
 
@@ -88,112 +180,122 @@ EFFORT_MEJS[!is.na(ch)] <- 1
 # 1 Burrow visit
 # 2 Prey visit
 # 3 not seen
-# 4 not observed - no survey that day
+# NA not observed - no survey that day
 # -------------------------------------------------
 
 ```
 
-```{r model}
-
-# Specify model in jags
+```{r logit mod}
 
 model_MEJS <- function () {
 
 # Priors and constraints
-b ~ dunif(0,1)            #
-mean.psiAB ~ dunif(0,1)   #
-alpha[1] ~ dunif(0,1)     # if enter at occasion 1, probability entered as chick burrow
+#for (i in 1:n_ind) {
+for (t in 1:(n.occasions-1)){
+ #phiA[t] <- mean.phi[1]   # egg survival
+ #logit(phiA[i, t]) <- mu.p
+ logit(phiA[t]) <- mu.phi[1]
+ logit(phiB[t]) <- mu.phi[2]
+ gamma[t] ~ dunif(0, 1)    # Prior for entry probabilities at occasion t
+ pA[t] <- mean.p[1]     # egg burrow detection
+ pB[t] <- mean.p[2]     # chick burrow detection
+ psiAB[t] <- mean.psiAB
+ alpha[t+1] <- 0              #probability of entry as chick on occasion t>1 
+} #t
+
+b ~ dunif(0,1)            # prior for assignment probability
+mean.psiAB ~ dunif(0,1)   # transition from egg to chick
+alpha[1] ~ dunif(0,1)     # if enter at occasion 1, probability that entered as chick burrow
 alphaKeep <- alpha[1]      # this is the only one we want to keep 
 
 for (u in 1:2){
- mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
+  mu.phi[u] ~ dnorm(0, 0.001) 
+ #mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
  mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
 }
-
-for (t in 1:(n.occasions-1)){
- phiA[t]     <- mean.phi[1]   # egg survival
- phiB[t]     <- mean.phi[2]   # chick survival
- gamma[t]    ~ dunif(0, 1)    # Prior for entry probabilities at occasion t
- pA[t]       <- mean.p[1]     # egg burrow detection
- pB[t]       <- mean.p[2]     # chick burrow detection
- psiAB[t]    <- mean.psiAB
- alpha[t+1]  <-0              #probability of entry as chick on occasion t+1 
-}
+est.phiA <- 1 / (1+exp(-mu.phi[1]))
+est.phiB <- 1 / (1+exp(-mu.phi[2]))
 
 # Likelihood 
 for (i in 1:M){
  # Define latent state at first occasion
- z[i,1] <- 1            #all M individuals are in state 1 at t=1 (e.g., one day prior to season)
+  z[i,1] <- 1            #all M individuals are in state 1 at t=1 (e.g., one day prior to season)
  for (t in 2:n.occasions){
   # State process: draw S(t) given S(t-1)
   z[i,t] ~ dcat(ps[z[i,t-1], i, t-1,])
   # Observation process: draw O(t) given S(t)
   y[i,t] ~ dcat(po[z[i,t], i, t-1,])  
-   #this follow Kery and Schaub 10.3.2, indexing is tricky. e.g., y[i,2] is a function of state[i,2] and observation array t=1; if detection covariates are used, don't add dummy occasion to detection covariates as detection data at occasion t uses array t-1
+   #this follows Kery and Schaub 10.3.2, y[i,2] is a function of state[i,2] and observation array t=1; if detection covariates are used, don't add dummy occasion to detection covariates as detection data at occasion t uses array t-1
 
-#   # Derive some stuff along the way
-#   egg[i,t-1]    <- equals(z[i,t], 2)
-#   chick[i,t-1]  <- equals(z[i,t], 3)
-#   active[i,t-1] <- max(egg[i,t-1],chick[i,t-1]) #egg or chick
+  # Derived objects
+  egg[i,t-1]    <- equals(z[i,t], 2)
+  chick[i,t-1]  <- equals(z[i,t], 3)
+  active[i,t-1] <- max(egg[i,t-1],chick[i,t-1]) #egg or chick
 } #t
-#  everEgg[i]    <- max(egg[i,])
-#  everChick[i]  <- max(chick[i,])
-#  EverActive[i] <- max(everChick[i],everEgg[i])
+ everEgg[i]    <- max(egg[i,])
+ everChick[i]  <- max(chick[i,])
+ EverActive[i] <- max(everChick[i],everEgg[i])
 } #i
+
+#derive abundances 
+ for (t in 1:(n.occasions-1)){
+  N.egg[t]    <- sum(egg[1:M,t])
+  N.chick[t]  <- sum(chick[1:M,t])
+  N.active[t] <- sum(active[1:M,t])
+  qgamma[t] <- 1-gamma[t]
+  birthProb[t] <- cprob[t] / psi      # Entry probability
+} #t
+
+cprob[1] <- gamma[1]
+ for (t in 2:(n.occasions-1)){
+  cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
+ }#t
+psi <- sum(cprob[])            # Inclusion probability
+
+Nstar <- sum(EverActive[1:M])
 
 # Define transition and observation matrices
  for (i in 1:M){
   for (t in 1:(n.occasions-1)) {
       # Define probabilities of state S(t+1) given S(t)   
-      ps[1,i,t,1] <- 1-gamma[t]               #probability of not entering
-      ps[1,i,t,2] <- gamma[t]*(1-alpha[t])    #probability of entering as egg
-      ps[1,i,t,3] <- gamma[t]*alpha[t]        #probability of entering as chick. Note: only alpha[1]>0
-      ps[1,i,t,4] <- 0                        #probability of entering as terminated
-      ps[2,i,t,1] <- 0                        #probability egg goes to 'not entered'
-      ps[2,i,t,2] <- phiA[t]*(1-psiAB[t])     #probability of surviving egg state and not transitioning
-      ps[2,i,t,3] <- phiA[t]*psiAB[t]         #probability of surviving egg state and hatching
-      ps[2,i,t,4] <- 1-phiA[t]                #probability of a failed egg
-      ps[3,i,t,1] <- 0                        #probability chick goes to 'not entered'
-      ps[3,i,t,2] <- 0                        #probability chick goes to egg
-      ps[3,i,t,3] <- phiB[t]                  #probability of surviving chick stage
-      ps[3,i,t,4] <- 1-phiB[t]                #probability of failed chick
-      ps[4,i,t,1] <- 0                        #probability terminated goes to 'not entered'
-      ps[4,i,t,2] <- 0                        #probability terminated goes to egg (maybe this does happen)
-      ps[4,i,t,3] <- 0                        #probability terminated goes to chick
-      ps[4,i,t,4] <- 1                        #probability terminated goes to terminated
+      ps[1,i,t,1] <- 1-gamma[t]                    #probability of not entering
+      ps[1,i,t,2] <- gamma[t]*(1-alpha[t])         #probability of entering as egg
+      ps[1,i,t,3] <- gamma[t]*alpha[t]             #probability of entering as chick. Note: only alpha[1]>0
+      ps[1,i,t,4] <- 0                             #probability of entering as terminated
+      ps[2,i,t,1] <- 0                             #probability egg goes to 'not entered'
+      #ps[2,i,t,2] <- (1-psiAB[t])*phiA[t]          #probability of surviving egg state and not transitioning
+      ps[2,i,t,2] <- (1-psiAB[t])*(phiA[t]^eff[i,t])     
+      #ps[2,i,t,3] <- phiA[t]*psiAB[t]              #probability of surviving egg state and hatching
+      ps[2,i,t,3] <- psiAB[t]*(phiA[t]^eff[i,t])      
+      #ps[2,i,t,4] <- 1-phiA[t]                      #probability of a failed egg
+      ps[2,i,t,4] <- 1-phiA[t]^(eff[i,t])  #probability of a failed egg
+      ps[3,i,t,1] <- 0                                #probability chick goes to 'not entered'
+      ps[3,i,t,2] <- 0                                #probability chick goes to egg
+      #ps[3,i,t,3] <- phiB[t]
+      ps[3,i,t,3] <- phiB[t]^(eff[i,t])     #probability of surviving chick stage
+      #ps[3,i,t,4] <- 1-phiB[t]               #probability of failed chick
+      ps[3,i,t,4] <- 1-(phiB[t]^(eff[i,t]))  #probability of failed chick
+      ps[4,i,t,1] <- 0                      #probability terminated goes to 'not entered'
+      ps[4,i,t,2] <- 0                       #probability terminated goes to egg (maybe happens)
+      ps[4,i,t,3] <- 0                       #probability terminated goes to chick
+      ps[4,i,t,4] <- 1                       #probability terminated goes to terminated
       
       # Define probabilities of O(t) given S(t)
-      po[1,i,t,1] <- 0                        #probability a 'not entered' burrow is detected with a burrow visit
-      po[1,i,t,2] <- 0                        #probability a 'not entered' burrow is detected with a prey visit
-      po[1,i,t,3] <- 1                        #probability a 'not entered' burrow is not detected
-      po[2,i,t,1] <- pA[t]*eff[i,t]           #probability an egg burrow is detected with a burrow visit
-      po[2,i,t,2] <- 0                        #probability an egg burrow is detected with a prey visit
-      po[2,i,t,3] <- 1-pA[t]*eff[i,t]         #probability an egg burrow is not detected
-      po[3,i,t,1] <- b * pB[t]*eff[i,t]       #probability a chick burrow is detected with a burrow visit 
-      po[3,i,t,2] <- (1 - b) * pB[t]*eff[i,t] #probability a chick burrow is detected with a prey visit
-      po[3,i,t,3] <- 1 - pB[t]*eff[i,t]       #probability a chick burrow is not detected
-      po[4,i,t,1] <- 0                        #probability a terminated burrow is detected with a burrow visit
-      po[4,i,t,2] <- 0                        #probability a terminated burrow is detected with a prey visit
-      po[4,i,t,3] <- 1                        #probability a terminated burrow is not detected
+      po[1,i,t,1] <- 0                        #'not entered' burrow is detected with a burrow visit
+      po[1,i,t,2] <- 0                        #'not entered' burrow is detected with a prey visit
+      po[1,i,t,3] <- 1                        #'not entered' burrow is not detected
+      po[2,i,t,1] <- pA[t]                    #egg burrow is detected with a burrow visit
+      po[2,i,t,2] <- 0                        #egg burrow is detected with a prey visit
+      po[2,i,t,3] <- 1-pA[t]                  #egg burrow is not detected
+      po[3,i,t,1] <- b * pB[t]                #chick burrow is detected with a burrow visit 
+      po[3,i,t,2] <- (1 - b) * pB[t]          #chick burrow is detected with a prey visit
+      po[3,i,t,3] <- 1 - pB[t]                #chick burrow is not detected
+      po[4,i,t,1] <- 0                        #terminated burrow is detected with a burrow visit
+      po[4,i,t,2] <- 0                        #terminated burrow is detected with a prey visit
+      po[4,i,t,3] <- 1                        #terminated burrow is not detected
   } #t
  }#M
 
-#derive abundances (lots of options here, e.g., site specific, annual, etc.) 
-#  for (t in 1:(n.occasions-1)){
-#   N.egg[t]    <- sum(egg[1:M,t])
-#   N.chick[t]  <- sum(chick[1:M,t])
-#   N.active[t] <- sum(active[1:M,t])
-#   qgamma[t] <- 1-gamma[t]
-#   birthProb[t] <- cprob[t] / psi      # Entry probability
-# }
-#  cprob[1] <- gamma[1]
-#  for (t in 2:(n.occasions-1)){
-#   cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
-#  }#t
-#  psi <- sum(cprob[])            # Inclusion probability
-# 
-# Nstar<-sum(EverActive[1:M])
-#  
 }
 
 write.model(model_MEJS, "model_MEJS.txt")
@@ -202,141 +304,35 @@ model.file = paste(getwd(),"model_MEJS.txt", sep="/")
 
 ```
 
-```{r aug inits}
-     
-# Augment data
-nz <- 200
-CH.aug <- rbind(ch, matrix(3, nrow = nz, ncol = dim(ch)[2])) #3 for not seen
-
-#augmented effort - not finished
-eff.aug <- rbind(EFFORT_MEJS, matrix(EFFORT_MEJS[1,], nrow = nz, ncol = dim(EFFORT_MEJS)[2], byrow=T))
-eff.aug <- eff.aug[,-1] #remove first column (dummy column), because detection goes off of t-1?
-
-get.first <- function(x) min(which(x < 3))
-f <- apply(ch, 1, get.first)
-#a <- match(Inf, f)
-     
-get.last <- function(x) max(which(x < 3))
-l <- apply(ch, 1, get.last)
-
-# latent z
-# all obs of 1,3,4 are unk state, NA
-# 2 obs means state 3, chick
-z.st <- ch
-z.st[which(z.st != 2)] <- NA
-z.st[which(z.st == 2)] <- 3
-# for(i in 1:dim(ch)[1]) {
-# z.st[i, 2:f[i]-1] <- 1
-# }
-z.st[,1] <- NA #this is set to 1 in the model, so need to revert to NA
-
-first.pv <- function(x) min(which(x == 3))
-fpv <- apply(z.st, 1, first.pv)
-
-last.pv <- function(x) max(which(x == 3))
-lpv <- apply(z.st, 1, last.pv)
-
-first.bv <- function(x) min(which(x == 2))
-fbv <- apply(ch, 1, first.bv)
-
-last.bv <- function(x) max(which(x == 2))
-lbv <- apply(ch, 1, last.bv)
-
-for (i in 1:dim(z.st)[1]) {
-  if (fpv[i] != Inf) {
-  z.st[i, (fpv[i]+1):lpv[i]] <- 3 #chick between pv observations
-  }
-}
-
-# Initial z values -
-#ch <- ch
-js.me.init <- function(ch, f, l){
-  inits <- matrix(NA, nr = dim(ch)[1], nc = dim(ch)[2])
-  #inits[,1] <- NA  #deterministic on occasion 1; commented out or else indexing is out of bounds
-
-  for(i in 1:dim(ch)[1]) { 
-    inits[i, 1:(f[i]-1)] <- 1  #1 before first capture 
-    if(l[i] < dim(ch)[2]){ #for all cases
-     inits[i, (l[i]+1):dim(ch)[2]] <- rep(3, (dim(ch)[2]-l[i])) #3 from last obs to end
-    }
-    if(sum(ch[i,] == 2, na.rm = T) > 0){ #nests with observed prey delivery
-       if(f[i] == min(which(ch[i,] == 2))){  #if first obs is a prey delivery
-        inits[i, f[i]:l[i]] <- 3              #chick until end of study 
-        if(f[i] > 2) inits[i, 2:(f[i]-1)] <- 2  #egg prior to chick; couldn't it be not entered as well?
-
-       } else { #if first obs is burrow visit
-        inits[i, f[i]:(min(which(ch[i,] == 2))-1)] <- 2 #egg between f[i] and first pv
-        inits[i, min(which(ch[i,] == 2)):l[i]] <- 3 #chick from first pv to last observation
-       }
-    } else { #never detected a prey delivery
-      if(sum(ch[i,] == 2, na.rm = T) == 0){      
-        inits[i, f[i]:(max(which(ch[i,] == 1)))] <- 2 #egg for all occasions between first and last bv
-      }
-    }
-   } #i
-  return(inits)
-}
-
-z.init = js.me.init(ch, f, l)
-z.init[,1] <- NA #deterministic on dummy occasion
-z.init[which(z.st == 3)] <- NA #deterministic, don't initialize where z is known as chick between pvs
-
-# z.init <- rbind(zInitsObs, matrix(1, nr = nz, nc = dim(ch)[2]))
-# z.init[,1] <- NA  #don't initialize dummy day
-
-###### #simpler z.init ########
-# everything that is deterministic gets NA (obs = 2).
-# everything that is unknown (1, 3, NA) gets inits
-## for unknown states:
-#### 1 obs (bv) can get 2 (egg)
-#### NA and 3 obs (not det) can get 1 (NE) before fc, 2 after first bv, 3 after first pv
-
-#z.init <- ch
-#z.init[which(z.init == 2)] <- NA #deterministic
-# z.init[,1] <- NA #deterministic on dummy occasion
-# z.init[which(z.init == 1)] <- 2 #bv observation can be egg state
-# 
-# for (i in 1:dim(z.init)[1]) {
-#   z.init[i,2:(f[i]-1)] <- 1 #NE before first capture
-#     if (fbv[i] != Inf & fpv[i] == -Inf) {
-#       z.init[i,(fbv[i]-1):(lpv[i]-1)] <- 2 #egg after first bv
-#     }
-#   if (fbv[i] != Inf) {
-#       z.init[i,(fbv[i]-1):(fpv[i]-1)] <- 2 #egg after first bv
-#     }
-#   if (fpv[i] != Inf) {
-#   z.init[i, (fpv[i]):lpv[i]] <- NA #chick between pv observations, deterministic
-#   }
-# }
-
-###########
-z <- z.st
-y <- ch
-
-```
 
 ```{r run}
 
 # Bundle data
 jags.data <- list(y = y, n.occasions = dim(ch)[2], 
                   z = z.st, 
-                  M = dim(ch)[1], eff = EFFORT_MEJS)
+                  eff = eff,
+                  M = dim(ch)[1])
 
-
-inits <- function(){list(mean.phi = runif(2, 0, 1), 
+inits <- function(){list(#mean.phi = runif(2, 0, 1), 
                          z = z.init,
                          mean.p = runif(2, 0, 1))}  
      
 # Parameters monitored
-parameters <- c("mean.phi", "mean.p", "b", "gamma", "alphaKeep", "mean.psiAB", "N.egg", "N.chick",
+parameters <- c('est.phiA', 'est.phiB', "mean.phi", "mean.p", "b", "gamma", 
+                "alphaKeep", "mean.psiAB", "N.egg", "N.chick",
                 "N.active", "Nstar", "psi", "birthProb")
-
      
 # MCMC settings
-ni <- 10; nt <- 1; nb <- 5; nc <- 2
+ni <- 100; nt <- 1; nb <- 5; nc <- 2
      
-out <- jags(jags.data, inits, parameters, model.file = model.file,
+out_pigu <- jags(jags.data, inits, parameters, model.file = model.file,
               n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+
+#out <- readRDS('out_pigu.rds')
+
+```
+
+```{r}
      
 #print(js_me, digits = 3)
 # outmat<-as.matrix(js_me$samples)
@@ -430,7 +426,7 @@ prey_del_plot_data[is.na(prey_del_plot_data)] <- 0
 
 ```
 
-
+#####simulation from Nathan
 ```{r}
 
 # Function to simulate capture-recapture data under a multi-event JS model; adapted from Kery & Schaub
@@ -617,6 +613,120 @@ legend("topleft", legend=c("Active","Egg", "Chick"), text.col=c("black", "red", 
 plot(apply(outmat[,grep("b\\[", colnames(outmat))],2,median), pch=16, type="b", ylab="Probability", xlab=c("Day of season"), ylim=c(0,1))
  points(b, pch=0) #true values
 
+
+
+```
+
+
+
+```{r model prob scale}
+
+model_MEJS <- function () {
+
+# Priors and constraints
+for (t in 1:(n.occasions-1)){
+ phiA[t] <- mean.phi[1]   # egg survival
+ phiB[t] <- mean.phi[2]   # chick survival
+ gamma[t] ~ dunif(0, 1)    # Prior for entry probabilities at occasion t
+ pA[t] <- mean.p[1]     # egg burrow detection
+ pB[t] <- mean.p[2]     # chick burrow detection
+ psiAB[t] <- mean.psiAB
+ alpha[t+1] <- 0              #probability of entry as chick on occasion t>1 
+}
+
+b ~ dunif(0,1)            # prior for assignment probability
+mean.psiAB ~ dunif(0,1)   # transition from egg to chick
+alpha[1] ~ dunif(0,1)     # if enter at occasion 1, probability that entered as chick burrow
+alphaKeep <- alpha[1]      # this is the only one we want to keep 
+
+for (u in 1:2){
+ mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
+ mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
+}
+
+# Likelihood 
+for (i in 1:M){
+ # Define latent state at first occasion
+  z[i,1] <- 1            #all M individuals are in state 1 at t=1 (e.g., one day prior to season)
+ for (t in 2:n.occasions){
+  # State process: draw S(t) given S(t-1)
+  z[i,t] ~ dcat(ps[z[i,t-1], i, t-1,])
+  # Observation process: draw O(t) given S(t)
+  y[i,t] ~ dcat(po[z[i,t], i, t-1,])  
+   #this follows Kery and Schaub 10.3.2, y[i,2] is a function of state[i,2] and observation array t=1; if detection covariates are used, don't add dummy occasion to detection covariates as detection data at occasion t uses array t-1
+
+  # Derived objects
+  egg[i,t-1]    <- equals(z[i,t], 2)
+  chick[i,t-1]  <- equals(z[i,t], 3)
+  active[i,t-1] <- max(egg[i,t-1],chick[i,t-1]) #egg or chick
+} #t
+ everEgg[i]    <- max(egg[i,])
+ everChick[i]  <- max(chick[i,])
+ EverActive[i] <- max(everChick[i],everEgg[i])
+} #i
+
+# Define transition and observation matrices
+ for (i in 1:M){
+  for (t in 1:(n.occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 1-gamma[t]                    #probability of not entering
+      ps[1,i,t,2] <- gamma[t]*(1-alpha[t])         #probability of entering as egg
+      ps[1,i,t,3] <- gamma[t]*alpha[t]             #probability of entering as chick. Note: only alpha[1]>0
+      ps[1,i,t,4] <- 0                             #probability of entering as terminated
+      ps[2,i,t,1] <- 0                             #probability egg goes to 'not entered'
+      ps[2,i,t,2] <- (1-psiAB[t])*phiA[t]          #probability of surviving egg state and not transitioning
+      #ps[2,i,t,2] <- (1-psiAB[t])*(phiA[t]^eff[i,t])     
+      ps[2,i,t,3] <- phiA[t]*psiAB[t]              #probability of surviving egg state and hatching
+      #ps[2,i,t,3] <- *psiAB[t]*(phiA[t]^eff[i,t])      
+      ps[2,i,t,4] <- 1-phiA[t]                                #probability of a failed egg
+      #ps[2,i,t,4] <- 1-phiA[t]^(eff[i,t])  #probability of a failed egg
+      ps[3,i,t,1] <- 0                                        #probability chick goes to 'not entered'
+      ps[3,i,t,2] <- 0                                        #probability chick goes to egg
+      ps[3,i,t,3] <- phiB[t]
+      #ps[3,i,t,3] <- phiB[t]^(eff[i,t])     #probability of surviving chick stage
+      ps[3,i,t,4] <- 1-phiB[t]                                #probability of failed chick
+      #ps[3,i,t,4] <- 1-(phiB[t]^(eff[i,t]))  #probability of failed chick
+      ps[4,i,t,1] <- 0                                        #probability terminated goes to 'not entered'
+      ps[4,i,t,2] <- 0                                        #probability terminated goes to egg (maybe happens)
+      ps[4,i,t,3] <- 0                                        #probability terminated goes to chick
+      ps[4,i,t,4] <- 1                                        #probability terminated goes to terminated
+      
+      # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 0                        #'not entered' burrow is detected with a burrow visit
+      po[1,i,t,2] <- 0                        #'not entered' burrow is detected with a prey visit
+      po[1,i,t,3] <- 1                        #'not entered' burrow is not detected
+      po[2,i,t,1] <- pA[t]                    #egg burrow is detected with a burrow visit
+      po[2,i,t,2] <- 0                        #egg burrow is detected with a prey visit
+      po[2,i,t,3] <- 1-pA[t]                  #egg burrow is not detected
+      po[3,i,t,1] <- b * pB[t]                #chick burrow is detected with a burrow visit 
+      po[3,i,t,2] <- (1 - b) * pB[t]          #chick burrow is detected with a prey visit
+      po[3,i,t,3] <- 1 - pB[t]                #chick burrow is not detected
+      po[4,i,t,1] <- 0                        #terminated burrow is detected with a burrow visit
+      po[4,i,t,2] <- 0                        #terminated burrow is detected with a prey visit
+      po[4,i,t,3] <- 1                        #terminated burrow is not detected
+  } #t
+ }#M
+
+#derive abundances 
+ for (t in 1:(n.occasions-1)){
+  N.egg[t]    <- sum(egg[1:M,t])
+  N.chick[t]  <- sum(chick[1:M,t])
+  N.active[t] <- sum(active[1:M,t])
+  qgamma[t] <- 1-gamma[t]
+  birthProb[t] <- cprob[t] / psi      # Entry probability
+}
+ cprob[1] <- gamma[1]
+ for (t in 2:(n.occasions-1)){
+  cprob[t] <- gamma[t] * prod(qgamma[1:(t-1)])
+ }#t
+ psi <- sum(cprob[])            # Inclusion probability
+
+Nstar <- sum(EverActive[1:M])
+
+}
+
+write.model(model_MEJS, "model_MEJS.txt")
+model.file = paste(getwd(),"model_MEJS.txt", sep="/")
 
 
 ```

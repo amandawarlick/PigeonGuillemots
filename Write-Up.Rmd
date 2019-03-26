@@ -1,6 +1,7 @@
 ---
 title: "Write-Up"
 output: word_document
+bibliography: ZoteroRefs.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -41,3 +42,26 @@ Difference between unobservable state and uncertain state/observation (missing d
 
 Environmental data - how it is included in modeling, whether in nest survival versus other vital rates (adult/juv survival, provisioning rates, seasonal nest schedule, weaning/fledging timing/condition)
 - Large scale versus local
+
+\begin{equation}
+\begin{bmatrix}
+1-\gamma_t\\ (\gamma_t)(1-\alpha_t)\\ \gamma_t*\alpha_t\\ 0\\
+0\\ (1-\psiAB_t)\phiA_t\\ 1-\phiA_t\psiAB_t\\ 1-\phiA_t\\
+0\\ 0\\ \phiB_t\\ 1-\phiB_t\\
+0\\ 0\\ 0\\ 1
+\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+\begin{bmatrix}
+1-\gamma_t&\gamma_t)(1-\alpha_t)&\gamma_t*\alpha_t&0\\
+0&(1-\psiAB_t)\phiA_t&1-\phiA_t\psiAB_t&1-\phiA_t\\
+0&0&\phiB_t&1-\phiB_t\\
+0&0&0&1
+\end{bmatrix}
+\end{equation}
+
+
+
+
+
