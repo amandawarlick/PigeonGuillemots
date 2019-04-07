@@ -2,8 +2,8 @@ model
 {
     for (i in 1:M) {
         for (t in 1:(n.occasions - 1)) {
-            logit(phiA[i, t]) <- mu.phi[1]
-            logit(phiB[i, t]) <- mu.phi[2]
+            logit(phiA[i, t]) <- mu.phi[1] + b.egg.y[year_i[i]]
+            logit(phiB[i, t]) <- mu.phi[2] + b.chick.y[year_i[i]]
             gamma[i, t] ~ dunif(0.00000E+00, 1)
             pA[i, t] <- mean.p[1]
             pB[i, t] <- mean.p[2]
@@ -20,10 +20,14 @@ model
         mu.phi[u] ~ dnorm(0.00000E+00, 0.001)
         mean.p[u] ~ dunif(0.00000E+00, 1)
     }
+    for (y in 2:nyear) {
+        b.chick.y[y] ~ dnorm(0.00000E+00, 0.001)
+        b.egg.y[y] ~ dnorm(0.00000E+00, 0.001)
+    }
     b.chick.y[1] <- 0.00000E+00
-    b.chick.y[2] ~ dnorm(0.00000E+00, 0.001)
-    est.phiA <- 1/(1 + exp(-mu.phi[1]))
-    est.phiB <- 1/(1 + exp(-mu.phi[2]))
+    b.egg.y[1] <- 0.00000E+00
+    phiA.int <- 1/(1 + exp(-mu.phi[1]))
+    phiB.int <- 1/(1 + exp(-mu.phi[2]))
     for (i in 1:M) {
         z[i, 1] ~ dcat(pi[1:3])
         for (t in 2:n.occasions) {

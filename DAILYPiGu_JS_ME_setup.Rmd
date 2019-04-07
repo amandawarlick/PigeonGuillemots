@@ -1,7 +1,4 @@
----
-title: ""
-output: word_document
----
+
 
 ```{r setup, include=FALSE}
 library(tidyr)
@@ -21,7 +18,7 @@ library(sciplot)
 library(jagsUI)
 library(chron)
  
-setwd("~/Documents/R/SAFS/PigeonGuillemots")
+#setwd("~/Documents/SAFS/PigeonGuillemots")
 path <- getActiveDocumentContext()$path 
 setwd(dirname(path))
 
@@ -36,8 +33,8 @@ setwd(dirname(path))
 data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
   filter(region == 'Whidbey') %>%
   dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
-  filter(site %in% c('Mutiny Sands', 'Double Bluff North')) %>%
-  filter(year > 2016) %>%
+  #filter(site %in% c('Mutiny Sands', 'Double Bluff North')) %>%
+  #filter(year > 2016) %>%
   distinct()  #2 duplicates, all lagoon south 2017
 
 #study start day per year, island-wide
@@ -146,15 +143,12 @@ aug_fun <- function(df, id_cols, visit_col){
   # Keep only the needed columns. 
   cols <- append(id_cols, visit_col)
   df_down_select <- df %>% select(cols)
-  
   # Create a storage data frame
   final_df <- data.frame(stringsAsFactors = FALSE)
-  
   # Loop through the data frame
   for (i in 1:nrow(df_down_select)){
     # Replicate the id data based on the number of visits
     list_rep <- rep(df_down_select[i, id_cols], df_down_select[i, visit_col])
-    
     # Convert the resulting list to a data frame
     current_df <- as.data.frame(matrix(unlist(list_rep),
                                        nrow = df_down_select[i, visit_col],
@@ -195,9 +189,6 @@ aug_inds_CH <- aug_id %>%
   transform(year = as.integer(year)) %>%
   dplyr::select(-n_visits)
 colnames(aug_inds_CH) <- colnames(burrow_CH)
-#colnames(aug_inds_CH) <- c(colnames(burrow_CH[,1:3]), 'n_visits', colnames(burrow_CH[4:ncol(burrow_CH)]))
-
-#need matrix(dim(aug), region, year, site, burrow_name, rep(3, n_visits) + NA)
 
 burrow_CH_aug <- burrow_CH %>%
   bind_rows(aug_inds_CH) 
@@ -210,8 +201,6 @@ for (i in 1:dim(burrow_CH_aug)[1]) {
   num <- length(temp)
   ch_dat[i,] <- c(temp, rep(NA, max_recap-num))
 }
-
-#for unique year-site combination, need vector of study_day that is length of n_visits
 
 max_visits <- max(n_visits$n_visits)
 
@@ -229,7 +218,7 @@ for (i in 1:dim(survey)[1]) {
   survey_days[i,] <- c(temp, rep(NA, max_visits-num))
 }
 
-year_i <- burrow_CH_aug$year
+year_i <- as.numeric(factor(burrow_CH_aug$year))
 site_i <- survey$site
 visits_i <- survey$n_visits
 
@@ -264,12 +253,14 @@ tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
 PG_covs <- burrow %>% 
   filter(region == 'Whidbey') %>%
   #filter(PG_count != '') %>% 
-  select(region, year, site, date, start_time, week, yday, burrow_name, burrow_visit, tot_prey,
+  dplyr::select(region, year, site, date, start_time, week, yday, burrow_name, burrow_visit, tot_prey,
          start_day, end_day, study_day) %>%
   transform(date = as.Date(date)) %>%
   merge(tides %>% filter(region == 'Whidbey'), by = c('site', 'date', 'region'), all.x = T) %>%
-  transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
-  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
+  transform(start_time = ifelse(start_time == "0:00" | start_time == "" | is.na(start_time), 
+                                "8:00", start_time)) %>%
+  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"), 
+                                format = "%Y-%m-%d %H:%M:%OS")) %>%
   transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
             from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
   transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
@@ -283,7 +274,7 @@ PG_covs <- burrow %>%
   dplyr::select(region, year, site, date, v, from_hilo,
                 burrow_name, burrow_visit, tot_prey, start_day, end_day, study_day) %>%
   merge(sst, by = c('study_day', 'year'), all.x = T) %>%
-  dplyr::select(region, year, site, study_day, burrow_name, from_hilo, v, temp)
+  dplyr::select(region, year, site, yday, study_day, burrow_name, from_hilo, v, temp)
 
 ```
 
