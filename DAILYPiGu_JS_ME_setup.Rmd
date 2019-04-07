@@ -274,7 +274,9 @@ PG_covs <- burrow %>%
   dplyr::select(region, year, site, date, v, from_hilo,
                 burrow_name, burrow_visit, tot_prey, start_day, end_day, study_day) %>%
   merge(sst, by = c('study_day', 'year'), all.x = T) %>%
-  dplyr::select(region, year, site, yday, study_day, burrow_name, from_hilo, v, temp)
+  dplyr::select(region, year, site, yday, study_day, burrow_name, burrow_visit, tot_prey, from_hilo, v, temp)
+
+write.csv(PG_covs, 'PG_covs.csv', row.names = F)
 
 ```
 

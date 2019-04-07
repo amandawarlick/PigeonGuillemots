@@ -216,8 +216,8 @@ tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
 
 PG_count_tides <- data_count %>%
   filter(intern_data != 'on' & PG_count != '') %>%
-  select(region, site, date, PG_count, start_time) %>%
-  inner_join(tides, by = c('site', 'date', 'region')) %>%
+  select(region, site, date, PG_count, start_time, yday, year) %>%
+  inner_join(tides %>% filter(region != 'SS'), by = c('site', 'date', 'region')) %>%
   transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
   transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
   transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
@@ -288,8 +288,9 @@ ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, gr
 ```{r}
 #temp data
 
-sst <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
-  transform(year = factor(year))
+sst_dat <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
+  #transform(year = factor(year)) %>%
+  filter(station == 9444900)
 
 ggplot(sst, aes(y = temp, x = yday, group = yday)) +
   geom_boxplot() + xlab('Day of Year') + ylab('Mean Daily SST') +
@@ -310,6 +311,7 @@ ggplot(sst, aes(y = temp, x = day, group = factor(month), col = factor(month))) 
 #surface pressure, cubic meters per second per 100m coastline
 #average daily value; #monthly anomalies relative to mean monthly value from 1948-1967 
 
+#uwpelling and temp at the monthly level
 setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
 
 upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
@@ -317,15 +319,51 @@ upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
   filter(year > 2007)
 upwell_anom <- read.csv("Upwell_anom.csv", header = T, stringsAsFactors = F) %>%
   filter(year > 2007) %>%
-  filter(lat != '60N') %>%
-  melt(id.vars = c('lat', 'long', 'year'), variable.name = 'month', value.name = 'up_anom')
+  filter(lat == '48N') %>%
+  melt(id.vars = c('lat', 'long', 'year'), variable.name = 'month', value.name = 'up_anom') %>%
+  transform(mo = as.numeric(as.factor(as.numeric(month)))) %>%
+  filter(month %in% c('Jun', 'Jul', 'Aug', 'Sep', 'Oct')) %>%
+  select(-c(month, lat, long))
 #monthly
-SST_44 <- read.csv("SST_44N.csv", header = T, stringsAsFactors = F) %>%
-  transform(date = as.Date(date), year = year(date)) %>%
-  filter(year > 2007)
+# SST_44 <- read.csv("SST_44N.csv", header = T, stringsAsFactors = F) %>%
+#   transform(date = as.Date(date), year = year(date)) %>%
+#   filter(year > 2007)
+
+covs <- PG_count_tides %>%
+  merge(sst_dat %>% select(-c(day, month, station)), by = c('year', 'yday'), all.x = T, all.y = F) %>%
+  transform(mo = month(date)) #%>% filter(site == 'Ledgewood' & year == 2014)#%>%
+  #merge(upwell_anom, by = c('mo', 'year'), all.y = F)
 
 setwd("~/Documents/SAFS/PigeonGuillemots")
 
+```
+
+```{r}
+
+#all covariates
+#PG_covs from mod_setup file
+
+covs_cnt <- covs %>%
+  select(year, site, yday, PG_count, v, type, from_hilo, temp, mo) %>%
+  rename(from_hilo_orig = from_hilo) %>%
+  transform(v = round(v, 1), temp = round(temp, 2)) %>%
+  #filter(site == 'Ledgewood' & year == 2014) %>%
+  filter(type == 'H')
+
+#filtered for only high tide in *_setup file
+covs_burrow <- read.csv('PG_covs.csv', header = T, stringsAsFactors = F) %>%
+  group_by(year, site, yday, from_hilo, v, temp) %>%
+  summarize(bv = sum(burrow_visit), pv = sum(tot_prey)) %>%
+  #filter(site == 'Ledgewood' & year == 2014) %>%
+  transform(v = round(v, 1), temp = round(temp, 2)) 
+
+covs_all <- covs_cnt %>%
+  merge(covs_burrow, by = c('year', 'site', 'yday', 'v', 'temp'), all.x = T) %>%
+  merge(upwell_anom, by = c('year', 'mo')) %>%
+  select(site, year, mo, yday, PG_count, bv, pv, type, v, from_hilo_orig, temp, up_anom)
+covs_all[is.na(covs_all)] <- 0
+
+write.csv(covs_all, 'covs_all.csv', row.names = F)
 ```
 
 ```{r}
@@ -385,16 +423,16 @@ week_perc_w <- data_count %>%
   merge(max_yr_w, by = c('year')) %>%
   transform(perc_week = cnt/max_cnt)  #proportion of max that each week comprises
 
-#only keep weeks where count was at least 65% of max count in that year
+#only keep weeks where count was at least 70% of max count in that year
 #first tried 50%, but that captured a steep downturn for a few years, this looks much better
 weekly_count_isl_trim_w <- week_perc_w %>%
-  filter(perc_week > 0.499) %>%
+  filter(perc_week > 0.699) %>%
   select(-c(max_cnt, perc_week)) %>%
   transform(region = 'Whidbey')
-# check_plot <- ggplot(weekly_count_isl_trim, aes(week, cnt, group = year, color = year)) +
-#   geom_line() + geom_point() +
-#   facet_wrap(~year) +
-#   plot_theme(legend.position = 'none') 
+check_plot <- ggplot(weekly_count_isl_trim_w, aes(week, cnt, group = year, color = year)) +
+  geom_line() + geom_point() +
+  facet_wrap(~year) +
+  plot_theme(legend.position = 'none')
 
 #colony level
 max_col_yr_w <- data_count %>%
@@ -411,13 +449,13 @@ week_perc_yr_w <- data_count %>%
   transform(perc_week = PG_count/max_cnt)
 
 weekly_count_col_trim_w <- week_perc_yr_w %>%
-  filter(perc_week > 0.49) %>%
+  filter(perc_week > 0.6999) %>%
   select(-c(max_cnt, perc_week)) %>%
   transform(region = 'Whidbey')
-# check_plot <- ggplot(weekly_count_col_trim, aes(week, PG_count, group = year, color = year)) +
-#   geom_line() + geom_point() +
-#   facet_wrap(~site) +
-#   plot_theme(legend.position = 'none')
+check_plot <- ggplot(weekly_count_col_trim_w, aes(week, PG_count, group = year, color = year)) +
+  geom_line() + geom_point() +
+  facet_wrap(~site) +
+  plot_theme(legend.position = 'none')
 
 ################################################################################################
 ################################################################################################
