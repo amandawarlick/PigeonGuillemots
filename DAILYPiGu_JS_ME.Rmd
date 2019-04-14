@@ -66,6 +66,68 @@ ch <- ch_dat
 y <- ch
 nyear <- length(unique(year_i))
 
+```
+
+```{r counts}
+
+#colony level
+counts <- read.csv('count_dat.csv', header = T, stringsAsFactors = F) 
+
+count_dat <- counts %>%
+  select(year, site, week, PG_count) %>%
+  filter(week < 33 & week > 26) 
+
+count_wide <- count_dat %>%
+  dcast(year + site ~ week, value.var = 'PG_count', fun.aggregate = mean)
+
+cnt <- matrix(NA, nrow = dim(count_wide)[1], ncol = 8)
+for (i in 1:dim(count_wide)[1]) {
+  temp <- round(as.numeric(count_wide[i, 2 + c(which(!is.na(count_wide[i,3:dim(count_wide)[2]])))]))
+  num <- length(temp)
+  cnt[i,] <- c(temp, rep(NA, 8-num))
+}
+
+y_cnt <- cnt[,1:3] #just start w/ 3 obs?
+site_cnt <- count_dat[,'site']
+year <- count_dat[,'year']
+
+#island level
+count_yr <- counts %>%
+  group_by(year, week) %>%
+  summarize(PG_count = sum(PG_count, na.rm = T), bv = sum(bv, na.rm = T), pv = sum(pv, na.rm = T),
+            v = mean(v, na.rm = T), temp = mean(temp, na.rm = T),
+            mins = mean(mins, na.rm = T), upwell = mean(upwell, na.rm = T)) 
+height <- count_yr %>%
+  select(year, week, v) %>%
+  filter(week > 26 & week < 32) %>%
+  dcast(year ~ week, value.var = 'v')
+height[11,2:6] <- NA
+temp <- count_yr %>%
+  select(year, week, temp) %>%
+  filter(week > 26 & week < 32) %>%
+  dcast(year ~ week, value.var = 'temp')
+#temp[9:11,2:6] <- NA
+upwell <- count_yr %>%
+  select(year, week, upwell) %>%
+  filter(week > 26 & week < 32) %>%
+  dcast(year ~ week, value.var = 'upwell')
+
+yr_cnt <- count_yr %>%
+  select(year, week, PG_count) %>%
+  filter(week > 26 & week < 32) %>%
+  dcast(year ~ week, value.var = 'PG_count', fun.aggregate = mean)
+
+# ggplot(yr_cnt %>% melt(id.vars = 'year'), aes(variable, value, group = year)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~year)
+# 
+# summary(lm(value ~ variable + year, 
+#            yr_cnt %>% melt(id.vars = 'year') %>% transform(variable = as.numeric(variable))))
+  
+```
+
+```{r}
+  
 #combined from which to subsample 
 # all_dat <- ch %>% bind_cols(effort)
 # all_dat <- all_dat[sample(nrow(all_dat), 20),]
@@ -84,6 +146,66 @@ nyear <- length(unique(year_i))
 # 
 # eff <- sim_eff
 # ch <- sim_dat
+
+```
+
+```{r nMix}
+
+nMix <- function () {
+  
+  #priors
+  for (i in 1:R) {
+  #lambda ~ dgamma(0.005, 0.005)
+  lambda[i] <- lambda.mu + b.upwell*upwell[i,j]
+  
+  for (j in 1:reps) {
+    
+  }
+  }
+  
+  
+  
+  lambda.mu ~ dunif(0,10)
+  
+  #likelihood
+  ##ecological process
+  for (i in 1:R) { #R is nrow (number of years or colony-year combinations)
+    N[i] ~ dpois(lambda)
+    ###obs process
+    for (j in 1:reps) { #reps is number of week replicates in the sample
+      y[i,j] ~ dbin(p, N[i])
+    } #j
+    N_est[i] <- sum(N[i])
+  } #i
+}
+
+write.model(nMix, "nMix.txt")
+model.file = paste(getwd(),"nMix.txt", sep="/")
+
+```
+
+```{r nMix run}
+
+# Bundle data
+y <- as.matrix(yr_cnt[,2:dim(yr_cnt)[2]])
+jags.data <- list(y = y, 
+                  temp = as.matrix(temp[,2:6]), upwell = as.matrix(upwell[,2:6]), 
+                  height = as.matrix(height[,2:6]),
+                  R = nrow(y), reps = ncol(y))
+
+Nst <- apply(y, 1, max) + 1
+inits <- function(){list(N = Nst)}  
+
+# Parameters monitored
+parameters <- c('lambda', 'p', 'N_est')
+     
+# MCMC settings
+ni <- 1000; nt <- 1; nb <- 300; nc <- 3
+     
+out_nMix <- jags(jags.data, inits, parameters, model.file = model.file,
+              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+
+#jagsUI::traceplot(out_nMix)
 
 ```
 
@@ -365,9 +487,9 @@ out_pigu_t <- jags(jags.data, inits, parameters, model.file = model.file,
 # out <- readRDS('out15.rds') #
 # out <- readRDS('up20.rds')
 out_best <- readRDS('out_all_up10.rds') #best
-out <- readRDS('out_up_all2.rds') 
+out <- readRDS('out_up_all2.rds')
 
-out <- readRDS('out_up_all30.rds')
+out <- readRDS('out_pigu_apr.rds')
 # out <- readRDS('out_pigu_gam.rds')
 
 saveRDS(out_best, file = 'out_best.rds') #not quite converged

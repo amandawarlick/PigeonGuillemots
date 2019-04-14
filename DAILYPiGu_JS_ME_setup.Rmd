@@ -213,7 +213,6 @@ survey_days <- matrix(NA, nrow = dim(survey)[1], ncol = max_visits)
 
 for (i in 1:dim(survey)[1]) {
   temp <- as.numeric(survey[i, 5 + c(which(!is.na(survey[i,6:dim(survey)[2]])))])
-  #num <- survey[i,5]
   num <- length(temp)
   survey_days[i,] <- c(temp, rep(NA, max_visits-num))
 }
@@ -225,9 +224,8 @@ visits_i <- survey$n_visits
 ```
 
 ```{r}
-# 
+
 # write.csv(survey_days, 'survey_days.csv', row.names = F)
-# 
 # write.csv(ch_dat, 'ch_dat.csv', row.names = F)
 
 ```

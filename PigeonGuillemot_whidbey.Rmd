@@ -71,9 +71,10 @@ data_count <- read.csv("PGdata_pre_proc_allyrs.csv", stringsAsFactors = F) %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
   transform(year = as.numeric(format(date, "%Y"))) %>%
   #mutate(PG_count = as.numeric(PG_count)) %>%
-  transform(week = strftime(date, format = "%V")) %>%
-  #transform(week = as.numeric(week)) %>%
-  transform(week = as.numeric(as.character(week))) %>%
+  # transform(week = strftime(date, format = "%V")) %>%
+  # #transform(week = as.numeric(week)) %>%
+  # transform(week = as.numeric(as.character(week))) %>%
+  transform(week = week(date)) %>%
   transform(yday = yday(date)) %>%
   filter(site != 'All South Sound') %>%
   #mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
@@ -92,6 +93,7 @@ data_count[is.na(data_count)] <- 0
 data_count_mult <- data_count %>%
   filter(count_type != 'pg')
 
+#to include/exclude 2018 counts
 data_count <- data_count %>%
   filter(count_type == 'pg')
 
@@ -134,9 +136,10 @@ data_burrow <- burrow_allyrs %>%
   transform(date = as.Date(date, format = "%m/%d/%y")) %>%
   transform(year = format(date, "%Y")) %>%
   mutate(burrow_name = gsub("-","", burrow_name)) %>%
-  transform(week = strftime(date, format = "%V")) %>%
-  #transform(week = as.numeric(week)) %>%
-  transform(week = as.numeric(as.character(week))) %>%
+  # transform(week = strftime(date, format = "%V")) %>%
+  # #transform(week = as.numeric(week)) %>%
+  # transform(week = as.numeric(as.character(week))) %>%
+  transform(week = week(date)) %>% 
   transform(yday = yday(date)) %>%
   transform(tot_prey = Gunnel + Sculpin + Other) %>%
   select(region, site, year, date, yday, week, burrow_name, burrow_visit, burrow_visit,
@@ -212,12 +215,13 @@ write.csv(data_count, "data_count.csv", row.names = F)
 tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
   transform(date = as.Date(date)) %>%
   transform(month = month(date)) %>%
-  transform(time = as.POSIXct(time))
+  transform(time = as.POSIXct(time)) %>%
+  filter(region != 'SS')
 
 PG_count_tides <- data_count %>%
   filter(intern_data != 'on' & PG_count != '') %>%
-  select(region, site, date, PG_count, start_time, yday, year) %>%
-  inner_join(tides %>% filter(region != 'SS'), by = c('site', 'date', 'region')) %>%
+  select(region, site, date, PG_count, start_time, yday, year, week) %>%
+  merge(tides, by = c('site', 'date', 'region'), all.x = T) %>%
   transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
   transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
   transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
@@ -225,13 +229,14 @@ PG_count_tides <- data_count %>%
   transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
   select(-c(t, month, from_low, from_high)) %>%
   transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
-  transform(rank = ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
+  transform(rank = ifelse(is.na(station), 2, #for 2018 rows without tidal info
+                          ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
                           ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
-                                 ifelse(time_stamp > "17:00:00", 4, 3)))) %>%
+                                 ifelse(time_stamp > "17:00:00", 4, 3))))) %>%
   filter(rank == 2 | rank == 3) %>%
   filter(region == 'Whidbey')
 
-table(PG_count_tides$rank)
+#table(PG_count_tides$rank)
 
 # # test <- PG_count_tides %>%
 # #   group_by(site, date) %>%
@@ -288,6 +293,7 @@ ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, gr
 ```{r}
 #temp data
 
+#only up through 2015?
 sst_dat <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
   #transform(year = factor(year)) %>%
   filter(station == 9444900)
@@ -311,12 +317,13 @@ ggplot(sst, aes(y = temp, x = day, group = factor(month), col = factor(month))) 
 #surface pressure, cubic meters per second per 100m coastline
 #average daily value; #monthly anomalies relative to mean monthly value from 1948-1967 
 
-#uwpelling and temp at the monthly level
+#uwpelling and temp at the monthly level; up through 2018
 setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
 
 upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
   transform(year = year(as.Date(date, format = '%m/%d/%y'))) %>%
   filter(year > 2007)
+#monthly upwelling anomalies
 upwell_anom <- read.csv("Upwell_anom.csv", header = T, stringsAsFactors = F) %>%
   filter(year > 2007) %>%
   filter(lat == '48N') %>%
@@ -344,11 +351,12 @@ setwd("~/Documents/SAFS/PigeonGuillemots")
 #PG_covs from mod_setup file
 
 covs_cnt <- covs %>%
-  select(year, site, yday, PG_count, v, type, from_hilo, temp, mo) %>%
+  #transform(week = week(date)) %>%
+  select(year, week, site, yday, PG_count, v, type, from_hilo, temp, mo) %>%
   rename(from_hilo_orig = from_hilo) %>%
   transform(v = round(v, 1), temp = round(temp, 2)) %>%
   #filter(site == 'Ledgewood' & year == 2014) %>%
-  filter(type == 'H')
+  filter(type == 'H' | is.na(type))
 
 #filtered for only high tide in *_setup file
 covs_burrow <- read.csv('PG_covs.csv', header = T, stringsAsFactors = F) %>%
@@ -357,212 +365,105 @@ covs_burrow <- read.csv('PG_covs.csv', header = T, stringsAsFactors = F) %>%
   #filter(site == 'Ledgewood' & year == 2014) %>%
   transform(v = round(v, 1), temp = round(temp, 2)) 
 
-covs_all <- covs_cnt %>%
+covs_col <- covs_cnt %>%
   merge(covs_burrow, by = c('year', 'site', 'yday', 'v', 'temp'), all.x = T) %>%
   merge(upwell_anom, by = c('year', 'mo')) %>%
-  select(site, year, mo, yday, PG_count, bv, pv, type, v, from_hilo_orig, temp, up_anom)
-covs_all[is.na(covs_all)] <- 0
+  select(site, year, week, mo, yday, PG_count, bv, pv, type, v, from_hilo_orig, temp, up_anom) %>%
+  transform(v = as.numeric(round(scale(v),2)), mins = round(scale(from_hilo_orig),2) , 
+            temp = as.numeric(round(scale(temp),2)), upwell = round(scale(up_anom),2)) %>%
+  select(-c(from_hilo_orig, up_anom))
+covs_col[is.na(covs_col)] <- 0
 
-write.csv(covs_all, 'covs_all.csv', row.names = F)
+write.csv(covs_col, 'covs_col.csv', row.names = F)
+
+covs_isl <- covs_col %>%
+  group_by(year, week, yday) %>%
+  summarize(PG_count = sum(PG_count, na.rm = T), bv = sum(bv, na.rm = T), pv = sum(pv, na.rm = T),
+            temp = mean(temp, na.rm = T), v = mean(v, na.rm = T), upwell = mean(upwell), 
+            mins = mean(mins, na.rm = T)) %>%
+  transform(year = factor(year)) %>%
+  filter(week > 24 & week < 35) 
+
+summary(lm(PG_count ~ v + upwell + week, covs_isl))
+summary(lm(bv ~ temp + v + upwell + mins + year, covs_isl))
+summary(lm(pv ~ temp + v + upwell + mins + year, covs_isl))
+
+
 ```
 
 ```{r}
-#peak/trimmed counts
+#trim with covariates df instead
 
-################################################################################################
-################################################################################################
-##################################       Whidbey       #########################################
-################################################################################################
-################################################################################################
-
-#mean counts per week in each year and region
-peak_mean_w <- data_count %>% 
-  filter(region == 'Whidbey') %>%
-  filter(intern_data != 'on') %>%
-  group_by(year, week) %>%
-  summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T)) 
-
-#sum of weekly counts at the regional level each year
-peak_sum_w <- data_count %>%
-  filter(region == 'Whidbey') %>%
-  filter(intern_data != 'on') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(sum_cnt = sum(PG_count, na.rm = T))
-
-#colony noise makes it harder to see the peaks when looking at means
-peak_plot_mean <- ggplot(peak_mean_w, aes(week, mean_cnt)) +
-  geom_line() + 
-  geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
-  plot_theme(legend.position = 'none') + facet_wrap(~year) #+
- #guides(color = guide_legend(override.aes=list(fill=NA)))
-
-#for frances
-#apparent seasonal peak when looking at sum counts across the regions each week
-peak_plot_sum <- ggplot(peak_sum_w, aes(week, sum_cnt)) +
-  geom_line() + xlab("Week of the Year") + ylab("Total Guillemot Count") +
-  facet_wrap(~year) +
-  plot_theme() 
-
-#taking max - this looks much better/clearer than the mean
-max_yr_w <- data_count %>%
-  filter(region == 'Whidbey' & intern_data != 'on') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(sum = sum(PG_count, na.rm = T)) %>% #first sum counts across colonies each week
-  group_by(year) %>%
-  summarize(max_cnt = max(sum, na.rm = T))  #then take the week w/ max count
-week_perc_w <- data_count %>%
-  filter(region == 'Whidbey' & intern_data != 'on') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
-  merge(max_yr_w, by = c('year')) %>%
-  transform(perc_week = cnt/max_cnt)  #proportion of max that each week comprises
-
-#only keep weeks where count was at least 70% of max count in that year
-#first tried 50%, but that captured a steep downturn for a few years, this looks much better
-weekly_count_isl_trim_w <- week_perc_w %>%
-  filter(perc_week > 0.699) %>%
-  select(-c(max_cnt, perc_week)) %>%
-  transform(region = 'Whidbey')
-check_plot <- ggplot(weekly_count_isl_trim_w, aes(week, cnt, group = year, color = year)) +
-  geom_line() + geom_point() +
-  facet_wrap(~year) +
-  plot_theme(legend.position = 'none')
-
-#colony level
-max_col_yr_w <- data_count %>%
-  filter(region == 'Whidbey' & intern_data != 'on') %>%
+max_col_yr_w <- covs_col %>%
   select(year, week, site, PG_count) %>%
   distinct() %>%
   group_by(year, site) %>%
   summarize(max_cnt = max(PG_count, na.rm = T)) 
-week_perc_yr_w <- data_count %>%
-  filter(region == 'Whidbey' & intern_data != 'on') %>%
+max <- covs_col %>%
+  transform(v = as.numeric(v), temp = as.numeric(temp)) %>%
   select(year, week, site, PG_count) %>%
+  group_by(week, year, site) %>%
   distinct() %>%
   merge(max_col_yr_w, by = c('year', 'site')) %>%
-  transform(perc_week = PG_count/max_cnt)
+  transform(max_week = ifelse(max_cnt == PG_count, 'y', 'n')) %>%
+  filter(max_week == 'y') %>%
+  select(year, site, week, PG_count) %>%
+  transform(min_week = week-3, max_week = week+1) %>% #adjust here
+  select(-c(week, PG_count))
 
-weekly_count_col_trim_w <- week_perc_yr_w %>%
-  filter(perc_week > 0.6999) %>%
-  select(-c(max_cnt, perc_week)) %>%
-  transform(region = 'Whidbey')
-check_plot <- ggplot(weekly_count_col_trim_w, aes(week, PG_count, group = year, color = year)) +
+col_trim <- covs_col %>% transform(v = as.numeric(v), temp = as.numeric(temp)) %>%
+  merge(max, by = c('year', 'site')) %>%
+  filter(week <= max_week & week >= min_week) %>% select(-c(min_week, max_week))
+  
+check_plot <- ggplot(col_trim, aes(week, PG_count, group = year, color = year)) +
   geom_line() + geom_point() +
   facet_wrap(~site) +
   plot_theme(legend.position = 'none')
 
-################################################################################################
-################################################################################################
-##################################    South Sound      #########################################
-################################################################################################
-################################################################################################
+#mean annual per site, go back up to max_week to adjust
+mean_trim <- col_trim %>% 
+  group_by(site, week) %>%
+  summarize(mean_cnt = mean(PG_count))
 
-#mean counts per week in each year and region
-peak_mean_SS <- data_count %>% 
-  filter(region == 'SS') %>%
-  filter(intern_data != 'on') %>%
+ggplot(mean_trim, aes(week, mean_cnt)) +
+  geom_line() + geom_point() +
+  facet_wrap(~site) +
+  plot_theme(legend.position = 'none')
+
+#sum to island level
+isl_sum_trim <- col_trim %>%
   group_by(year, week) %>%
-  summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T)) 
+  summarize(cnt = mean(PG_count))
 
-#sum of weekly counts at the regional level each year
-peak_sum_SS <- data_count %>%
-  filter(region == 'SS') %>%
-  filter(intern_data != 'on') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(sum_cnt = sum(PG_count, na.rm = T))
+ggplot(isl_sum_trim, aes(week, cnt, group = year, color = year)) +
+  geom_line() + geom_point() +
+  facet_wrap(~year) +
+  plot_theme(legend.position = 'none')
 
-#colony noise makes it harder to see the peaks when looking at means
-peak_plot_mean <- ggplot(peak_mean_SS, aes(week, mean_cnt)) +
-  geom_line() + 
-  geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
-  plot_theme(legend.position = 'none') + facet_wrap(~year) #+
- #guides(color = guide_legend(override.aes=list(fill=NA)))
+count_dat <- col_trim
 
-#apparent seasonal peak when looking at sum counts across the regions each week
-peak_plot_sum <- ggplot(peak_sum_SS, aes(week, sum_cnt)) +
-  geom_line() + 
-  #facet_wrap(~year) +
-  plot_theme(legend.position = 'none') 
+#count
+summary(lm(PG_count ~ week + year, count_dat)) #declining a little with week, but non-sig
+summary(lm(PG_count ~ v + upwell + week, count_dat))
 
-#taking max - this looks much better/clearer than the mean
-max_yr_SS <- data_count %>%
-  filter(region == 'SS') %>%
-  filter(intern_data != 'on') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(sum = sum(PG_count, na.rm = T)) %>% #first sum counts across colonies each week
-  group_by(year) %>%
-  summarize(max_cnt = max(sum, na.rm = T))  #then take the week w/ max count
-week_perc_SS <- data_count %>%
-  filter(intern_data != 'on') %>%
-  filter(region == 'SS') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, week) %>%
-  summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
-  merge(max_yr_SS, by = c('year')) %>%
-  transform(perc_week = cnt/max_cnt)  #proportion of max that each week comprises
+#bv
+summary(mod1 <- lm(bv ~ temp + v + upwell + mins + year, count_dat))
+summary(mod1 <- lm(bv ~ v + upwell + mins + year, count_dat))
+summary(mod1 <- lm(bv ~ temp + v + upwell + mins + year, count_dat))
 
-#only keep weeks where count was at least 65% of max count in that year
-#first tried 50%, but that captured a steep downturn for a few years, this looks much better
-weekly_count_isl_trim_SS <- week_perc_SS %>%
-  filter(perc_week > 0.499) %>%
-  select(-c(max_cnt, perc_week)) %>%
-  transform(region = 'SS')
-# check_plot <- ggplot(weekly_count_isl_trim, aes(week, cnt, group = year, color = year)) +
-#   geom_line() + geom_point() +
-#   facet_wrap(~year) +
-#   plot_theme(legend.position = 'none') 
+#pv
+summary(mod1 <- lm(pv ~ temp + v + upwell + year, count_dat))
 
-#colony level
-max_col_yr_SS <- data_count %>%
-  filter(intern_data != 'on') %>%
-  filter(region == 'SS') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  group_by(year, site) %>%
-  summarize(max_cnt = max(PG_count, na.rm = T)) 
-week_perc_yr_SS <- data_count %>%
-  filter(intern_data != 'on') %>%
-  filter(region == 'SS') %>%
-  select(year, week, site, PG_count) %>%
-  distinct() %>%
-  merge(max_col_yr_SS, by = c('year', 'site')) %>%
-  transform(perc_week = PG_count/max_cnt)
+write.csv(count_dat, 'count_dat.csv', row.names = F)
 
-weekly_count_col_trim_SS <- week_perc_yr_SS %>%
-  filter(perc_week > 0.49) %>%
-  select(-c(max_cnt, perc_week)) %>%
-  transform(region = 'SS')
-# check_plot <- ggplot(weekly_count_col_trim, aes(week, PG_count, group = year, color = year)) +
-#   geom_line() + geom_point() +
-#   facet_wrap(~site) +
-#   plot_theme(legend.position = 'none')
 
-########combined regions##########
-
-weekly_count_isl_trim <- weekly_count_isl_trim_w
-weekly_count_col_trim <- weekly_count_col_trim_w
-# weekly_count_isl_trim <- bind_rows(weekly_count_isl_trim_w, weekly_count_isl_trim_SS)
-# weekly_count_col_trim <- bind_rows(weekly_count_col_trim_w, weekly_count_col_trim_SS)
-
-### count data moving forward: weekly_count_col_trim and weekly_count_isl_trim
-write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
-write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
 ```
+
+
 
 ```{r}
 
-tot_nest <- burrow %>% #here
+tot_nest <- burrow %>%
   filter(region == 'Whidbey') %>%
   group_by(region, year, site) %>% #need site bc same names across sites
   summarise(cnt = n_distinct(burrow_name))
@@ -1082,7 +983,6 @@ plot_b <- ggplot(perc_suc_isl, aes(year, perc_suc)) +
 plot_grid(plot_a, plot_b, labels = c('(a)', '(b)'), label_size = 10)
 mean(perc_suc_isl$perc_suc)
 
-
 ##write.csv(perc_suc_col, "perc_suc_col.csv", row.names = F)
 ##write.csv(perc_suc_isl, "perc_suc_isl.csv", row.names = F)
 
@@ -1228,4 +1128,245 @@ theme_classic() +
 
 ```
 
+##archive
+```{r}
+#peak/trimmed counts - before having added covariates
+
+################################################################################################
+################################################################################################
+##################################       Whidbey       #########################################
+################################################################################################
+################################################################################################
+
+# #mean counts per week in each year and region
+# peak_mean_w <- data_count %>% 
+#   filter(region == 'Whidbey') %>%
+#   filter(intern_data != 'on') %>%
+#   group_by(year, week) %>%
+#   summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T)) 
+# 
+# #sum of weekly counts at the regional level each year
+# peak_sum_w <- data_count %>%
+#   filter(region == 'Whidbey') %>%
+#   filter(intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(sum_cnt = sum(PG_count, na.rm = T)) %>%
+#   transform(quant = 0.9*sum_cnt)
+# 
+# #colony noise makes it harder to see the peaks when looking at means
+# peak_plot_mean <- ggplot(peak_mean_w, aes(week, mean_cnt)) +
+#   geom_line() + 
+#   geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
+#   plot_theme(legend.position = 'none') + facet_wrap(~year) #+
+#  #guides(color = guide_legend(override.aes=list(fill=NA)))
+# 
+# #for frances
+# #apparent seasonal peak when looking at sum counts across the regions each week
+# peak_plot_sum <- ggplot(peak_sum_w, aes(week, sum_cnt)) +
+#   geom_line() + xlab("Week of the Year") + ylab("Total Guillemot Count") +
+#   facet_wrap(~year) +
+#   plot_theme() 
+# 
+# #taking max - this looks much better/clearer than the mean
+# max_yr_w <- data_count %>%
+#   filter(region == 'Whidbey' & intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(sum = sum(PG_count, na.rm = T)) %>% #first sum counts across colonies each week
+#   group_by(year) %>%
+#   summarize(max_cnt = max(sum, na.rm = T)) %>% #then take the week w/ max count
+#   transform(quant = 0.9*max_cnt)
+# week_perc_w <- data_count %>%
+#   filter(region == 'Whidbey' & intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
+#   merge(max_yr_w, by = c('year')) %>%
+#   transform(perc_week = cnt/max_cnt)  #proportion of max that each week comprises
+# 
+# #only keep weeks where count was at least 70% of max count in that year
+# #first tried 50%, but that captured a steep downturn for a few years, this looks much better
+# isl_trim <- week_perc_w %>%
+#   filter(perc_week > 0.5) %>%
+#   select(-c(max_cnt, perc_week)) %>%
+#   transform(region = 'Whidbey')
+# check_plot <- ggplot(isl_trim, aes(week, cnt, group = year, color = year)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~year) +
+#   plot_theme(legend.position = 'none')
+# 
+# #colony level
+# max_col_yr_w <- data_count %>%
+#   filter(region == 'Whidbey' & intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, site) %>%
+#   summarize(max_cnt = max(PG_count, na.rm = T)) 
+# week_perc_yr_w <- data_count %>%
+#   filter(region == 'Whidbey' & intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   group_by(week, year, site) %>%
+#   distinct() %>%
+#   merge(max_col_yr_w, by = c('year', 'site')) %>%
+#   transform(perc_week = PG_count/max_cnt) %>%
+#   transform(max_week = ifelse(max_cnt == PG_count, 'y', 'n'))
+# 
+# max_week <- week_perc_yr_w %>%
+#   filter(max_week == 'y') %>%
+#   select(year, site, week, PG_count) %>%
+#   transform(min_week = week-3, max_week = week) %>%
+#   select(-c(week, PG_count))
+# 
+# # col_trim <- week_perc_yr_w %>%
+# #   filter(perc_week > 0.9) %>%
+# #   select(-c(max_cnt, perc_week)) %>%
+# #   transform(region = 'Whidbey')
+# 
+# col_trim <- week_perc_yr_w %>% select(-max_week) %>%
+#   merge(max_week, by = c('year', 'site')) %>%
+#   filter(week <= max_week & week >= min_week)
+#   
+# check_plot <- ggplot(col_trim, aes(week, PG_count, group = year, color = year)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~site) +
+#   plot_theme(legend.position = 'none')
+# 
+# #mean annual per site, go back up to max_week to adjust
+# mean_trim <- col_trim %>% 
+#   group_by(site, week) %>%
+#   summarize(mean_cnt = mean(PG_count))
+# 
+# ggplot(mean_trim, aes(week, mean_cnt)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~site) +
+#   plot_theme(legend.position = 'none')
+# 
+# #sum to island level
+# isl_sum_trim <- col_trim %>%
+#   group_by(year, week) %>%
+#   summarize(cnt = mean(PG_count))
+# 
+# ggplot(isl_sum_trim, aes(week, cnt, group = year, color = year)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~year) +
+#   plot_theme(legend.position = 'none')
+# 
+# # col_dat <- col_trim %>%
+# #   merge(covs_col, by = c('year', 'site', 'week', 'PG_count'), all.x = T, all.y = F) %>%
+# #   filter(bv != 'NA')
+# 
+# count_dat <- col_trim
+# 
+# summary(lm(PG_count ~ week + year, count_dat))
+
+```
+
+```{r}
+
+################################################################################################
+################################################################################################
+##################################    South Sound      #########################################
+################################################################################################
+################################################################################################
+
+# #mean counts per week in each year and region
+# peak_mean_SS <- data_count %>% 
+#   filter(region == 'SS') %>%
+#   filter(intern_data != 'on') %>%
+#   group_by(year, week) %>%
+#   summarize(mean_cnt = mean(PG_count, na.rm = T), se = se(PG_count, na.rm = T)) 
+# 
+# #sum of weekly counts at the regional level each year
+# peak_sum_SS <- data_count %>%
+#   filter(region == 'SS') %>%
+#   filter(intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(sum_cnt = sum(PG_count, na.rm = T))
+# 
+# #colony noise makes it harder to see the peaks when looking at means
+# peak_plot_mean <- ggplot(peak_mean_SS, aes(week, mean_cnt)) +
+#   geom_line() + 
+#   geom_ribbon(aes(ymin = mean_cnt - se, ymax = mean_cnt + se), alpha = 0.4, linetype = 'blank') +
+#   plot_theme(legend.position = 'none') + facet_wrap(~year) #+
+#  #guides(color = guide_legend(override.aes=list(fill=NA)))
+# 
+# #apparent seasonal peak when looking at sum counts across the regions each week
+# peak_plot_sum <- ggplot(peak_sum_SS, aes(week, sum_cnt)) +
+#   geom_line() + 
+#   #facet_wrap(~year) +
+#   plot_theme(legend.position = 'none') 
+# 
+# #taking max - this looks much better/clearer than the mean
+# max_yr_SS <- data_count %>%
+#   filter(region == 'SS') %>%
+#   filter(intern_data != 'on') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(sum = sum(PG_count, na.rm = T)) %>% #first sum counts across colonies each week
+#   group_by(year) %>%
+#   summarize(max_cnt = max(sum, na.rm = T))  #then take the week w/ max count
+# week_perc_SS <- data_count %>%
+#   filter(intern_data != 'on') %>%
+#   filter(region == 'SS') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, week) %>%
+#   summarize(cnt = sum(PG_count, na.rm = T)) %>% #sum across colonies
+#   merge(max_yr_SS, by = c('year')) %>%
+#   transform(perc_week = cnt/max_cnt)  #proportion of max that each week comprises
+# 
+# #only keep weeks where count was at least 65% of max count in that year
+# #first tried 50%, but that captured a steep downturn for a few years, this looks much better
+# weekly_count_isl_trim_SS <- week_perc_SS %>%
+#   filter(perc_week > 0.499) %>%
+#   select(-c(max_cnt, perc_week)) %>%
+#   transform(region = 'SS')
+# # check_plot <- ggplot(weekly_count_isl_trim, aes(week, cnt, group = year, color = year)) +
+# #   geom_line() + geom_point() +
+# #   facet_wrap(~year) +
+# #   plot_theme(legend.position = 'none') 
+# 
+# #colony level
+# max_col_yr_SS <- data_count %>%
+#   filter(intern_data != 'on') %>%
+#   filter(region == 'SS') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   group_by(year, site) %>%
+#   summarize(max_cnt = max(PG_count, na.rm = T)) 
+# week_perc_yr_SS <- data_count %>%
+#   filter(intern_data != 'on') %>%
+#   filter(region == 'SS') %>%
+#   select(year, week, site, PG_count) %>%
+#   distinct() %>%
+#   merge(max_col_yr_SS, by = c('year', 'site')) %>%
+#   transform(perc_week = PG_count/max_cnt)
+# 
+# weekly_count_col_trim_SS <- week_perc_yr_SS %>%
+#   filter(perc_week > 0.49) %>%
+#   select(-c(max_cnt, perc_week)) %>%
+#   transform(region = 'SS')
+# # check_plot <- ggplot(weekly_count_col_trim, aes(week, PG_count, group = year, color = year)) +
+# #   geom_line() + geom_point() +
+# #   facet_wrap(~site) +
+# #   plot_theme(legend.position = 'none')
+
+########combined regions##########
+
+# weekly_count_isl_trim <- weekly_count_isl_trim_w
+# weekly_count_col_trim <- weekly_count_col_trim_w
+# # weekly_count_isl_trim <- bind_rows(weekly_count_isl_trim_w, weekly_count_isl_trim_SS)
+# # weekly_count_col_trim <- bind_rows(weekly_count_col_trim_w, weekly_count_col_trim_SS)
+# 
+# ### count data moving forward: weekly_count_col_trim and weekly_count_isl_trim
+# write.csv(weekly_count_col_trim, "weekly_count_col_trim.csv", row.names = F)
+# write.csv(weekly_count_isl_trim, "weekly_count_isl_trim.csv", row.names = F)
+```
 
