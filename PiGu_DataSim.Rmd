@@ -33,7 +33,7 @@ setwd(dirname(path))
 data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
   filter(region == 'Whidbey') %>%
   dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
-  #filter(site %in% c('Mutiny Sands', 'Double Bluff North')) %>%
+  #filter(site %in% c('Mutiny Sands', 'Double Bluff North', 'Cliffside')) %>%
   filter(site %in% c('Mutiny Sands', 'Cliffside')) %>%
   #filter(year > 2016) %>%
   distinct()  #2 duplicates, all lagoon south 2017
@@ -113,6 +113,48 @@ burrow_CH <- burrow %>%
   dplyr::select(region, year, site, burrow_name, study_day, capt_hist) %>% #NA outside start/stop days
   dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist') 
 
+
+#gamma <- 0.9
+sim_egg <- matrix(NA, ncol = 35, nrow = nrow(burrow_CH))
+
+for (i in 1:nrow(sim_egg)){
+  sim_egg[i,1] <- 3 #none entered/seen on first survey day
+  for (i in 1:(2*nrow(sim_egg)/3)) { #2/3 have 'normal' ch
+    sim_egg[i,7] <- sample(c(1,3), 1, replace = T, prob = c(0.6, 0.3)) 
+    sim_egg[i,14] <- sample(c(1,3), 1, replace = T, prob = c(0.7, 0.1))
+    #sim_egg[i,14] <- sample(c(1,3), 1, replace = T, prob = c(pA, (1-pA)))
+    sim_egg[i,c(21,28, 35)] <- sample(c(1,3), 1, replace = T, prob = c(0.6, 0.4))
+  }
+  for (i in (1+(2*nrow(sim_egg)/3)):nrow(sim_egg)) #1/3 only seen once and then not seen - trying to kill eggs
+  {
+    sim_egg[i,7] <- 1 #all entered
+    sim_egg[i,c(14, 21, 28, 35)] <- 3 #none seen after that
+  }
+}
+
+sim_chick <- matrix(NA, ncol = 60, nrow = nrow(sim_egg))
+
+for (i in 1:nrow(sim_chick)){
+  for (i in 1:(2*nrow(sim_chick)/3)) { #2/3 have 'normal' ch
+    sim_chick[i,c(7,14,21)] <- sample(c(2,3), 1, replace = T, prob = c(0.7, 0.3)) #high then tapers off
+    #sim_chick[i,14] <- sample(c(2,3), 1, replace = T, prob = c(phiA, (1-phiA)))
+    sim_chick[i,c(28,35,42)] <- sample(c(2,3), 1, replace = T, prob = c(0.5, 0.4))
+    sim_chick[i,49] <- sample(c(2,3), 1, replace = T, prob = c(0.3, 0.7))
+    sim_chick[i,c(56,60)] <- 3
+  }
+  for (i in (1+(2*nrow(sim_chick)/3)):nrow(sim_chick)) 
+  {
+    sim_chick[i,c(7,14,21,28,35,42,49,56,60)] <- 3 #none of the failed eggs seen as chicks
+  }
+}
+
+sim_egg <- data.frame(sim_egg)
+names(sim_egg) <- c(1:ncol(sim_egg))
+sim_chick <- data.frame(sim_chick)
+names(sim_chick) <- c((1+ncol(sim_egg)):(ncol(sim_egg)+ncol(sim_chick)))
+
+sim_dat <- bind_cols(burrow_CH[,c(1:4)], sim_egg, sim_chick)
+
 #df of survey days at burrow-week level
 survey <- burrow %>%
   merge(n_visits, by = c('region', 'year', 'site')) %>%
@@ -122,7 +164,8 @@ survey <- burrow %>%
   #dcast(region + year + site + burrow_name + n_visits ~ week, value.var = 'study_day', fun.aggregate = mean)
   dcast(region + year + site + n_visits + burrow_name ~ study_day, value.var = 'study_day', fun.aggregate = mean)
 
-max_recap <- max(survey$n_visits) #max number of resights for ncol, NOT distinct study days
+#max_recap <- max(survey$n_visits) #max number of resights for ncol, NOT distinct study days
+max_recap <- sum(!is.na(sim_dat[1,-c(1:4)]))
 
 ```
 
@@ -143,7 +186,7 @@ num_nests <- burrow %>%
 aug_fun <- function(df, id_cols, visit_col){
   # Keep only the needed columns. 
   cols <- append(id_cols, visit_col)
-  df_down_select <- df %>% select(cols)
+  df_down_select <- df %>% dplyr::select(cols)
   # Create a storage data frame
   final_df <- data.frame(stringsAsFactors = FALSE)
   # Loop through the data frame
@@ -191,45 +234,37 @@ aug_inds_CH <- aug_id %>%
   dplyr::select(-n_visits)
 colnames(aug_inds_CH) <- colnames(burrow_CH)
 
-burrow_CH_aug <- burrow_CH %>%
+# burrow_CH_aug <- burrow_CH %>%
+#   bind_rows(aug_inds_CH) 
+
+sim_dat_aug <- sim_dat %>%
   bind_rows(aug_inds_CH) 
 
 ##collapse so that all data are at beginning, trailing NAs for the rest
-ch_dat <- matrix(NA, nrow = dim(burrow_CH_aug)[1], ncol = max_recap)
+ch_sim <- matrix(NA, nrow = dim(sim_dat_aug)[1], ncol = max_recap)
 
-for (i in 1:dim(burrow_CH_aug)[1]) {
-  temp <- as.numeric(burrow_CH_aug[i, 4 + c(which(!is.na(burrow_CH_aug[i,5:dim(burrow_CH_aug)[2]])))])
+for (i in 1:dim(sim_dat_aug)[1]) {
+  temp <- as.numeric(sim_dat_aug[i, 4 + c(which(!is.na(sim_dat_aug[i,5:dim(sim_dat_aug)[2]])))])
   num <- length(temp)
-  ch_dat[i,] <- c(temp, rep(NA, max_recap-num))
+  ch_sim[i,] <- c(temp, rep(NA, max_recap-num))
 }
 
-max_visits <- max(n_visits$n_visits)
-
-surv_aug <- survey %>%
-  bind_rows(aug_inds %>% transform(n_visits = as.numeric(n_visits)))
-
-survey <- surv_aug
-
-survey_days <- matrix(NA, nrow = dim(survey)[1], ncol = max_visits)
+#survey_days
+days_sim <- matrix(NA, nrow = dim(sim_dat_aug)[1], ncol = max_recap)
 
 for (i in 1:dim(survey)[1]) {
-  temp <- as.numeric(survey[i, 5 + c(which(!is.na(survey[i,6:dim(survey)[2]])))])
-  num <- length(temp)
-  survey_days[i,] <- c(temp, rep(NA, max_visits-num))
+  days_sim[i,1] <- 1
+  days_sim[i,c(2:(max_recap-1))] <- c(7*c(1:(max_recap-3)), 91)
+  days_sim[i,max_recap] <- 95
 }
 
-year_i <- as.numeric(factor(burrow_CH_aug$year))
-site_i <- survey$site
-visits_i <- survey$n_visits
+year_i <- as.numeric(factor(sim_dat_aug$year))
+#site_i <- survey$site
+visits_i <- rep(max_recap, nrow(sim_dat_aug))
 
+#####ultimately, survey_days <- days_sim; ch_dat <- ch_sim
 ```
 
-```{r}
-
-# write.csv(survey_days, 'survey_days.csv', row.names = F)
-# write.csv(ch_dat, 'ch_dat.csv', row.names = F)
-
-```
 
 
 ```{r covariates}

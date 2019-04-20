@@ -3,18 +3,17 @@
 
 # Function to simulate capture-recapture data under a multi-event JS model; adapted from Kery & Schaub
    # Unobservable: number of unobservable states
-n.occasions <- 82                        # Number of capture occasions
-Nstar <- 500                             # Superpopulation size (total number of burrows active on at least one day)
-n.states <- 4                            # not entered, egg, chick, terminated
-n.obs <- 3                               # burrow visit, prey delivery, not detected
+n.occasions <- 100              # Number of capture occasions
+Nstar <- 500                    # Superpopulation size (total number of burrows active on at least one day)
+n.states <- 4                   # not entered, egg, chick, terminated
+n.obs <- 3                      # burrow visit, prey delivery, not detected
 gamma <- c(0.5, seq(0.2, 0.01, length = n.occasions-1))      # Entry probabilities decrease with time
-alpha <- c(.40, rep(0, n.occasions-1))   # Prob burrow is a "chick burrow" given entry (assume this only occurs on day 1)
-phiA <- 0.8                              # survival state A (egg burrow)
-phiB <- 0.7                              # survival state B (chick burrow)
-psiAB <- 0.25                            # transition A to B conditional on survival
-pA <- 0.5                                # detection for egg burrow
-pB <- 0.75                               # detection for chick burrow
-beta <- 0.25                             # conditional on observing chick, probability the delivery was a 'burrow visit'
+phiA <- 0.97                    # survival state A (egg burrow)
+phiB <- 0.98                    # survival state B (chick burrow)
+psiAB <- 0.05                   # transition A to B conditional on survival
+pA <- 0.4                       # detection for egg burrow
+pB <- 0.6                       # detection for chick burrow
+beta <- 0.2                     # conditional on observing true state chick, probability obs was bv
 
 #Define matrics
 
