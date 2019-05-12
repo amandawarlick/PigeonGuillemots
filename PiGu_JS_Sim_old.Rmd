@@ -1,0 +1,609 @@
+
+```{r setup, include=FALSE}
+library(tidyr)
+library(data.table)
+library(ggfortify)
+library(broom) #tidy() augment()
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(lme4)
+library(lmerTest)
+library(scales)
+library(reshape2)
+library(stats) 
+library(zoo)
+library(sciplot)
+library(rstudioapi)
+library(jagsUI)
+library(chron)
+ 
+#setwd("~/Documents/SAFS/PigeonGuillemots")
+path <- getActiveDocumentContext()$path 
+setwd(dirname(path))
+
+# knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r set up}
+
+#load data from PigeonGuillemot_whidbey.Rmd
+filter <- c('Mutiny Sands', 'Double Bluff North', 'Cliffside', 'Harrington North', 'Lagoon South', 'Shore Meadows', 'Mutiny Sands', 'Malmo Bluff')
+
+#contains single row where burrow_name == NA when no activity was detected, but survey started
+data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
+  filter(region == 'Whidbey') %>%
+  dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
+  #filter(site %in% filter) %>%
+  filter(site %in% c('Mutiny Sands')) %>%
+  #filter(year > 2016) %>%
+  distinct()  #2 duplicates, all lagoon south 2017
+
+#study start day per year, island-wide
+start_end_all <- data_burrow_all %>%
+  group_by(year, region) %>%
+  summarize(start_day = min(yday, na.rm = T), end_day = max(yday, na.rm = T))
+
+no_vis <- data_burrow_all %>%
+  filter(is.na(burrow_name)) %>%
+  dplyr::select(region, year, site, week, yday)
+
+all_days <- data_burrow_all %>%
+  #filter(is.na(burrow_name)) %>%
+  group_by(region, year, site) %>%
+  distinct(yday)
+fill <- data_burrow_all %>%  #all day-burrow combinations
+  filter(!is.na(burrow_name)) %>%
+  group_by(region, year, site, burrow_name) %>%
+  distinct(burrow_name) %>%
+  merge(all_days, all = T) 
+
+burrow <- data_burrow_all %>%
+  filter(!is.na(burrow_name)) %>% #remove all dummy rows where no burrows were seen
+  merge(fill, by = c('region', 'site', 'year', 'burrow_name', 'yday'), all = T) %>%
+  merge(start_end_all, by = c('region', 'year'), all = T) %>%
+  transform(study_day = yday - start_day + 1) #%>% arrange(burrow_name)
+
+#burrow visit and prey visit start stops
+prey_start_end <- burrow %>%
+  filter(tot_prey > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(prey_start = min(study_day), prey_end = max(study_day))  
+
+bv_start_end <- burrow %>%
+  filter(burrow_visit > 0) %>%
+  group_by(region, year, site, burrow_name) %>%
+  summarize(bv_start = min(study_day), bv_end = max(study_day))  
+
+start_end_visits <- prey_start_end %>%
+  merge(bv_start_end, by = c('region', 'year', 'site', 'burrow_name'), all = T)
+
+day_range <- burrow %>%
+  group_by(region, year, site) %>%
+  summarize(min_day = min(study_day, na.rm = T), max_day = max(study_day, na.rm = T))
+
+week_range <- burrow %>%
+  group_by(region, year, site) %>%
+  summarize(min_week = min(week), max_week = max(week))
+
+n_visits <- burrow %>%
+  group_by(region, year, site) %>% #don't include burrow here, since hasn't been expanded yet
+  summarize(n_visits = n_distinct(study_day)) #use study_day instead of date - NAs in date
+
+#combining all data with dummy framework of all days, create capture history
+burrow_CH <- burrow %>%
+  merge(start_end_visits, by = c('region', 'year', 'site', 'burrow_name'), all.x = T) %>%
+  transform(prey_days = prey_end + 1 - prey_start) %>%
+  transform(bv_days = bv_end + 1 - bv_start) %>%
+  group_by(region, year, site) %>%
+  merge(day_range, by = c('region', 'year', 'site')) %>%
+  merge(n_visits, by = c('region', 'year', 'site')) %>% #arrange(burrow_name)
+  transform(capt_hist = ifelse(is.na(burrow_visit) & is.na(tot_prey), 3, #observed but not detected
+                     ifelse(burrow_visit == 0 & tot_prey == 0, 3, #observed but not detected
+              ifelse(tot_prey > 0, 2, #prey visit
+              ifelse(burrow_visit > 0, 1, #burrow visit
+                       100))))) %>% 
+  dplyr::select(region, year, site, week, yday, start_day, study_day, n_visits, 
+         min_day, max_day, burrow_name, capt_hist) %>% distinct() %>%
+  dcast(region + year + site + burrow_name + min_day + max_day ~ study_day, value.var = 'capt_hist', 
+        fun.aggregate = mean) %>%
+  filter(!is.na(burrow_name)) %>%
+  melt(id.vars = c('region', 'year', 'site', 'burrow_name', 'min_day', 'max_day')) %>%
+  transform(study_day = as.numeric(as.character(variable))) %>% 
+  transform(capt_hist = ifelse(study_day < min_day | study_day > max_day, NA, value)) %>%
+  dplyr::select(region, year, site, burrow_name, study_day, capt_hist) %>% #NA outside start/stop days
+  dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist') 
+
+sim_egg <- matrix(NA, ncol = 35, nrow = nrow(burrow_CH))
+
+for (i in 1:nrow(sim_egg)){
+  sim_egg[i,1] <- 3 #none entered/seen on first survey day
+  for (i in 1:(nrow(sim_egg)/3)) { #2/3 have 'normal' ch
+    sim_egg[i,c(7,14)] <- sample(c(1,3), 1, replace = T, prob = c(0.7, 0.3)) 
+    #sim_egg[i,14] <- sample(c(1,3), 1, replace = T, prob = c(pA, (1-pA)))
+    sim_egg[i,c(21,28, 35)] <- sample(c(1,3), 1, replace = T, prob = c(0.3, 0.7))
+  }
+  for (i in (1+(nrow(sim_egg)/3)):nrow(sim_egg)) #1/3 only seen once and then not seen - trying to kill eggs
+  {
+    sim_egg[i,7] <- 1 #all entered
+    sim_egg[i,c(14, 21, 28, 35)] <- 3 #none seen after that
+  }
+}
+
+sim_chick <- matrix(NA, ncol = 60, nrow = nrow(sim_egg))
+
+for (i in 1:nrow(sim_chick)){
+  for (i in 1:(nrow(sim_chick)/3)) { #2/3 have 'normal' ch
+    sim_chick[i,c(7,14,21)] <- sample(c(2,3), 1, replace = T, prob = c(0.7, 0.3)) #high then tapers off
+    #sim_chick[i,14] <- sample(c(2,3), 1, replace = T, prob = c(phiA, (1-phiA)))
+    sim_chick[i,c(28,35,42)] <- sample(c(2,3), 1, replace = T, prob = c(0.5, 0.4))
+    sim_chick[i,49] <- sample(c(2,3), 1, replace = T, prob = c(0.3, 0.7))
+    sim_chick[i,c(56,60)] <- 3
+  }
+  for (i in (1+(nrow(sim_chick)/3)):nrow(sim_chick)) 
+  {
+    sim_chick[i,c(7,14,21,28,35,42,49,56,60)] <- 3 #none of the failed eggs seen as chicks
+  }
+}
+
+sim_egg <- data.frame(sim_egg)
+names(sim_egg) <- c(1:ncol(sim_egg))
+sim_chick <- data.frame(sim_chick)
+names(sim_chick) <- c((1+ncol(sim_egg)):(ncol(sim_egg)+ncol(sim_chick)))
+
+sim_dat <- bind_cols(burrow_CH[,c(1:4)], sim_egg, sim_chick)
+
+#df of survey days at burrow-week level
+survey <- burrow %>%
+  merge(n_visits, by = c('region', 'year', 'site')) %>%
+  merge(week_range, by = c('region', 'year', 'site')) %>%
+  #transform(occ = week-min_week) %>%
+  dplyr::select(region, year, site, yday, burrow_name, study_day, n_visits, week, max_week) %>%
+  #dcast(region + year + site + burrow_name + n_visits ~ week, value.var = 'study_day', fun.aggregate = mean)
+  dcast(region + year + site + n_visits + burrow_name ~ study_day, value.var = 'study_day', fun.aggregate = mean)
+
+#max_recap <- max(survey$n_visits) #max number of resights for ncol, NOT distinct study days
+max_recap <- sum(!is.na(sim_dat[1,-c(1:4)]))
+
+```
+
+```{r}
+#augment
+#number of nests per site per year - for proportion
+num_nests <- burrow %>%
+  group_by(region, year, site) %>%
+  summarize(nest_cnt = n_distinct(burrow_name)) %>%
+  transform(burrow_name = 'XXX') %>%
+  merge(n_visits, by = c('region', 'year', 'site')) %>%
+  transform(aug = round(0.2*nest_cnt)) %>%
+  transform(aug = ifelse(aug < 1, 1, aug)) %>%
+  dplyr::select(-nest_cnt)
+
+aug_fun <- function(df, id_cols, visit_col){
+  # Keep only the needed columns. 
+  cols <- append(id_cols, visit_col)
+  df_down_select <- df %>% dplyr::select(cols)
+  # Create a storage data frame
+  final_df <- data.frame(stringsAsFactors = FALSE)
+  # Loop through the data frame
+  for (i in 1:nrow(df_down_select)){
+    # Replicate the id data based on the number of visits
+    list_rep <- rep(df_down_select[i, id_cols], df_down_select[i, visit_col])
+    # Convert the resulting list to a data frame
+    current_df <- as.data.frame(matrix(unlist(list_rep),
+                                       nrow = df_down_select[i, visit_col],
+                                       byrow = TRUE),
+                                stringsAsFactors = FALSE)
+    final_df <- bind_rows(final_df, current_df)
+  }
+  return(final_df)
+}
+
+aug_id <- aug_fun(num_nests, c('region', 'year', 'site', 'burrow_name', 'n_visits'), 'aug') %>%
+  transform(V4 = 'XXX')
+colnames(aug_id) <- c('region', 'year', 'site', 'burrow_name', 'n_visits') 
+
+#take just id cols and days
+days_obs <- survey %>%
+  dplyr::select(-c(burrow_name)) %>%
+  distinct()
+
+#merge id columns and day observation columns
+aug_inds <- aug_id %>%
+  merge(days_obs, by = c('region', 'year', 'site', 'n_visits'), all = T) %>%
+  transform(year = as.numeric(year))
+colnames(aug_inds) <- colnames(survey)
+
+#take augmented survey day data and turn to '3' obs
+ch_obs <- days_obs
+for (i in 1:nrow(ch_obs)) {
+  for (j in 5:ncol(ch_obs)) {
+    if (!is.nan(ch_obs[i,j])) {
+      ch_obs[i,j] <- 3
+    }
+  }
+}
+
+aug_inds_CH <- aug_id %>%
+  merge(ch_obs, by = c('region', 'year', 'site', 'n_visits'), all = T) %>%
+  transform(year = as.integer(year)) %>%
+  dplyr::select(-n_visits)
+colnames(aug_inds_CH) <- colnames(burrow_CH)
+
+sim_dat_aug <- sim_dat %>%
+  bind_rows(aug_inds_CH) 
+
+##collapse so that all data are at beginning, trailing NAs for the rest
+ch_sim <- matrix(NA, nrow = dim(sim_dat_aug)[1], ncol = max_recap)
+
+for (i in 1:dim(sim_dat_aug)[1]) {
+  temp <- as.numeric(sim_dat_aug[i, 4 + c(which(!is.na(sim_dat_aug[i,5:dim(sim_dat_aug)[2]])))])
+  num <- length(temp)
+  ch_sim[i,] <- c(temp, rep(NA, max_recap-num))
+}
+
+#survey_days
+days_sim <- matrix(NA, nrow = dim(sim_dat_aug)[1], ncol = max_recap)
+
+for (i in 1:dim(sim_dat_aug)[1]) {
+  days_sim[i,1] <- 1
+  days_sim[i,c(2:(max_recap-1))] <- c(7*c(1:(max_recap-3)), 91)
+  days_sim[i,max_recap] <- 95
+}
+
+year_i <- as.numeric(factor(sim_dat_aug$year))
+#site_i <- survey$site
+visits_i <- rep(max_recap, nrow(sim_dat_aug))
+
+#####ultimately, survey_days <- days_sim; ch_dat <- ch_sim, but actually just using visits_i and days_sim
+```
+
+
+```{r model}
+
+model_MEJS <- function () {
+
+# Priors and constraints
+for (i in 1:M) {
+  for (t in 1:(n.occasions-1)){
+        logit(phiA[i,t]) <- mu.phi[1] #+ b.egg.y[year_i[i]] 
+        logit(phiB[i,t]) <- mu.phi[2] #+ b.chick.y[year_i[i]] 
+    gamma[i,t] <- mean.gam    # Prior for entry probabilities at occasion t
+    pA[i,t] <- mean.p[1]     # egg burrow detection
+    pB[i,t] <- mean.p[2]     # chick burrow detection
+    psiAB[i,t] <- mean.psiAB
+  } #t
+} #i
+
+b ~ dunif(0,1)            # prior for assignment probability
+mean.psiAB ~ dunif(0,1)   # transition from egg to chick
+mean.gam ~ dunif(0,1)
+pi ~ ddirch(alpha[1:3])   #dirichlet prior for multinomial
+alpha[1] <- 1/3
+alpha[2] <- 1/3
+alpha[3] <- 1/3
+
+for (u in 1:2){
+ mu.phi[u] ~ dnorm(0, 0.001) 
+ #mean.phi[u] ~ dunif(0, 1)    # Priors for mean state-spec. survival
+ mean.p[u] ~ dunif(0, 1)      # Priors for mean state-spec. recapture
+}
+
+  b.chick.y[1] <- 0
+  b.egg.y[1] <- 0
+# for (y in 2:nyear) {
+#   b.chick.y[y] ~ dnorm(0, 0.001)
+#   b.egg.y[y] ~ dnorm(0, 0.001)
+# }
+
+phiA.int <- 1 / (1+exp(-mu.phi[1]))
+phiB.int <- 1 / (1+exp(-mu.phi[2]))
+
+# Likelihood 
+for (i in 1:M){
+ # Define latent state at first occasion
+  z[i,1] ~ dcat(pi[1:3])      #all M individuals have probability of being in 1 of 3 states
+  #y[i,1] ~ dcat(po[z[i,1], i, 1, 1:3])  #covered below
+  
+ for (t in 2:n.occasions){
+  # State process: draw S(t) given S(t-1); daily
+  z[i,t] ~ dcat(ps[z[i,t-1], i, t-1, 1:4])
+ } #t
+   
+  # Observation process: draw O(t) given S(t); n_visit approach via Nathan
+  for (k in 1:visits_i[i]) {  
+  y[i,k] ~ dcat(po[z[i,effort[i,k]], i, k, 1:3]) #add indices back in if modeling p
+  } #k
+} #i
+
+# Define transition and observation matrices
+ for (i in 1:M){
+  for (t in 1:(n.occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 1-gamma[i,t]                    #probability of not entering
+      ps[1,i,t,2] <- gamma[i,t]                    #probability of entering as egg
+      ps[1,i,t,3] <- 0                          #can't enter as a chick after day 1
+      ps[1,i,t,4] <- 0                             #probability of entering as terminated
+      ps[2,i,t,1] <- 0                             #probability egg goes to 'not entered'
+      ps[2,i,t,2] <- (1-psiAB[i,t])*phiA[i,t]          #probability of surviving egg state and not transitioning
+      ps[2,i,t,3] <- phiA[i,t]*psiAB[i,t]              #probability of surviving egg state and hatching
+      ps[2,i,t,4] <- 1-phiA[i,t]                      #probability of a failed egg
+      ps[3,i,t,1] <- 0                                #probability chick goes to 'not entered'
+      ps[3,i,t,2] <- 0                                #probability chick goes to egg
+      ps[3,i,t,3] <- phiB[i,t]
+      ps[3,i,t,4] <- 1-phiB[i,t]               #probability of failed chick
+      ps[4,i,t,1] <- 0                      #probability terminated goes to 'not entered'
+      ps[4,i,t,2] <- 0                       #probability terminated goes to egg (maybe happens)
+      ps[4,i,t,3] <- 0                       #probability terminated goes to chick
+      ps[4,i,t,4] <- 1                       #probability terminated goes to terminated
+  } #t
+
+   for (t in 1:visits_i[i]) {
+      # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 0                        #'not entered' burrow is detected with a burrow visit
+      po[1,i,t,2] <- 0                        #'not entered' burrow is detected with a prey visit
+      po[1,i,t,3] <- 1                        #'not entered' burrow is not detected
+      po[2,i,t,1] <- pA[i,t]                    #egg burrow is detected with a burrow visit
+      po[2,i,t,2] <- 0                        #egg burrow is detected with a prey visit
+      po[2,i,t,3] <- 1-pA[i,t]                  #egg burrow is not detected
+      po[3,i,t,1] <- b * pB[i,t]                #chick burrow is detected with a burrow visit 
+      po[3,i,t,2] <- (1 - b) * pB[i,t]          #chick burrow is detected with a prey visit
+      po[3,i,t,3] <- 1 - pB[i,t]                #chick burrow is not detected
+      po[4,i,t,1] <- 0                        #terminated burrow is detected with a burrow visit
+      po[4,i,t,2] <- 0                        #terminated burrow is detected with a prey visit
+      po[4,i,t,3] <- 1                        #terminated burrow is not detected
+  } #t
+ }#M
+
+#mean over study period
+for (i in 1:M) {
+  days.chick[i] <- sum(z[i,] == 3)
+  days.egg[i] <- sum(z[i,] == 2)
+  fledged_high[i] <- step(days.chick[i]-32) #if step() greater than zero, 1
+  fledged_low[i] <- step(days.chick[i]-45) #if step() greater than zero, 1
+  everActive[i] <- max(z[i,]>1) #number of active ever
+ } #i
+
+#seasonal values
+#for (i in 1:M) {
+  for (t in 2:n.occasions) {
+  chick[t] <- sum(z[1:M,t] == 3)
+  egg[t] <- sum(z[1:M,t] == 2)
+   } #t
+ #} #i
+
+#means
+n.fledged.low <- sum(fledged_low[1:M])
+n.fledged.high <- sum(fledged_high[1:M])
+n.active.burrow <- sum(everActive[1:M])
+nest.succ.low <- n.fledged.low/n.active.burrow
+nest.succ.high <- n.fledged.high/n.active.burrow
+mean.days.chick <- mean(days.chick)
+mean.days.egg <- mean(days.egg)
+} #mod
+
+write.model(model_MEJS, "model_MEJS.txt")
+model.file = paste(getwd(),"model_MEJS.txt", sep="/")
+```
+
+
+```{r}
+
+# Function to simulate capture-recapture data under a multi-event JS model;
+# adapted with Nathan's help from Kery & Schaub
+n.occasions <- 95            # Number of capture occasions
+Nstar <- nrow(ch_sim)                  # Superpopulation size (total number of burrows active on at least one day)
+n.states <- 4                   # not entered, egg, chick, terminated
+n.obs <- 3                      # burrow visit, prey delivery, not detected
+gamma <- c(0.5, seq(0.2, 0.01, length = n.occasions-1))      # Entry probabilities decrease with time
+gamma[(n.occasions-15):n.occasions] <- 0  #no new can enter once forced exit at t-15
+
+phiA <- 0.95                    # survival state A (egg burrow)
+phiB <- 0.90                  # survival state B (chick burrow)
+psiAB <- 0.15                   # transition A to B conditional on survival
+pA <- 0.5                       # detection for egg burrow
+pB <- 0.8                       # detection for chick burrow
+b <- 0.2                     # conditional on observing true state chick, probability obs was bv
+
+#Define matrics
+
+#state at entry
+# init.st <- matrix(NA, nrow = n.occasions+1, ncol = n.states) 
+#  for(t in 1:nrow(init.st)){
+#   init.st[t,]<- c(0.33, 0.33, 0.33, 0) #multinomial probability of entering into 1-3 states 
+#  }
+init.st <- c(rep(0.33, 3), 0)
+
+#state process conidtional on entry (survival and transition)
+st.proc <- array(NA, dim = c(n.states, n.states, Nstar, n.occasions))
+for (i in 1:Nstar){
+   for (t in 1:n.occasions){
+      st.proc[,,i,t] <- matrix(c(
+      (1-gamma[t]), gamma[t], 0, 0,     #this line is not needed since it is conditional on entry state
+      0, phiA*(1-psiAB), phiA*psiAB, 1-phiA,
+      0, 0, phiB, 1-phiB,
+      0, 0, 0, 1), nrow = n.states, byrow = TRUE)
+      } #t
+   } #i
+
+#Observation process
+obs.proc <- array(NA, dim=c(n.states, n.obs, Nstar, n.occasions))
+for (i in 1:Nstar){
+   for (t in 1:n.occasions){
+      obs.proc[,,i,t] <- matrix(c(
+      0,  0,  1,                   #not detected if not entered
+      pA, 0,  1-pA,                #detection if egg burrow
+      pB*b,  pB*(1-b), 1-pB, #detection if chick burrow
+      0,  0,  1),                  #detection if terminated
+      nrow = n.states, byrow = TRUE)
+      } #t
+   } #i
+
+# Function to simulate capture-recapture data under the JS model
+sim.mejs <- function(st.proc, obs.proc, Nstar, n.occasions, n.obs, n.states){
+
+   z <- chTRUE <- matrix(0, ncol = n.occasions, nrow = Nstar)  
+   B <- rmultinom(1, Nstar, gamma) #total number of entering burrows per occasion
+   ent.occ <- numeric()
+   for (t in 1:n.occasions){
+      ent.occ <- c(ent.occ, rep(t, B[t])) #entry day for each burrow
+   }
+
+   #survival, transition, and detection
+   for (i in 1:Nstar){
+    #prior to entry
+    z[i,1:(ent.occ[i]-1)] <- 1 #not entered until entry occasion
+    chTRUE[i,1:(ent.occ[i]-1)] <- n.obs #cannot be observed prior to capture, 3 for not obs
+
+    #at entry occasion 
+    for (t in ent.occ[i]){ #when t matches entry day for i
+     #z[i,t] <-  which(rmultinom(1, 1, init.st[t-1,])==1) #state at entry occasion
+     z[i,t] <-  which(rmultinom(1, 1, init.st)==1) #state at entry occasion
+     event <- which(rmultinom(1, 1, obs.proc[z[i,t],,i,t])==1) #obs given state; [states, obs, N, t)
+     chTRUE[i,t] <- event
+    } #t
+
+    #after entry occasion
+    if(ent.occ[i]<(n.occasions)){ #survival process if entered prior to end of study
+      for (t in ent.occ[i]:(n.occasions-1)){
+      z[i,t+1] <- which(rmultinom(1, 1, st.proc[z[i,t],,i,t])==1)   #state
+      event <- which(rmultinom(1, 1, obs.proc[z[i,t],,i,t])==1)     #obs given state
+      chTRUE[i,t+1] <- event
+     }#t
+    }#if
+    
+    #forced exit: should instead be forced to state 4 after X number of days either in state 2 or state 3
+    z[i,c((n.occasions-15):n.occasions)] <- 4
+    chTRUE[i,c((n.occasions-15):n.occasions)] <- 3
+  }#i
+   
+   # Remove individuals never captured
+   captured <- apply(chTRUE, 1, min) < n.obs
+   chOBS <- chTRUE[captured,]
+   alive <- z
+    alive[z==1|z==4] <- 0
+    alive[z==2|z==3] <- 1
+   Nt <- colSums(alive)    # Actual population size
+   Negg <- Nchick <- NA
+   #for(t in 1:(n.occasions+1)){
+   for(t in 1:(n.occasions)){
+    Negg[t] <- length(which(z[,t]==2))
+    Nchick[t] <- length(which(z[,t]==3))
+   }
+   return(list(CH = chOBS, B = B, N = Nt, Negg = Negg, Nchick = Nchick))
+} #funciton
+
+# Execute simulation function
+sim <- sim.mejs(st.proc, obs.proc, Nstar, n.occasions, n.obs, n.states)
+CH <- sim$CH
+
+#verify
+# sim$N
+# sim$B
+# sum(sim$B) #should equal simulated value of Nstar
+
+# Augment data
+nz <- Nstar - dim(CH) #augment to get back up to nrow(ch_sim) from above
+CH.aug <- rbind(CH, matrix(n.obs, nrow = nz, ncol = dim(CH)[2])) 
+ch <- CH.aug
+
+get.first <- function(x) min(which(x < n.obs)) #first time that there is a non-3
+f <- apply(CH, 1, get.first)
+get.last <- function(x) max(which(x < n.obs))  #last time there is a non-3
+l <- apply(CH, 1, get.last)
+
+#inits for state process z[i,t]
+js.me.init <- function(ch, f, l, nz){
+  inits <- matrix(NA, nr = dim(ch)[1], nc = dim(ch)[2])
+  #inits[,1] <- NA  #deterministic on occasion 1
+
+  for(i in 1:dim(ch)[1]) { 
+    inits[i,1:f[i]-1] <- 1  #1 before first capture 
+    if(l[i]<dim(ch)[2]){
+     inits[i, (l[i]+1):dim(ch)[2]] <- rep(3, (dim(ch)[2]-l[i])) #3 from last obs to end
+    }
+    if(sum(ch[i,] == 2, na.rm=T)>0){ #sites with observed prey delivery
+       if(f[i]==min(which(ch[i,]  == 2))){  #if first obs is a prey delivery
+        inits[i, f[i]:l[i]]<-3              #chick until end of study 
+        if(f[i]>2) inits[i, 2:(f[i]-1)]<-2  #egg prior to chick
+
+       }else{
+        inits[i, f[i]:(min(which(ch[i,]  == 2))-1)]<-2
+        inits[i, min(which(ch[i,]  == 2)):l[i]]<-3
+       }
+    }else{ #never detected a prey delivery
+      if(sum(ch[i,] == 2, na.rm=T)==0){      
+        inits[i, f[i]:(max(which(ch[i,]  == 1)))]<-2
+      }
+    }
+   }#i
+  return(inits)
+}
+
+zInitsObs <- js.me.init(CH, f, l, nz)
+z.init <- rbind(zInitsObs,matrix(1, nr = nz, nc = dim(CH)[2])) #add augmented
+
+
+
+```
+
+```{r}
+   
+# Bundle data
+jags.data <- list(y = ch, n.occasions = n.occasions, 
+                  #nyear = length(unique(year_i)),
+                  #z = z.st, 
+                  effort = days_sim, #from setup, survey_days
+                  visits_i = visits_i, 
+                  M = dim(ch)[1])
+
+inits <- function(){list(#mean.phi = runif(2, 0, 1), 
+                         z = z.init,
+                         #z = matrix(3, nrow = dim(ch)[1], ncol = max(effort, na.rm = T)),
+                         mean.p = runif(2, 0, 1))}  
+
+# Parameters monitored
+parameters <- c('phiA.int', 'phiB.int', "mean.p", "b", 
+                'n.active.burrow', 'n.fledged.low', 'n.fledged.high', 'mean.days.chick', 'mean.days.egg',
+                #"gamma", 'z', 'fledged', 'chick', 'egg', "N.egg", "N.chick", 
+                'b.egg.y', 'b.chick.y',
+                "mean.psiAB", 'mu.phi',
+                'nest.succ.low', 'nest.succ.high', 
+                "N.active", "Nstar", "psi")
+     
+# MCMC settings
+ni <- 3000; nt <- 1; nb <- 1000; nc <- 3
+     
+out_sim <- jags(jags.data, inits, parameters, model.file = model.file,
+              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T)
+
+out <- readRDS('out4d.rds')
+
+```
+
+
+```{r}
+
+
+# plot(js_me$samples[,"alphaKeep"])
+# 
+# #abundances
+# outmat<-as.matrix(js_me$samples)
+# plot(apply(outmat[,grep("N.active\\[", colnames(outmat))],2,median), pch=16, type="b", ylab="Number", xlab=c("Day of season"), ylim=c(0,Nstar))
+# points(apply(outmat[,grep("N.egg\\[", colnames(outmat))],2,median), pch=16, type="b", col="red")
+# points(apply(outmat[,grep("N.chick\\[", colnames(outmat))],2,median), pch=16, type="b", col="blue")
+# legend("topleft", legend=c("Active","Egg", "Chick"), text.col=c("black", "red", "blue"), bty="n")
+#  #true values
+#  points(sim$N[2:(n.occasions+1)], pch=0)
+#  points(sim$Negg[2:(n.occasions+1)], pch=0, col="red")
+#  points(sim$Nchick[2:(n.occasions+1)], pch=0, col="blue")
+# 
+# #estimated 'birth' rates
+# plot(apply(outmat[,grep("b\\[", colnames(outmat))],2,median), pch=16, type="b", ylab="Probability", xlab=c("Day of season"), ylim=c(0,1))
+#  points(b, pch=0) #true values
+
+
+
+```
+

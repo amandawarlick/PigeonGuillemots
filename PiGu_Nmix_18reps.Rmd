@@ -1,0 +1,436 @@
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#install.packages('rstudioapi')
+# install.packages(c('rjags', 'jagsUI', 'R2OpenBUGS', 'dplyr', 'tidyr', 'reshape2', 'data.table', 'ggplot2', 'scales', 'knitr', 'stringr', 'lubridate', 'stats', 'zoo'))
+
+library(rstudioapi)
+library(rjags)
+library(jagsUI)
+library(R2OpenBUGS)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(data.table)
+library(ggplot2)
+#library(cowplot) 
+library(loo)
+library(scales)
+library(knitr)
+library(stringr)
+library(lubridate)
+library(stats) 
+library(IDPmisc)
+library(zoo)
+library(magrittr)
+
+path <- getActiveDocumentContext()$path 
+setwd(dirname(path))
+
+```
+
+
+```{r counts}
+
+#colony level
+counts <- read.csv('count_dat.csv', header = T, stringsAsFactors = F) 
+
+count_dat <- counts %>%
+  select(year, site, week, PG_count) %>%
+  filter(week < 33 & week > 26) %>% distinct() %>%
+  group_by(year, site, week) %>% #not sure why there are multiple obs for tides but it's not tripping up counts
+  summarize(PG_count = mean(PG_count, na.rm = T))
+
+#for now, just use sites that appear in each year, otherwise need dynamic matrix dimensions for y
+top_sites <- counts %>%
+  select(year, site, week, PG_count) %>%
+  group_by(site) %>%
+  summarize(cnt = n_distinct(year)) %>%
+  filter(cnt == max(cnt))
+
+top_cnts <- tbl_df(count_dat) %>%
+  group_by(site, year) %>%
+  top_n(n = 3, wt = PG_count)
+top_cnts <- data.frame(top_cnts) %>%
+  group_by(year, site, week) %>%
+  summarize(PG_count = mean(PG_count)) %>%
+  filter(site %in% top_sites$site) %>%
+  #filter(year > 2016) %>%
+  transform(site = as.numeric(as.factor(site)), year = as.numeric(as.factor(year)))
+
+# count_wide <- count_dat %>%
+#   dcast(year + site ~ week, value.var = 'PG_count', fun.aggregate = mean)
+
+col_cnt <- top_cnts %>% 
+  dcast(year + site ~ week, value.var = 'PG_count')
+
+# #condensing counts to the left - and keep year and site
+cnt <- matrix(NA, nrow = dim(col_cnt)[1], ncol = (2+length(unique(top_cnts$week))))
+for (i in 1:dim(col_cnt)[1]) {
+  cnt[i,1] <- col_cnt[i,1]
+  cnt[i,2] <- col_cnt[i,2]
+  temp <- round(as.numeric(col_cnt[i, 2 + c(which(!is.na(col_cnt[i,3:dim(col_cnt)[2]])))]))
+  num <- length(temp)
+  cnt[i,3:dim(cnt)[2]] <- c(temp, rep(NA, length(unique(top_cnts$week))-num))
+}
+cnt <- data.frame(cnt)
+colnames(cnt) <- c('year', 'site', 1:5)
+
+#cnt_y <- cnt[,1:4]
+reps <- 4
+# site <- as.vector(col_cnt[,'site'])
+# year <- as.vector(col_cnt[,'year'])
+nyear <- length(unique(top_cnts$year))
+nsite <- max(col_cnt[,'site'])
+
+# site_yr <- top_cnts %>%
+#   group_by(year) %>%
+#   summarize(sites = n_distinct(site))
+
+y <- array(NA, dim = c(nsite, reps, nyear))	# site, rep, year
+     
+for(t in 1:nyear){
+   rows <- cnt$year == t
+   y[,,t] <- as.matrix(cnt)[rows, 3:(reps+2)]
+}
+  
+```
+
+```{r covariates}
+
+year_dat <- counts %>%
+  group_by(year, week) %>%
+  summarize(PG_count = sum(PG_count, na.rm = T), bv = sum(bv, na.rm = T), pv = sum(pv, na.rm = T),
+            v = mean(v, na.rm = T), temp = mean(temp, na.rm = T),
+            mins = mean(mins, na.rm = T), upwell = mean(upwell, na.rm = T))
+
+temp_yr <- year_dat %>%
+  select(year, week, temp) %>%
+  group_by(year) %>%
+  summarize(temp = mean(temp, na.rm = T))
+# temp_week <- year_dat %>%
+#   select(year, week, temp) %>%
+#   filter(week > 28 & week < 31) %>%
+#   #filter(week > 26 & week < 32) %>%
+#   dcast(year ~ week, value.var = 'temp')
+#temp[9:11,2:6] <- NA
+upwell_week <- year_dat %>%
+  select(year, week, upwell) %>%
+  filter(week > 26 & week < 32) %>%
+  dcast(year ~ week, value.var = 'upwell')
+upwell_yr <- year_dat %>%
+  select(year, week, upwell) %>%
+  group_by(year) %>%
+  summarize(up = mean(upwell))
+
+#tides, year and replicate-specific
+#copied from above bc didn't want to break anything
+count_dat_v <- counts %>%
+  select(year, site, week, PG_count, v) %>%
+  filter(week < 33 & week > 26) %>% distinct() %>%
+  group_by(year, site, week) %>% #not sure why there are multiple obs for tides but it's not tripping up counts
+  summarize(PG_count = mean(PG_count, na.rm = T), v = mean(v, na.rm = T))
+weeks <- length(unique(count_dat$week))
+
+top_cnts_v <- tbl_df(count_dat_v) %>%
+  group_by(site, year) %>%
+  top_n(n = 3, wt = PG_count)
+top_cnts_v <- data.frame(top_cnts_v) %>%
+  group_by(year, site, week, v) %>%
+  summarize(PG_count = mean(PG_count)) %>%
+  filter(site %in% top_sites$site) %>%
+  transform(site = as.numeric(as.factor(site)), year = as.numeric(as.factor(year)))
+
+col_v <- top_cnts_v %>% distinct() %>%
+  dcast(year + site ~ week, value.var = 'v')
+#col_v <- col_v[,1:(2+weeks)] 
+
+# #condensing counts to the left - and keep year and site
+v_dat <- matrix(NA, nrow = dim(col_v)[1], ncol = (2+weeks))
+for (i in 1:dim(col_v)[1]) {
+  v_dat[i,1] <- col_v[i,1]
+  v_dat[i,2] <- col_v[i,2]
+  temp <- as.numeric(col_v[i, 2 + c(which(!is.na(col_v[i,3:dim(col_v)[2]])))])
+  num <- length(temp)
+  v_dat[i,3:dim(v_dat)[2]] <- c(temp, rep(NA, (dim(v_dat)[2]-(num+2))))
+}
+v_dat <- data.frame(v_dat)
+colnames(v_dat) <- c('year', 'site', 1:weeks)
+
+tides <- array(NA, dim = c(nsite, reps, nyear))	# site, rep, year
+
+for(t in 1:nyear) {
+   rows <- v_dat$year == t
+   tides[,,t] <- as.matrix(v_dat)[rows, 3:(reps+2)]
+}
+tides[which(is.na(tides))] <- 0
+
+```
+
+
+```{r null model}
+nMix <- function () {
+  
+  #priors
+  p ~ dunif(0,1)
+  lambda ~ dunif(0,200)
+
+  
+    #likelihood
+  ##ecological process
+  for (t in 1:nyear) {
+    for (k in 1:nsite) {
+      N[k,t] ~ dpois(lambda)
+    
+      ###obs process
+    for (j in 1:reps) { #reps is number of week replicates in the sample
+      y[k,j,t] ~ dbin(p, N[k,t])
+      } #j
+       # N_est[k,t] <- sum(N[k,t])
+    } #k sites
+   N_est[t] <- sum(N[,t])
+  } #y years
+  
+} #mod
+
+write.model(nMix, "nMix.txt")
+model.file = paste(getwd(),"nMix.txt", sep="/")
+
+```
+
+```{r null time varying lambda}
+
+nMix <- function () {
+  
+  #priors
+    for (t in 1:nyear) {
+    lambda[t] ~ dunif(0,200)
+  }
+  
+  # for (k in 1:nsite) {
+  #   p[k] ~ dunif(0,1)
+  # }
+  p ~ dunif(0,1)
+  #lambda ~ dunif(0,200)
+
+  
+    #likelihood
+  ##ecological process
+  for (t in 1:nyear) {
+    for (k in 1:nsite) {
+      N[k,t] ~ dpois(lambda[t])
+    
+      ###obs process
+    for (j in 1:reps) { #reps is number of week replicates in the sample
+      y[k,j,t] ~ dbin(p, N[k,t])
+      } #j
+    } #k sites
+   N_est[t] <- sum(N[,t])
+  } #y years
+  
+} #mod
+
+write.model(nMix, "nMix.txt")
+model.file = paste(getwd(),"nMix.txt", sep="/")
+
+```
+
+```{r covs on lambda}
+
+nMix <- function () {
+  
+  #priors
+    for (t in 1:nyear) {
+      log(lambda[t]) <- lambda.mu + b.upwell*upwell[t] + b.temp*temp[t] #+ eps[t]
+      p[t] ~ dunif(0,1)
+    }
+  
+    lambda.mu ~ dunif(-10,10)
+    b.upwell ~ dunif(-10,10)
+    b.temp ~ dunif(-10,10)
+
+  # for (k in 1:nsite) {
+  #   p[k] ~ dunif(0,1)
+  # }
+  #p ~ dunif(0,1)
+
+    #likelihood
+  ##ecological process
+  for (t in 1:nyear) {
+    for (k in 1:nsite) {
+      N[k,t] ~ dpois(lambda[t])
+    
+      ###obs process
+    for (j in 1:reps) { #reps is number of week replicates in the sample
+      y[k,j,t] ~ dbin(p[t], N[k,t])
+      } #j
+    } #k sites
+   N_est[t] <- sum(N[,t])
+  } #y years
+  
+} #mod
+
+write.model(nMix, "nMix.txt")
+model.file = paste(getwd(),"nMix.txt", sep="/")
+
+```
+
+```{r covs on lambda p}
+
+#tide on detection, but really it should more importantly be on lambda
+nMix <- function () {
+  
+  #priors
+    for (t in 1:nyear) {
+      log(lambda[t]) <- lambda.mu + b.upwell*upwell[t] + b.temp*temp[t] #+ eps[t]
+      
+      for (k in 1:nsite) {
+        for (j in 1:reps) {
+          lp[k,j,t] <- p.mu + a.height*t.height[k,j,t] 
+          p[k,j,t] <- exp(lp[k,j,t])/(1+exp(lp[k,j,t]))
+        } #j
+      } #k
+    } #t
+  
+    lambda.mu ~ dunif(-10,10)
+    b.upwell ~ dunif(-10,10)
+    b.temp ~ dunif(-10,10)
+    p.mu ~ dunif(-10,10)
+    a.height ~ dunif(-10,10)
+
+  # for (k in 1:nsite) {
+  #   p[k] ~ dunif(0,1)
+  # }
+  #p ~ dunif(0,1)
+
+    #likelihood
+  ##ecological process
+  for (t in 1:nyear) {
+    for (k in 1:nsite) {
+      N[k,t] ~ dpois(lambda[t])
+    
+      ###obs process
+    for (j in 1:reps) { #reps is number of week replicates in the sample
+      y[k,j,t] ~ dbin(p[k,j,t], N[k,t])
+      } #j
+    } #k sites
+   N_est[t] <- sum(N[,t])
+  } #y years
+  
+} #mod
+
+write.model(nMix, "nMix.txt")
+model.file = paste(getwd(),"nMix.txt", sep="/")
+
+```
+
+```{r nMix run}
+
+# Bundle data
+
+jags.data <- list(y = y, 
+                  nyear = nyear, nsite = nsite,
+                  temp = as.matrix(temp_yr[,2]), 
+                  # upwell_j = as.matrix(upwell_j[,2:6]), 
+                  upwell = as.matrix(upwell_yr[,2]),
+                  t.height = tides,
+                  reps = ncol(y))
+
+Nst <- apply(y, c(1,3), max, na.rm = T) + 1
+inits <- function(){list(N = Nst)}  
+
+# Parameters monitored
+parameters <- c('p.mu', 'p.mean', 'b0', 
+                #'p', 
+                'a0', 
+                'r', 'm',
+                'b.temp',
+                'b.upwell', 'a.height', 'b.height',
+                'b.up.p',
+                'lamnda.mu',
+                #'lambda', 
+                'N_est')
+     
+# MCMC settings
+ni <- 5000; nt <- 1; nb <- 1000; nc <- 3
+     
+(out_sim <- jags(jags.data, inits, parameters, model.file = model.file,
+              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T))
+
+#jagsUI::traceplot(out_n)
+
+```
+
+
+```{r mini sim}
+
+R <- 11
+reps <- 5
+
+y <- array(dim = c(R, reps))
+
+N <- rpois(R, lambda = 20)
+
+for (j in 1:reps) {
+  y[,j] <- rbinom(n = R, size = N, 0.8)
+}
+
+# Bundle data
+y <- y
+jags.data <- list(y = y, 
+                  R = nrow(y), reps = ncol(y))
+
+Nst <- apply(y, 1, max, na.rm = T) + 1
+inits <- function(){list(N = Nst)}  
+
+# Parameters monitored
+parameters <- c('p.mu', 'p.mean', 'b0', 
+                'p', 
+                'a0', 
+                'r', 'm',
+                'N_est', 
+                'b.upwell', 'b.height', 'b.up.p', 'lambda')
+     
+# MCMC settings
+ni <- 25000; nt <- 1; nb <- 5000; nc <- 3
+     
+(out_sim <- jags(jags.data, inits, parameters, model.file = model.file,
+              n.chains = nc, n.thin = nt, n.iter = ni, n.burnin = nb, parallel = T))
+
+Nst*0.79
+
+
+```
+
+
+
+
+```{r old}
+##########island level
+
+# 
+# yr_cnt <- count_yr %>%
+#   select(year, week, PG_count) %>%
+#   filter(week > 27 & week < 30) %>%
+#   dcast(year ~ week, value.var = 'PG_count', fun.aggregate = mean)
+
+#test mean/var
+# test <- yr_cnt %>%
+#   group_by(year) %>%
+#   summarize(mean = mean(c(`28`, `29`)), 
+#             var = var(c(`28`, `29`)))
+#   summarize(mean = mean(c(`28`, `29`, `30`, `31`)), 
+#             var = var(c(`28`, `29`, `30`, `31`)))
+
+# ggplot(yr_cnt %>% melt(id.vars = 'year'), aes(variable, value, group = year)) +
+#   geom_line() + geom_point() +
+#   facet_wrap(~year)
+# 
+# summary(lm(value ~ variable + year, 
+#            yr_cnt %>% melt(id.vars = 'year') %>% transform(variable = as.numeric(variable))))
+
+
+```
+

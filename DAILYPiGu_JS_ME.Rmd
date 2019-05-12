@@ -7,7 +7,6 @@
 
 library(rstudioapi)
 library(rjags)
-#library(R2jags) #seems to fight with jagsUI
 library(jagsUI)
 library(R2OpenBUGS)
 library(dplyr)
@@ -372,7 +371,7 @@ out_pigu_t <- jags(jags.data, inits, parameters, model.file = model.file,
 
 ```{r}
 
-out <- readRDS('out.rds') #
+out <- readRDS('out12_sim.rds') #
 # out <- readRDS('up20.rds')
 out_best <- readRDS('out_all_up10.rds') #best
 out <- readRDS('out_up_all2.rds')
@@ -531,6 +530,44 @@ ch_long <- burrow %>%
    scale_color_manual(values = c("#e45f56", "#363e7e")) +
    plot_theme(legend.position = 'top',
               legend.title = element_blank())
+
+#pasted from other script, now called PiGu_CJSME_whatsthis.Rmd in Archive folder
+#  data_ME_day_wide <- data_ME_day %>% 
+#   distinct(region, year, site, burrow_name, study_day, capt_hist) %>% 
+#   dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist', fill = 3, fun.aggregate = mean)
+# 
+# CH_PG_day <- as.matrix(data_ME_day_wide %>% select(-c(region, year, site, burrow_name)), rownames.force = F)
+# colnames(CH_PG_day) <- NULL
+# CH_PG_day <- round(CH_PG_day, 0)
+
+by_site <- ggplot(minsmax %>% 
+                   filter(grepl("pv", variable) & value != 'NA' & region == 'Whidbey'), 
+                 aes(site, value, group = site, color = site)) +
+  geom_boxplot() + 
+  facet_wrap(~variable) +
+  xlab("") + ylab("Study Day") +
+  fig_theme(legend.position = 'none')
+
+by_reg <- ggplot(minsmax %>% 
+                   filter(value != 'NA'), 
+                 aes(region, value, group = region, color = variable)) +
+  geom_boxplot() + 
+  facet_wrap(~variable) +
+  xlab("") + ylab("Study Day") +
+  fig_theme(legend.position = 'none') +
+  scale_color_manual(values = c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c"))
+
+density <- ggplot(data = data_ME_day, aes(study_day)) +
+  geom_line(data = data_ME_day %>% filter(capt_hist == 1), aes(study_day, col = 'BV'), 
+            stat = 'density') + 
+  geom_line(data = data_ME_day %>% filter(capt_hist == 2), aes(study_day, col = 'PV'), 
+            stat = 'density') + 
+  geom_vline(aes(xintercept = 40), linetype = 'dotted', col = 'darkgrey') +
+  geom_vline(aes(xintercept = 20), linetype = 'dotted', col = 'darkgrey') +
+  scale_y_continuous(limit = c(0, 0.025)) +
+  ylab("Relative Frequency Density") + xlab("") + facet_wrap(~region) +
+  scale_color_manual(values = c("#e45f56", "#363e7e")) +
+  fig_theme()
 
 
 ```

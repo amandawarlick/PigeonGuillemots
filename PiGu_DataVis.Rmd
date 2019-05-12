@@ -63,7 +63,7 @@ color3 <- c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c")
 
 ```{r data, results = 'hide', message = FALSE}
 
-setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
+setwd("~/Documents/SAFS/PigeonGuillemots/PiGuData")
 
 #mannually added raw website output for 2015-2017 to earlier years that were compiled from annual report spreadsheets
 
@@ -318,7 +318,7 @@ ggplot(sst, aes(y = temp, x = day, group = factor(month), col = factor(month))) 
 #average daily value; #monthly anomalies relative to mean monthly value from 1948-1967 
 
 #uwpelling and temp at the monthly level; up through 2018
-setwd("~/Documents/SAFS/PigeonGuillemots/WhidbeyData")
+setwd("~/Documents/SAFS/PigeonGuillemots/PiGuData/EnvData")
 
 upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
   transform(year = year(as.Date(date, format = '%m/%d/%y'))) %>%
@@ -355,8 +355,12 @@ covs_cnt <- covs %>%
   select(year, week, site, yday, PG_count, v, type, from_hilo, temp, mo) %>%
   rename(from_hilo_orig = from_hilo) %>%
   transform(v = round(v, 1), temp = round(temp, 2)) %>%
-  #filter(site == 'Ledgewood' & year == 2014) %>%
-  filter(type == 'H' | is.na(type))
+  group_by(year, week, site, type, mo) %>% #getting rid of duplicates from multiple visits per week
+  summarize(PG_count = mean(PG_count), v = mean(v), yday = mean(yday),
+            from_hilo_orig = mean(from_hilo_orig), temp = mean(temp)) %>%
+  filter(type == 'H' | is.na(type)) 
+
+#test <- covs_cnt %>% filter(site == 'Lagoon North #2' & year == 2010)
 
 #filtered for only high tide in *_setup file
 covs_burrow <- read.csv('PG_covs.csv', header = T, stringsAsFactors = F) %>%
@@ -440,7 +444,8 @@ ggplot(isl_sum_trim, aes(week, cnt, group = year, color = year)) +
   facet_wrap(~year) +
   plot_theme(legend.position = 'none')
 
-count_dat <- col_trim
+#count_dat <- col_trim
+count_dat <- covs_col  #using this at the moment since I'm getting top 3 counts anyways rather than trimmed
 
 #count
 summary(lm(PG_count ~ week + year, count_dat)) #declining a little with week, but non-sig

@@ -29,12 +29,13 @@ setwd(dirname(path))
 ```{r set up}
 
 #load data from PigeonGuillemot_whidbey.Rmd
+
+filter <- c('Mutiny Sands', 'Double Bluff North', 'Cliffside', 'Harrington North', 'Lagoon South', 'Shore Meadows', 'Mutiny Sands', 'Malmo Bluff')
 #contains single row where burrow_name == NA when no activity was detected, but survey started
 data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
   filter(region == 'Whidbey') %>%
   dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
-  #filter(site %in% c('Mutiny Sands', 'Double Bluff North')) %>%
-  filter(site %in% c('Mutiny Sands', 'Cliffside')) %>%
+  filter(site %in% filter) %>%
   #filter(year > 2016) %>%
   distinct()  #2 duplicates, all lagoon south 2017
 

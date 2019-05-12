@@ -1,28 +1,8 @@
-
-# Following example code from Kery & Schaub, implementing Conn & Cooch 2009
-
-```{r}
-
-library(rjags)
-#library(R2jags) #seems to fight with jagsUI
-library(jagsUI)
-library(R2OpenBUGS)
-library(dplyr)
-library(tidyr)
-library(reshape2)
-
-setwd("~/Documents/SAFS/PigeonGuillemots")
-
-
-```
-
-
-```{r}
+## Environmental data sources
 
 
 
-```
-
+## Misc Project Notes
 9/3/18
 
 In thinking about the multiple counts from South Sound for 2015-2017 and for all sites 2018 and onward, Sarah and I discussed how to apply the variation for what we have to the sites and years where we only have a single count. So, what we learn about the *distribution* of p[i,t,j] we can apply across all [i,t]. 
@@ -39,3 +19,21 @@ We don't *expect* j to vary, but it does due to seasonal patterns, presence of n
 N-mixture models are identifiable due to relationship of variance to mean, despite critiques, it is what we have.
 
 Instead of N-mix models, people commonly use n[i,t,j] ~ rnorm(N[i], deviance), which states that you're equally likely to under-count as you are to over-count, which for some reason I didn't get is not right. 
+
+\begin{equation}
+\begin{bmatrix}
+1-\gamma_t\\ (\gamma_t)(1-\alpha_t)\\ \gamma_t*\alpha_t\\ 0\\
+0\\ (1-\psiAB_t)\phiA_t\\ 1-\phiA_t\psiAB_t\\ 1-\phiA_t\\
+0\\ 0\\ \phiB_t\\ 1-\phiB_t\\
+0\\ 0\\ 0\\ 1
+\end{bmatrix}
+\end{equation}
+
+\begin{equation}
+\begin{bmatrix}
+1-\gamma_t&\gamma_t)(1-\alpha_t)&\gamma_t*\alpha_t&0\\
+0&(1-\psiAB_t)\phiA_t&1-\phiA_t\psiAB_t&1-\phiA_t\\
+0&0&\phiB_t&1-\phiB_t\\
+0&0&0&1
+\end{bmatrix}
+\end{equation}
