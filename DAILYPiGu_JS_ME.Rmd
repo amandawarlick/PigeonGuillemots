@@ -1,7 +1,7 @@
 
 
 ```{r}
-
+   
 #install.packages('rstudioapi')
 # install.packages(c('rjags', 'jagsUI', 'R2OpenBUGS', 'dplyr', 'tidyr', 'reshape2', 'data.table', 'ggplot2', 'scales', 'knitr', 'stringr', 'lubridate', 'stats', 'zoo'))
 
