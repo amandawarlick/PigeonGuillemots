@@ -1,0 +1,56 @@
+---
+title: "Untitled"
+author: "Amanda Warlick"
+date: "2/5/2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+General population dynamics  
+$N_{t+1} = N_t + N_tr$
+
+$N_{t+1} = Adults_t*Survival + Chicks$
+
+N-mixture model  
+$N_{i,t} \sim Poisson(\lambda_{i,t})$  
+$log(\lambda_{i,t}) = \alpha_0+\alpha_{year}*year_{i,t}+\alpha_{tide}*tide_{i,t} + \gamma_{site} + \gamma_{year} + \epsilon$  
+$\gamma_{year} \sim Normal(0, \sigma_{year})$  
+
+$\gamma_{site} \sim Normal(0, \sigma_{site})$  
+$\epsilon \sim Normal(0, \sigma)$
+
+
+
+$y_{i,t,j}|N_{i,t} \sim Binomial(N_{i,t}, p)$  
+$logit(p) = \beta_0 + \epsilon$  
+
+$\epsilon \sim Normal(0, \sigma)$
+
+
+
+mark-recapture  
+$\phi_{i,a}~ \sim ~\mu_a$  
+$\phi_{i,t,a}~ \sim ~\mu_{t,a}$  
+$\phi_{i,t,a}~ \sim ~\mu_{a} + \epsilon_t$ 
+
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1[region_i]+ \epsilon_t$
+
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1[cohort_i]+ \epsilon_t$
+
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i+ \epsilon_t$   
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i + \epsilon_t$   
+
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aNOI_t$  
+
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aNOI_t + \beta3_aBMI_i+\epsilon_t$  
+
+<!-- using -->
+$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i+\epsilon_t$   
+
+$\psi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aBMI_i$   
+
+
+SRKW equations

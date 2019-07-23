@@ -1,0 +1,22 @@
+model
+{
+    p.mu.prob ~ dunif(0.00000E+00, 1)
+    lambda ~ dunif(0.00000E+00, 200)
+    for (t in 1:nyear) {
+        for (k in 1:nsite) {
+            N[k, t] ~ dpois(lambda)
+            for (j in 1:reps) {
+                y[k, j, t] ~ dbin(p.mu.prob, N[k, t])
+                eval[k, j, t] <- p.mu.prob * N[k, t]
+                E[k, j, t] <- pow((y[k, j, t] - eval[k, j, t]), 
+                  2)/(eval[k, j, t] + 0.5)
+                y.new[k, j, t] ~ dbin(p.mu.prob, N[k, t])
+                E.new[k, j, t] <- pow((y.new[k, j, t] - eval[k, 
+                  j, t]), 2)/(eval[k, j, t] + 0.5)
+            }
+        }
+        N_est[t] <- sum(N[, t])
+    }
+    fit <- sum(E[, , ])
+    fit.new <- sum(E.new[, , ])
+}

@@ -1,8 +1,46 @@
+
+## Immiediate to-dos, 6/20/19
+- Talk with Sarah + Nathan about overall population model; figure out what we'll actually use counts for
+- Time-varying egg/chick survival from literature?
+- For nest survival simulation, add fixed effects of year; still unsure what helps phi values avoid boundary issues (EDIT: I think it's the starting values. Everything works great when I either narrow the prior on p to dunif(0.1,1) or narrow the starting values). I also used the example Nathan sent me to try and put phi back on the probability scale and it seems to be more table and well-mixed, but not a guarentee that it won't get stuck at 1.00 phiEgg with very low pEgg.
+- For the N-mix model, I made a lot of progress, but stopped in the midst of some interesting explorations of adding random effects for year, site, and detection (??). For the latter, I'm not sure I understand this, but following K&S example on page 404, dramatically improved model fit. I feel like I don't have enough repeated counts to really do this. It looked like a few years had really low detections, and abundance was therefore blowing up. I ran out of steam when I was starting to think about model selection and creating WAIC values. 
+
+## File descriptions
+
+Tides.R: script for querying and cleaning temperature and tide data from multiple tidal buoys and two temperature buoys (Port Townsend and Seattle). Queries are separated to avoid exceeding the query limit. Not using (but compiling) data for South Sound. The best way to test whether all of the years/months were successfully queried is using the figures in PiGu_DataProc_early (contains all years).
+
+#Data prep and visualization
+PiGu_DataProc_early.Rmd: data cleaning for main dataframes of count_data and burrow_data for all years, including all data visualizations.
+
+PiGu_DataProc_2018.Rmd: Special treatment/cleaning for data with multiple counts, years 2018 forward, just for the count data modeling. It would be best to combine with _early.Rmd, but don't have time to check that I'm not overwriting anything at the moment.
+
+## Modeling counts
+PiGu_Nmix.Rmd: N-mixture model for PiGu counts using the pg0, pg30, pg60 as repeated counts for years 2018 and onward.
+
+PiGu_Nmix_weekreps.Rmd: First attempt at N-mixture model for PiGu counts using top three weeks as the multiple counts, assuming the population is closed within that time period. Not ideal because you can't put environmental covariates on detection, since those aren't constant across weeks.
+
+## Modeling nest survival
+DAILYPiGu_JS_ME_setup.Rmd: generation of capture history data for JS model. A bit of a beast.
+
+DailyPiGu_JS_ME.Rmd: JS model.
+
+PiGu_JS_Sim.Rmd: data simulation and running of JS model.
+
+PiGu_JS_Sim_old.Rmd: First attempt at data simulation that uses the structure from cleaning actual data - can/should be deleted.
+
+
+## Running and generating
+
+To generate/update count/covariate data for the Nmixture model:
+- Run both PiGu_DataProc_2018 and PiGu_DataProc_early
+++ They are separate so that I could leave the same architecture but treat the covariate merging and casting of the multiple counts differently in 2018+
+++ The main dfs from this are count_dat and count_dat18, both of which are loaded up in the beginning of PiGu_Nmix_18reps
+
 ## Environmental data sources
 
 
 
-## Misc Project Notes
+## Misc Project Notes, see boostnote for more recent meetings and notes
 9/3/18
 
 In thinking about the multiple counts from South Sound for 2015-2017 and for all sites 2018 and onward, Sarah and I discussed how to apply the variation for what we have to the sites and years where we only have a single count. So, what we learn about the *distribution* of p[i,t,j] we can apply across all [i,t]. 

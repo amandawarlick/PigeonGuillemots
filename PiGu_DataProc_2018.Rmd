@@ -1,0 +1,334 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warning = F, error = F, messages = F, results = 'asis', fig.width = 11, fig.height = 8)
+```
+
+```{r, results = 'hide'}
+
+library(tidyr)
+#library(ggmap)
+library(data.table)
+library(ggfortify)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(ggmap)
+library(maps)
+library(mapdata)
+library(scales)
+#library(captioner)
+library(knitr)
+library(reshape2)
+library(stringr)
+library(magrittr) 
+library(IDPmisc)
+#library(ggTimeSeries)
+library(stats) 
+library(zoo)
+library(sciplot) #se()
+library(gvlma) #universal assumptions test gvlma(mod)
+library(chron) #times()
+
+plot_theme <- function(...) {
+  theme(
+    #text = element_text(size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 10), 
+    axis.text = element_text(vjust = 0.5, color = "black", size = 10), 
+    axis.title = element_text(size = 11),
+    axis.line.y = element_line(colour = "black"), 
+    axis.line.x = element_line(colour = "black"), 
+    plot.background = element_rect(), 
+    panel.background = element_rect(fill = 'white'),
+    panel.border = element_rect(fill = NA),
+    panel.grid = element_blank(), 
+    legend.key = element_blank(),
+    strip.background = element_blank(), 
+    strip.text = element_text(size = 10),
+    legend.text = element_text(size = 9),
+    ...)
+}
+
+fig_theme <- plot_theme
+
+color3 <- c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c")
+
+```
+
+
+```{r data, results = 'hide', message = FALSE}
+
+setwd("~/Documents/SAFS/PigeonGuillemots/PiGuData")
+
+#mannually added raw website output for 2015-2017 to earlier years that were compiled from annual report spreadsheets
+
+data_count <- read.csv("PGdata_pre_proc_allyrs.csv", stringsAsFactors = F) %>%
+  transform(date = as.Date(date, format = "%m/%d/%y")) %>%
+  transform(year = as.numeric(format(date, "%Y"))) %>%
+  #mutate(PG_count = as.numeric(PG_count)) %>%
+  # transform(week = strftime(date, format = "%V")) %>%
+  # #transform(week = as.numeric(week)) %>%
+  # transform(week = as.numeric(as.character(week))) %>%
+  transform(week = week(date)) %>%
+  transform(yday = yday(date)) %>%
+  filter(site != 'All South Sound') %>%
+  #mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
+  mutate(site = gsub(" -- INTERN", "", site)) %>%
+  mutate(site = gsub("- INTERN", "", site)) %>%
+  mutate(site = gsub(" @E", " E", site)) %>%
+  mutate(site = gsub("@", " ", site)) %>%
+  mutate(site = gsub("- ", " ", site)) %>%
+  mutate(site = gsub("'", "", site)) %>%
+  filter(intern_data != 'on') %>%
+  distinct() %>%
+  filter(region == 'Whidbey')
+data_count[is.na(data_count)] <- 0
+
+#contains all multiple counts (2018 onward)
+data_count_mult <- data_count %>%
+  filter(count_type != 'pg')
+data_count <- data_count_mult
+
+write.csv(data_count_mult, 'data_2018_proc.csv', row.names = F)
+
+#cleaning website output for burrow-level data 2015-2017 so that it matches earlier years
+burrow_2015_18 <- read.csv("burrow_data_2015_2018.csv", stringsAsFactors = F) %>%
+  distinct() %>%
+  mutate(burrow_name = gsub("b.", "", burrow_name)) %>%
+  filter(site != 'All South Sound') %>%
+  #mutate(intern_data = ifelse(intern_data == "on", "Y", intern_data)) %>%
+  mutate(site = gsub(" -- INTERN", "", site)) %>%
+  mutate(site = gsub("- INTERN", "", site)) %>%
+  mutate(site = gsub(" @E", " E", site)) %>%
+  mutate(site = gsub("@", " ", site)) %>%
+  mutate(site = gsub("- ", " ", site)) %>%
+  mutate(site = gsub("'", "", site)) %>%
+  mutate(visit_type = ifelse(visit_type == 'gunnels', 'Gunnel', 
+                             ifelse(visit_type == 'sculpin', 'Sculpin',
+                                    ifelse(visit_type == 'noprey', 'burrow_visit', 'Other')))) %>%
+  dcast(region + site + date + burrow_name + intern_data ~ visit_type, value.var = 'visits', 
+        fun.aggregate = mean, fill = 0) %>%
+  select(region, site, date, burrow_name, Gunnel, Sculpin, Other, burrow_visit, intern_data) %>%
+  transform(burrow_name = gsub(' ', '', burrow_name)) %>%
+  filter(region == 'Whidbey') 
+
+burrow_allyrs <- read.csv("burrow_pre_proc.csv", stringsAsFactors = F) %>%
+  distinct() %>%
+  mutate(Gunnel = coalesce(as.numeric(Gunnel), 0)) %>% #forcing NAs to 0, other ways weren't working
+  mutate(Sculpin = coalesce(as.numeric(Sculpin), 0)) %>%
+  mutate(Other = coalesce(as.numeric(Other), 0)) %>%
+  mutate(burrow_visit = coalesce(as.numeric(burrow_visit), 0)) %>%
+  bind_rows(burrow_2015_18) %>%
+  transform(burrow_name = gsub(' ', '', burrow_name)) %>%
+  filter(region == 'Whidbey')
+  
+#this df contains dates where no burrows were visited (but surveys were done) but does NOT contain
+#dates for certain burrows that were not visited when others were
+data_burrow <- burrow_allyrs %>%
+  filter(intern_data != 'on') %>%
+  filter(intern_data != 'Y') %>%
+  transform(date = as.Date(date, format = "%m/%d/%y")) %>%
+  transform(year = format(date, "%Y")) %>%
+  mutate(burrow_name = gsub("-","", burrow_name)) %>%
+  transform(week = week(date)) %>% 
+  transform(yday = yday(date)) %>%
+  transform(tot_prey = Gunnel + Sculpin + Other) %>%
+  select(region, site, year, date, yday, week, burrow_name, burrow_visit, burrow_visit,
+         Gunnel, Sculpin, Other, tot_prey) 
+
+weekLims <- data_burrow %>%
+  group_by(region, year, site) %>%
+  summarize(minWeek = min(week), maxWeek = max(week))
+
+#dates for empty burrow visits (non-visits not recorded in burrow-level data, so use dates of count data and merge in)
+#BUT BE CAREFUL! sometimes more than one survey was done in a week, which messes up burrow data
+count_dates <- data_count %>%
+  filter(intern_data != 'on') %>%
+  distinct(region, site, date, year, week, yday, start_time, count_type) %>% 
+  filter(region == 'Whidbey') %>%
+  merge(weekLims, by = c('region', 'year', 'site')) %>%
+  filter(week < minWeek | week > maxWeek) %>%
+  dplyr::select(-c(minWeek, maxWeek))
+
+data_burrow <- data_burrow %>%
+  merge(count_dates, by = c('region', 'site', 'year', 'date', 'week', 'yday'), all = T)  %>%
+  filter(region == 'Whidbey') %>% 
+  distinct()
+
+ setwd("~/Documents/SAFS/PigeonGuillemots")
+# write.csv(prey_weeks, "prey_weeks.csv", row.names = F)
+# write.csv(data_burrow, "data_burrow.csv", row.names = F)
+# write.csv(data_count, "data_count.csv", row.names = F)
+
+```
+
+
+```{r}
+# bringing in tide data
+
+#also in ME_SETUP for CH covariates, but keep this for counts and time to hilo and visualizing data
+tides <- read.csv("tides_all.csv", stringsAsFactors = F, header = T) %>%
+  transform(date = as.Date(date)) %>%
+  transform(month = month(date)) %>%
+  transform(time = as.POSIXct(time)) %>%
+  filter(region != 'SS')
+
+PG_count_tides <- data_count %>%
+  filter(intern_data != 'on' & PG_count != '') %>%
+  select(region, site, date, PG_count, start_time, yday, year, week, count_type) %>%
+  merge(tides, by = c('site', 'date', 'region'), all.x = T) %>%
+  transform(start_time = ifelse(start_time == "0:00" | start_time == "", "8:00", start_time)) %>%
+  transform(survey = as.POSIXlt(paste0(paste(date, start_time, sep = " "), ":00"))) %>%
+  transform(from_low = ifelse(type == "L", as.numeric(time-survey, units = "mins"), NA),
+            from_high = ifelse(type == "H", as.numeric(time-survey, units = "mins"), NA)) %>%
+  transform(from_hilo = as.numeric(coalesce(from_low, from_high))) %>%
+  select(-c(t, month, from_low, from_high)) %>%
+  transform(time_stamp = times(format(time, format = "%H:%M:%S"))) %>%
+  transform(rank = ifelse(is.na(station), 2, #for 2018 rows without tidal info
+                          ifelse(time_stamp <= "2:30:00" | time_stamp >= "21:00:00", 1,
+                          ifelse(time_stamp > "3:00:00" & time_stamp <= "9:00:00", 2,
+                                 ifelse(time_stamp > "17:00:00", 4, 3))))) %>%
+  filter(rank == 2 | rank == 3) %>%
+  filter(region == 'Whidbey')
+
+PG_count_tides_trim <- PG_count_tides %>%
+  transform(month = month(date)) %>%
+  filter(month > 6 & month < 9) %>%
+  filter(region == 'Whidbey')
+
+# mod <- lm(PG_count ~ abs(from_hilo) + site, data = PG_count_tides_trim %>% filter(type == 'L'))
+# summary(mod)
+
+#from low tide; loess
+from_low <- ggplot(PG_count_tides_trim %>% filter(type == 'L'), aes(x = from_hilo, y = PG_count)) +
+  #geom_point() + 
+  geom_smooth(se = T) +
+  xlab("Minutes from Low Tide" ) + ylab("PG Count") + 
+  plot_theme()
+
+############
+
+fig_theme <- plot_theme
+#for frances
+from_high <- ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo, y = PG_count)) +
+  #geom_point() +
+  geom_smooth(se = T) +
+  xlab("Minutes from High Tide" ) + ylab("Jul-Aug Guillemot Counts per Colony") +
+  fig_theme()
+
+ggplot(PG_count_tides_trim %>% filter(type == 'H'), aes(x = from_hilo)) + geom_histogram()
+#from low and high tide; loess
+
+ggplot(PG_count_tides_trim, aes(x = from_hilo, y = PG_count, col = type, group = type)) +
+  #geom_point() +
+  geom_smooth(se = T) +
+  xlab("Minutes from Low or High Tide" ) + ylab("PG Count") +
+  fig_theme()
+
+#gam method; abs value
+ggplot(PG_count_tides_trim, aes(x = abs(from_hilo), y = PG_count, col = type, group = type)) +
+  #geom_point() +
+  geom_smooth(se = F) +
+  xlab("Minutes from Low or High Tide") + ylab("PG Count") +
+  fig_theme()
+
+
+################
+
+
+```
+
+```{r}
+#temp data
+
+#only up through 2015?
+sst_dat <- read.csv('sst_day.csv', header = T, stringsAsFactors = F) %>%
+  #transform(year = factor(year)) %>%
+  filter(station == 9444900)
+
+ggplot(sst_dat, aes(y = temp, x = yday, group = yday)) +
+  geom_boxplot() + xlab('Day of Year') + ylab('Mean Daily SST') +
+  facet_grid(~station) + theme_bw()
+
+ggplot(sst_dat, aes(y = temp, x = yday, group = factor(year), col = factor(year))) +
+  geom_line() + ylab('Mean Daily SST') + xlab('Day of Year') +
+  scale_color_brewer(palette = 'Set3', name = '') + facet_grid(~station) +
+  theme_bw()
+
+ggplot(sst_dat, aes(y = temp, x = day, group = factor(month), col = factor(month))) +
+  geom_line() + xlab('Day') + ylab('Mean Daily SST') +
+  facet_wrap(~year+station) + scale_color_brewer(palette = 'Set1') + 
+  theme_bw()
+
+##maybe this is older?
+#read in upwelling and SST data; https://www.pfeg.noaa.gov/products/PFEL/modeled/indices/upwelling/NA/data_download.html
+#surface pressure, cubic meters per second per 100m coastline
+#average daily value; #monthly anomalies relative to mean monthly value from 1948-1967 
+
+#uwpelling and temp at the monthly level; up through 2018
+setwd("~/Documents/SAFS/PigeonGuillemots/PiGuData/EnvData")
+
+upwell_day <- read.csv("Upwell_day.csv", header = T, stringsAsFactors = F) %>%
+  transform(year = year(as.Date(date, format = '%m/%d/%y'))) %>%
+  filter(year > 2007)
+#monthly upwelling anomalies
+upwell_anom <- read.csv("Upwell_anom.csv", header = T, stringsAsFactors = F) %>%
+  filter(year > 2007) %>%
+  filter(lat == '48N') %>%
+  melt(id.vars = c('lat', 'long', 'year'), variable.name = 'month', value.name = 'up_anom') %>%
+  transform(mo = as.numeric(as.factor(as.numeric(month)))) %>%
+  filter(month %in% c('Jun', 'Jul', 'Aug', 'Sep', 'Oct')) %>%
+  select(-c(month, lat, long))
+#monthly
+# SST_44 <- read.csv("SST_44N.csv", header = T, stringsAsFactors = F) %>%
+#   transform(date = as.Date(date), year = year(date)) %>%
+#   filter(year > 2007)
+
+covs <- PG_count_tides %>%
+  merge(sst_dat %>% select(-c(day, month, station)), by = c('year', 'yday'), all.x = T, all.y = F) %>%
+  transform(mo = month(date)) #%>% filter(site == 'Ledgewood' & year == 2014)#%>%
+  #merge(upwell_anom, by = c('mo', 'year'), all.y = F)
+
+setwd("~/Documents/SAFS/PigeonGuillemots")
+
+```
+
+```{r}
+
+#all covariates
+#PG_covs from mod_setup file
+
+covs_cnt <- covs %>%
+  #transform(week = week(date)) %>%
+  select(year, week, site, yday, PG_count, v, type, from_hilo, temp, mo, count_type) %>%
+  rename(from_hilo_orig = from_hilo) %>%
+  transform(v = round(v, 1), temp = round(temp, 2)) %>%
+  group_by(year, week, site, type, mo, count_type) %>% #getting rid of duplicates from multiple visits per week
+  summarize(PG_count = mean(PG_count), v = mean(v), yday = mean(yday),
+            from_hilo_orig = mean(from_hilo_orig), temp = mean(temp)) %>%
+  filter(type == 'H' | is.na(type)) 
+
+#test <- covs_cnt %>% filter(site == 'Lagoon North #2' & year == 2010)
+
+#filtered for only high tide in PiGu_JS_setup file
+covs_burrow <- read.csv('PG_covs.csv', header = T, stringsAsFactors = F) %>%
+  group_by(year, site, yday, from_hilo, v, temp) %>%
+  summarize(bv = sum(burrow_visit), pv = sum(tot_prey)) %>%
+  #filter(site == 'Ledgewood' & year == 2014) %>%
+  transform(v = round(v, 1), temp = round(temp, 2)) 
+
+covs_col <- covs_cnt %>%
+  merge(covs_burrow, by = c('year', 'site', 'yday', 'v', 'temp'), all.x = T) %>%
+  merge(upwell_anom, by = c('year', 'mo')) %>%
+  select(site, year, week, mo, yday, PG_count, bv, pv, type, v, from_hilo_orig, temp, up_anom, count_type) %>%
+  transform(v = as.numeric(round(scale(v),2)), mins = round(scale(from_hilo_orig),2) , 
+            temp = as.numeric(round(scale(temp),2)), upwell = round(scale(up_anom),2)) %>%
+  select(-c(from_hilo_orig, up_anom))
+covs_col[is.na(covs_col)] <- 0
+
+count_dat <- covs_col  
+
+write.csv(count_dat, 'count_dat_18.csv', row.names = F)
+
+```
+
+##deleted all further data exploration since it is in it's original form in PiGu_DataProc_early.Rmd

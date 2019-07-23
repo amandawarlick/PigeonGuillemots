@@ -1,0 +1,254 @@
+---
+title: ""
+output: word_document
+bibliography: ZoteroRefs.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, warnings = F, messages = F)
+
+library(tidyr)
+#library(ggmap)
+library(data.table)
+library(rgdal)
+library(broom)
+library(ggfortify)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(ggmap)
+library(maps)
+library(mapdata)
+library(scales)
+#library(captioner)
+library(knitr)
+library(reshape2)
+library(stringr)
+library(magrittr) 
+#library(ggTimeSeries)
+library(stats) 
+library(zoo)
+library(sciplot) #se()
+library(gvlma) #universal assumptions test gvlma(mod)
+library(chron) #times()
+
+plot_theme <- function(...) {
+  theme(
+    #text = element_text(size = 11),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 10), 
+    axis.text = element_text(vjust = 0.5, color = "black", size = 10), 
+    axis.title = element_text(size = 11),
+    axis.line.y = element_line(colour = "black"), 
+    axis.line.x = element_line(colour = "black"), 
+    plot.background = element_rect(), 
+    panel.background = element_rect(fill = 'white'),
+    panel.border = element_rect(fill = NA),
+    panel.grid = element_blank(), 
+    legend.key = element_blank(),
+    strip.background = element_blank(), 
+    strip.text = element_text(size = 10),
+    legend.text = element_text(size = 9),
+    ...)
+}
+
+color3 <- c("#3b98ee", "#a3d39c", "#e45f56", "#f6b61c")
+
+```
+
+
+```{r map}
+
+wa_state <- map_data("state", region = c("washington")) 
+islcounty_outline <- map_data("county", region = c("washington"), subregion = 'island') %>%
+  filter(subregion == 'island')
+
+col_locs <- data.frame(Colony = c('Deception Pass', 'Cliffside', 'Swantown', 'Hastie Lake', 'Fort Casey', 'Keystone', 'Ledgewood', 'Hancock', 'Lagoon N.', 'Lagoon S.', 'Malmo Bluff', 'Shore Meadows', 'Mutiny Sands', 'Limpet Lane', 'Double Bluff', 'Possession Point', 'Langley', 'Pratts Bluff', 'Harrington', 'Coupeville',
+                                  'Rolling Hills', 'Monroe Landing', 'Maylor Point', 'Forbes Point',
+                                  'Crescent Harbor', 'Mariners Cove'), 
+                       lat = c(48.401, 48.368, 48.299, 48.264, 48.1719, 48.163, 48.1416, 48.12, 48.09,
+                               48.068, 48.0255, 48.0113, 48.008, 47.98, 47.9717, 47.906, 48.0363, 48.1168,
+                               48.2099, 48.2236, 48.2332, 48.2378, 48.268, 48.2731, 48.2974, 48.299),
+                       long = c(-122.655, -122.6697, -122.725, -122.749, -122.687, -122.655, -122.606,
+                                -122.60, -122.60, -122.610, -122.5948, -122.582, -122.562, -122.5488,
+                                -122.5344, -122.3862, -122.3931, -122.559, -122.6077, -122.673, -122.7308,
+                                -122.695, -122.6414, -122.6249, -122.5876, -122.505))
+
+proj_locs <- data.frame(Location = c('Whidbey', 'Port Angeles',  'Vashon Island', 'South Sound'),
+                        lat = c(48.1813, 48.111, 47.447, 47.096),
+                        long = c(-122.65, -123.36, -122.49, -122.72))
+  
+  
+#wd <- getwd()
+wd <- "~/Documents/SAFS/Stellers/Data/"
+#dir_spatial <- paste0(wd, "/Data/")
+dir_shp <- paste0(wd, "gz_2010_us_040_00_500k")
+us_shp <- readOGR(dsn = dir_shp, layer = "gz_2010_us_040_00_500k")
+
+wa_shp <- us_shp[us_shp$NAME == 'Washington',]
+wa <- tidy(wa_shp, region = "GEO_ID") %>%
+  data.table() 
+
+#whidbey colonies
+ggplot() +
+geom_polygon(data = wa, aes(x = long, y = lat, group = group), 
+             fill = "grey93", color = "grey50", size = 0.2) + 
+  xlab("") + ylab("") + coord_fixed(1.5, ylim = c(47.891, 48.4599),
+                                    xlim = c(-122.168, -122.93)) +
+    geom_point(data = col_locs, aes(x = long, y = lat), size = 0.6) +
+  #geom_path(data = islcounty_outline, colour = "grey20", size = 0.3) +
+  # geom_label_repel(data = col_locs, inherit.aes = FALSE,
+  #                  aes(x = long, y = lat, label = Colony), show.legend = TRUE,
+  #   fontface = 'bold', size = 1.5, color = 'black', fill = 'white', force = 1, point.padding = .5) +
+theme_classic() +
+   theme(
+    axis.line = element_blank(),
+    axis.text = element_blank(), axis.ticks = element_blank(),
+    strip.text = element_text(size = 9),
+    strip.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA, size = 1))
+
+#project locations
+ggplot() +
+geom_polygon(data = wa, aes(x = long, y = lat, group = group), 
+             fill = "grey93", color = "grey50", size = 0.2) + 
+  xlab("") + ylab("") + coord_fixed(1.5, ylim = c(47.091, 48.4599),
+                                    xlim = c(-124.868, -121.93)) +
+    geom_point(data = proj_locs, aes(x = long, y = lat), size = 0.6) +
+  #geom_path(data = islcounty_outline, colour = "grey20", size = 0.3) +
+  geom_label_repel(data = proj_locs, inherit.aes = FALSE,
+                   aes(x = long, y = lat, label = Location), show.legend = TRUE,
+    fontface = 'bold', size = 2, color = 'black', fill = 'white', 
+    force = 0.01, point.padding = 0.5) +
+theme_classic() +
+   theme(
+    axis.line = element_blank(),
+    axis.text = element_blank(), axis.ticks = element_blank(),
+    strip.text = element_text(size = 9),
+    strip.background = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA, size = 1))
+
+```
+
+$$
+z_{1,t}~|~z_{i, t-1} \sim Categorical(\Pi[1:3])
+$$
+
+
+$$
+z_{i,t}~|~z_{i, t-1} \sim Categorical(\Omega_{z_{i, t-1}, i, t-1, 1:4})
+$$
+
+
+$$
+y_{i,t}~|~z_{i,t} \sim Categorical(\Theta_{z_{i, t-1}, i, t, 1:3})
+$$
+
+
+
+
+#### Abstract 
+
+Pigeon guillemots (*Cepphus columba*) are an indicator species for Puget Sound in the U.S. Pacific Northwest, but existing local abundance estimates are outdated, demographic rates are unknown, and the impact of varying local oceanographic conditions on nest survival have not been investigated to date. Through an ongoing monitoring effort, a citizen science program has been recording adult colony attendance and burrow prey deliveries at known colony sites in inland waters of Puget Sound during the breeding season from 2008-2018. The survey design and cliff-side location of burrows precludes observing if or precisely when eggs hatch or chicks fledge. This study implements a Bayesian Jolly-Seber multi-event mark-recapture model framework with uncertain nest state to estimate egg and chick survival probability based on counts of burrow visits and prey deliveries from repeated occasions and years. Initial model results estimate overall reproductive success ranging from 18-28%, with high daily egg and chick survival rates and detection probabilities of 20 and 58% for egg and chick states, respectively. This study provides the first estimates of demographic rates in this region. The results from this analysis will be foundational to developing an integrated population model, which will provide important information for ongoing monitoring of indicator species in Puget Sound, particularly given observed and ongoing environmental change in the region.
+
+#### Introduction  
+Understanding the processes driving trends in wildlife population abundance requires knowledge about population structure, survival, and reproductive success. Data on these demographic parameters can be obtained through capture-recapture studies, where survival probabilities and abundance can be estimated based on repeated sightings of marked or individually identifiable animals over a series of occasions. However, these studies can be cost prohibitive or logistically challenging due to species’ life history traits that might make them difficult or impossible to observe at a given time (e.g., based on migratory behavior) or in a given state (e.g., breeding versus non-breeding ages). This is often the case for seabird species, where individuals may only be observed at a colony during breeding season, may have unknown over-wintering locations, may exhibit a skip-breeding pattern, or may have varying degrees of site fidelity. Additionally, even when individuals are reliably detected, estimating reproductive success can be challenging if nests are inaccessible. To address some of these challenges, we develop a Bayesian multi-event mark-recapture model to estimate reproductive success of pigeon guillemots (*Cepphus columba*), a cliff-nesting seabird that has been designated as a regional indicator species for ongoing and future ecosystem-level changes occurring throughout Puget Sound, Washington. 
+
+
+
+Multi-state mark-recapture models arose to estimate age- or state-specific abundance and demographic rates and are based on the idea that we can infer information about the true latent state or ecological process of an individual based on a capture history that arises from an observation process with imperfect detection. However, biases can occur when the status of a marked individual is not observed with perfect certainty or if a life history stage is not observable. This is the case for pigeon guillemots in Puget Sound, where individuals in the population are not marked and reproductive success cannot be observed because chicks fledge at night from nests located in cliff crevasses. Multi-event models [@kendallCaptureRecaptureAnalysisEstimating2004; @pradelMultieventExtensionMultistate] were developed to address these situations and have led to improved parameter estimation compared with the previous strategy of dropping cases with uncertain or hidden (unobservable) states  [@kendallCaptureRecaptureAnalysisEstimating2004; @kendallEstimatingStateTransitionProbabilities2002] (Lebreton & Pradel 2002).  
+
+Multi-event models have been used extensively to assess sex, reproductive status, and survival of terrestrial avian species, but have been increasingly used to estimate breeding state, population structure, survival, and even the effect of oceanographic conditions on long-lived seabird species  [@champagnonPacificDecadalNino; @fayPopulationDensityClimate2015; @gueryHiddenSurvivalHeterogeneity; @payo-payoConsecutiveCohortEffects2016; @sanz-aguilarSexAgedependentPatterns2017; @tavecchiaModellingSurvivalBreeding2016] Champagnon et al. 2018). Multi-event models allow for the estimation of parameters even when observations map to multiple possible true states and can also incorporate covariates into both the state and observation processes. In this study, since pigeon guillemots are unmarked and nest fates are unobservable, we apply a novel multi-event model framework to the attendance patterns and prey deliveries made to individually identifiable nest burrows to infer the true reproductive status and success of nests. Existing information on reproductive success in pigeon guillemots is limited to naïve estimates based on field surveys in the Farallon Islands in the late 1980s that estimated 40% nest survival (Vermeer et al. 1993b) and 47 nests on Whidbey where 31% survived (Kreamer 2011). We hypothesized that daily egg and chick survival would be relatively high, but that model estimates of reproductive success would be similar to those estimated for conspecifics over the season. We also expect that overall nest success will be similar to naïve estimates due to high detection rates of nest burrows over the study season. However, this approach allows for much more refined estimates evaluated at a range of possible hatchling period lengths noted from field studies. 
+
+Pigeon guillemots are one of only three alcids that nest in Puget Sound and despite having been identified as an indicator species for the region, little research has been done on the demographics of Pacific coast populations since studies in British Columbia and California throughout the 1990s. In the Pacific Northwest, pigeon guillemots are more concentrated in eastern Juan de Fuca and central and northern Puget Sound  [@nysewanderReportMarineBird]2005, but their patchy distribution [@burgerCoexistenceSpatialDistributions2008; @ewinsDistributionPigeonGuillemots23] has made estimating abundance trends difficult. Despite these challenges, there are a few rough estimates. Though some seabird species in Puget Sound have declined in recent decades [@andersonCHANGESAVIFAUNALABUNDANCE2009], survey counts suggest that abundance of pigeon guillemots has remained relatively constant since 2000 [@gaydosBIRDSMAMMALSTHAT2011; @vilchisAssessingEcologicalCorrelates2015; @wardUsingCitizenscienceData2015](Bishop et al. 2016). Using this mark-recapture model framework within an integrated population model that incorporates environmental variability will enhance our understanding of demographic rates and abundance for this regional indicator species. This information highlights the important contributions of citizen science initiatives and is central to monitoring the resilience of this and other alcids in light of ongoing climatic changes and conservation and management planning throughout the region.    
+
+Methods
+
+Study species
+Pigeon guillemots are cliff-nesting alcids whose range extends from California to Alaska and into Russia (Sowls 1978). Dense regional populations that breed in the Farallon Islands, CA [@nelsonDemographyPigeonGuillemot1991; @nelsonFactorsInfluencingColony1987; @pressSeabirdsFarallonIslands], Vancouver Island in British Columbia [@ewinsDistributionPigeonGuillemots23], and Naked Island, AK [@goletAdultPreyChoice2000](Kuletz, 1983; Oakley & Kuletz 1996) have been the focus of numerous ecological studies, forming the foundation of our knowledge about the species to date. Insights can also be gleaned from research on two closely related species, spectacled guillemots in the northwest Pacific [@ewinsDistributionPigeonGuillemots23] and black guillemots across the Northwest Atlantic Ocean and North Sea (Asbirk 1979; Petersen 1981). Pigeon guillemots have been documented as having higher and less variable reproductive rates compared with other alcids [@cairnsDietForagingEcology1987](Gaston 1985)CITE. An estimated 40% of chicks survive to reach breeding age around 3-5 years [@ewinsDistributionPigeonGuillemots23; @nelsonDemographyPigeonGuillemot1991] with an estimated 80% survival rate for adults [@nelsonDemographyPigeonGuillemot1991](Ewins 1993) and a total life expectancy of 8-9 years [@cormackEstimatesSurvivalSighting1964]. Little is known about winter habitat or distribution, but beginning in late spring, pigeon guillemots concentrate around colony sites to nest in cliff burrows along rocky shorelines spanning coastal areas and offshore islands throughout their range. 
+
+While pigeon guillemots share many similarities with their alcid relatives, they also have unique life history traits that affect when and how many individuals are at the colony and how reliably they can be detected and counted when and if they are there. Namely, that the level of activity and the number of birds at a colony is governed by both seasonal and daily cycles. At the seasonal level, male birds arrive at the colony first to stake out burrow territory [@nelsonFactorsInfluencingColony1987]. Non-breeding individuals are also present in higher numbers at the beginning of the season (approximately 30% of total) and gradually disperse once nesting begins (Drent 1965). Eggs incubate for an average of 30 days (Drent 1965) with both sexes tending the nest [@cairnsEcologyEnergeticsChick1987](Cairns 1981). Once an egg hatches, adults alternately deliver food until chicks fledge after 33-45 days [@vermeerColonyAttendancePigeon1993;](Thoreson & Booth 1958, Cairns 1981, Drent 1965, Oakley & Kuletz 1996), which is difficult to observe as it generally occurs at night. Peak prey deliveries generally occur in the early mornings and evenings, often corresponding to optimal foraging periods based on tidal fluctuations [@vermeerColonyAttendancePigeon1993](Ainley & Lewis 1972cite; Petersen 1981). Unlike other alcids, pigeon guillemots (particularly experienced breeders) often lay double clutches (where a second “beta” egg is laid ~4 days after the initial egg), an ability that likely stems from nearshore foraging (Winn 1950; Drent 1965) on demersal species with predictable distributions that allows for higher delivery rates of larger prey compared with foraging offshore on lipid-rich but less predictable pelagic species [@goletAdultPreyChoice2000; @wanlessLowEnergyValues2005; @cairnsEcologyEnergeticsChick1987; @emmsSIGNIFICANCEPATTERNNEST](Cairns 1981, Bradstreet & Brown 1985); Gaston & Jones 1998; Golet et al 1998)cite. 
+
+Data sources and characterization
+Pigeon guillemot breeding colonies at 40 sites on Whidbey Island, WA (Figure 1) have been observed by a citizen science program since 2008. Volunteers observe cliff sites from the beach for precisely one hour between 7:00am-10:00am (aimed at coinciding with low tide) once per week during the breeding season, ranging from mid-June to mid-September depending on the year [@kreamerFactorsAffectingSuccess]2011. Once volunteers have waited for birds to resettle from potentially being disturbed by observer presence, volunteers record two categories of information for the duration of the one-hour survey: counts of adults and burrow activity. For the count data, volunteers record the number of adult guillemots in the water directly adjacent to the colony at the beginning, mid-point, and end of the one-hour survey. For burrow activity, volunteers record the number of times adult guillemots visit each specific cliff burrow (a) with and (b) without fish prey. Burrows are mapped and identified at the beginning of the season and are thereafter individually identifiable. Colony cliff sites differ in height, length, and aspect, with the average number of active nests observed in a given year ranging from 1 to 13.  
+
+Surveys are conducted approximately seven days apart, though the consistency and number of survey weeks varies by site due to unpredictable logistics of beach access and because nesting activities occur somewhat asynchronously across the island. Surveys extend until at least two weeks without burrow activity have been observed. Whidbey island is largely residential with public beach access and a mix of coastal land use and habitat integrity. Cliff habitat erosion and predation are the primary threats to these birds during the breeding season, though colonies are also subject to varying levels of anthropogenic disturbance from beach-goers and nearshore boat activity. 
+
+Environmental data used as covariates in this study include tidal fluctuations, local sea surface temperature, and coastal upwelling as a measure of larger-scale oceanographic processes. Daily sea surface temperatures and the timing and height of daily low and high tides were obtained from the NOAA Center for Operational Oceanographic Products and Services  and extracted from the API using the `noaaoceans` R package (Warlick, 2019). Tidal height data in six-minute intervals was obtained from nine tidal buoys surrounding the island and the number of minutes elapsed from the morning low tide until the start of each survey was calculated. The nearest buoy with comprehensive sea-surface temperature information is 9444900 near Port Townsend, WA. Monthly upwelling anomalies were obtained from NOAA’s Pacific Fisheries Environmental Laboratory from a buoy at (45N, -124W). 
+
+## Modeling approach
+
+Intro: 
+
+*Estimating adult breeders*
+
+*Estimating reproductive success*
+State-specific survival, transition, and detection probabilities for pigeon guillemot nests were estimated using a multi-event Jolly-Seber model with uncertain state assignment (Figure 2). In this study, daily nest survival is needed in order to ascertain overall nest success using the assumption that nests receiving prey deliveries for the length of the chick period (35-42 days) will have fledged. Using this framework allows us to estimate daily (as opposed to weekly, the level of the data) survival and account for imperfect detection and uncertain nest state, as non-prey visits to nest burrows can occur during both the egg and chick states. 
+
+Possible true states were identified as individuals that have not yet entered (pre-egg), egg, hatchling, and terminated (fledged or dead). Possible observations corresponding to these true states include birds flying into burrow nests (a) without prey (Bv), (b) with prey (Pv), and (c) not detected. Capture histories were generated for each individual nest, where a capture history of ‘00Bv00Pv0’ would represent a nest that was not seen until a non-prey burrow visit on the third week, not detected for two weeks, and subsequently detected with a prey delivery visit, and then not detected. As is typical for Jolly-Seber models, we do not condition on the first capture, where nests can ‘enter’ asynchronously. This framework also enables the estimation of the egg incubation period, daily egg hatching probability, and how the composition of nest stages changes over the season. The state process of the multinomial parameterization of the model is defined at the first occasion as
+  
+
+Formula
+
+where the state at the first occasion can be any of the three states with equal probability. The state process is defined at all subsequent occasions as
+
+Formula
+
+where the state z of individual i at occasion t, conditional on the nest’s state at the previous occasion, is modeled by a categorical distribution with matrix Ω describing the probability of an individual transitioning to a new state based on its previous state and individual- and time-specific covariate effects. This transition probability is typically decomposed into survival (ϕ_(i,t)) and state transition (ψ_(i,t)) probabilities. For the observation process,
+
+Formula
+
+an observation y conditional on the true state z is modeled by a categorical distribution with probability matrix Θ, which indicates for individual i at time t the probability of detection (p_(i,t)) and the state assignment error probability (δ_(i,t)) (Figure 2b). 
+
+For this analysis, the typical set of JS model assumptions apply, where it is assumed that there are no identification errors, that survival and reproductive state of individuals are independent, and that there is no unmodeled heterogeneity in survival and detection probabilities. In this initial analysis, I only model constant detection, survival, and assignment error probabilities, which may not be ideal given the changing attendance and prey delivery pattern over the summer breeding season. To calculate population-level nest success as the primary demographic rate of interest here, the total number of nests that were in the chick state for 35 and 42 days in each iteration was divided by the total number of active burrows based on the lower and upper limits of the fledging time period. To account for individuals that may never have been detected, capture history data was augmented with additional M individuals. The total abundance of M nests is used as the denominator when deriving the proportion of nests with surviving fledglings. 
+
+To improve model efficiency, the capture history was maintained at weekly intervals and mapped to the daily state process via a vector of site-specific survey days. Normal (0, 0.001) and uniform (0, 1) distributions were used as uninformative priors for survival, detection, and transition probability parameters. A Dirichlet distribution was used for the prior on  for the state probability at the first occasion. Models were fit in JAGS using the R packages jagsUI and rjags with 50,000 iterations, 4,000 burn-in, and three MCMC chains. R-hat values were inspected for convergence (see Appendix 1 for relevant JAGS code). Model selection will eventually be implemented using WAIC values, though that is not yet included in this analysis.
+
+
+
+*Integrated population model*
+
+*Model selection and diagnostics*
+
+Results
+
+*Counts*
+
+*Estimating reproductive success*
+Over the study period, a total of more than 2,500 nests were observed, ranging from 205 to 265 per year (Figure 3a). Based on the number of burrows that received prey deliveries for at least four weeks, a naïve estimate of nest success was calculated for each year, with a mean of 29% over the study period (Figure 3b). Both the number of active nests and the proportion that received prey deliveries for four weeks has varied but generally increased over the study period. Observations of burrow attendance and deliveries are highly variable across sites and years, with burrow visits being observed on 1-14 surveys per year, with a wide range of first and last prey and non-prey visit observations (Figure 4). Despite this range, non-prey burrow visits start and end before prey visits on average, as would be expected. 
+
+The multi-event JS model framework was used to estimate daily egg and chick survival in addition to daily initiation and egg hatching probabilities. The number of days that the nest was estimated to have been in the egg and chick states was used to derive the total number of active and fledged nests. The mean daily egg survival across all years and all sites was 1.0 (sd = 0.0; uh oh! Initial values are all egg state right now – this is problematic) and the mean daily hatchling survival was 0.964 (0.95-0.969 credible interval). Based on the mean posterior distribution estimate, the average number of days spent in the egg and chick states were 20 (17.4-22.6) and 24.8 (22.9-27.5), respectively (Figure 5). As noted above, nest success was calculated based on the low and high range of published estimates for the number of days to fledge (35-42 days). Based on these parameters and derived values, mean reproductive success (fledglings per egg laid) was 0.18 (0.14-0.23) at the lower bound and 0.27 (0.23-0.33) at the upper bound (Figure 6). Mean detection probability of egg burrows and chick burrows was 0.21 (0.17-0.24) and 0.58 (0.53-0.63), respectively (Figure 7). The average daily hatching probability (hatch) was estimated as 0.04 (0.03-0.055). The probability of observing only a non-prey visit to a burrow that is in the chick state -- parameter b -- was 0.18 (0.14-0.22) (Figure 7). 
+
+
+Discussion
+
+This study presents the implementation of a Jolly-Seber model in a multi-event framework to estimate daily stage-specific nest survival and overall reproductive success while accounting for nest state uncertainty and unknown nest fate. As expected, estimated daily egg and chick survival were high, with overall reproductive success calculated as ranging from 0.18-0.28 (these are a little lower than a few other model runs I did – still working on some issues) depending on the threshold criteria used in determining a successful fledged hatchling. These results will be most meaningful to management and conservation efforts that are aimed at monitoring the population status of regional indicator species once model estimates are examined at the annual rather than constant mean levels, as this will facilitate an understanding of whether demographic rates are changing over time. 
+
+Pigeon guillemot reproductive success has not been rigorously estimated for any colony sites within the Pacific Northwest region. The results from this study indicating reproductive success of approximately 18-28% align with older estimates (Vermeer et al. 1993b) and the more recent naïve estimate from the Whidbey Island monitoring project (Kreamer 2011). Detection probability being lower for the egg state is likely attributable to increased visitation when adults are actively provisioning chicks rather than just tending the egg. Using the framework developed in this study within a broader integrated population model framework that includes breeding adult counts and relevant environmental covariates to estimate overall regional abundance will facilitate more robust comparisons with field research conducted in Alaska, B.C., and California throughout the 1970s-1980s that focused mainly on adult survival, mate fidelity, colony attendance patterns, and chick provisioning rates for different prey types and under varying environmental conditions. 
+
+Estimating reproductive success using this Jolly-Seber multi-event model framework allows for the estimation of stage-specific survival and reproductive success where it would not otherwise be possible using more traditional approaches that rely on known nest states and fates. However, like all approaches, this has its drawbacks. One important consideration is what it means to estimate survival and reproductive success based on a pattern of chick provisioning rather than direct observations of the nest. Pigeon guillemots are not unique in that their demographic rates and reproductive cycle are inextricably linked to prevailing environmental conditions that influence spatio-temporal prey availability. Research suggests that oceanographic variability can impact not only reproductive success and timing, but adult survival and overall population dynamics. Pigeon guillemot reproductive success in the Farallon Islands has been found to be lower in El Niño years (Ainley & Boekelheide 1990) and lower chick growth rates and reduced brood size have coincided with years of lower prey abundance in British Columbia and Alaska (Vermeer et al. 1993b; Piatt 2003). Changing prey availability due to a shift in the Pacific Decadal Oscillation coincided with a notable decline in guillemot abundance in the Bering Sea and Gulf of Alaska in the 1990s (Litzow et al. 2002). Guillemot responses to environmental variability are complex and nuanced (Burger 2003; Irons 2008), but one thing is clear: oceanographic conditions matter and can affect everything from nest initiation and attendance to chick provisioning and fledge weights (Nelson 1987; Ainley & Boekelheide 1990). In the context of this study, this could mean that distinguishing between the natural variability in prey provisioning strategies and how that variability may or may not affect chick survival will be challenging. In other words, the underlying adaptability of these birds to prevailing environmental conditions should be considered. 
+
+Another source of bias in these estimates is that the current model framework does not account for how stage-specific detection and state assignment probabilities change over the breeding season, as prey and non-prey burrow visits exhibit a very strong seasonal peak in activity part-way through the breeding season. For example, the probability of correctly ascertaining that there is a chick in the nest is likely higher when prey delivery rates are highest in the initial few weeks of fastest chick growth. If not accounted for, this could result in biased estimates of the state of the nest at the beginning and ending of the season, which would directly impact our estimate of the number of days in the chick state, the crux of the reproductive success estimate. Additionally, this model does not at all address the tendency of pigeon guillemots to lay double clutches (average clutch size for successful nests > 1, Asbirk 1979, Emms & Verbeek 1991, Litzow & Piatt 2003), which may also positively bias estimates if the second beta chick is provisioned for several days (Cairns 1981) after the first chick has fledged. Regardless of these issues, the data are relatively robust and the model framework is adaptable to account for these issues in future iterations.
+
+Pigeon guillemots in Puget Sound are considered to be one of the more patchily distributed species, particularly among alcids (Ewins et al. 1994, Anderson et al. 2009, Pearson & Hamel 2013). This suggests that it will likely be important to consider spatial differences across sites when incorporating counts of adults in a larger IPM framework and incorporating new data from younger study sites in the South Sound region, Vashon Island, and Port Angeles, WA. The next steps for this work includes developing a more robust integrated population model, where count data are included using an N-mixture model while accounting for imperfect detection, thereby allowing joint inference on how demographic rates and abundance vary over time. Though there are no current estimates for demographic rates, current abundance is estimated as being relatively stable based on field surveys of multiple species throughout the region (Pearson & Hamel 2013, Ward et al 2015). This and other ongoing efforts by citizen science initiatives can provide a volume of data for use in ecological wildlife population modeling that would not otherwise be available, facilitating the development of new approaches and invaluable information for the continued conservation, management, and monitoring of indicator species. 
+
+References
+
+Asbirk, S. 1979. The adaptive significance of the reproductive pattern in the Black Guillemot Cepphus grylle.
+ Videskabelige Meddelelser Dansk Naturhistorisk Foren.
+ 
+Bradstreet MSW, Brown RGB (1985) Feeding ecology of the Atlantic Alcidae. In: Nettleship DN, Birkhead TR (eds) The Atlantic Alcidae. Academic Press, London, pp 263–318.
+ 
+Cairns DK (1981) Breeding, feeding, and chick growth of the black guillemot (Cepphus grylle) in southern Quebec. Can Field Nat 95:312–318. 
+
+Drent, R. H. 1965. Breeding biology of the Pigeon Guillemot, Cepphus columba. Ardea 53: 99-160.
+
+ Ewins, P. J. 1993. Pigeon Guillemot (Cepphus columba).  Pages 1-24 in Number 49. The Birds of North America (A. Poole and F. Gill, Eds.). Washington, D.C., Philadelphia, The Academy of Natural Sciences.
+
+Kuletz KJ (1983) Mechanisms and consequences of foraging behavior in a population of breeding Pigeon Guillemots. MSc thesis, University of California, Irvine. 
+
+Oakley & Kuletz 1996. Population, reproduction and foraging of pigeon guillemots at Naked Island, Alaska, before and after the Exxon Valdez oil spill. Bird study number 9. Exxon Valdez oil spill state/federal natural resource damage assessment final report. American Fisheries Symposium 18: 759-769.
+
+Petersen, 1981. Breeding biology and feeding ecology of black guillemots. Thesis for D.Phil, degree at the University of Oxford, September 1981. 
+
+Thoresen, A. C. and E. S. Booth. 1958. Breeding activities of the Pigeon Guillemot, Cepphus columba (Pallas). Walla Walla College Publications Department of Biological Science 23: 1-36.
+

@@ -57,7 +57,7 @@ setwd('~/Documents/SAFS/PigeonGuillemots')
 id_temp <- c(9444900)
 name_temp <- c("Port Townsend")
 years <- c(2008, 2009,
-           #2010, 
+           2010, 
            2011:2018)
 
 all_june <- data.frame()
@@ -119,7 +119,7 @@ sst_pt2010 <- read.csv('CO-OPS_PT2010.csv', header = T, stringsAsFactors = F) %>
 sst_pt <- all_years %>%
   transform(t = as.Date(ymd_hm(t), format = '%Y-%m-%d')) %>%
   transform(v = as.numeric(v)) %>%
-  bind_rows(sst_pt2010) %>%
+  #bind_rows(sst_pt2010) %>%
   rename(date = t) %>%
   transform(month = month(date)) %>%
   transform(day = day(date)) %>%
@@ -127,6 +127,8 @@ sst_pt <- all_years %>%
   transform(yday = yday(date)) %>%
   rename(temp = v) %>%
   filter(temp < 58)
+
+#test <- filter(year == 2010) %>% summarize(cnt = n_distinct(yday))
 
 sst_day_pt <- sst_pt %>%
   group_by(day, station, month, year, yday) %>%
@@ -191,7 +193,7 @@ for (j in years) {
   all_years_sea <- rbind(all_june, all_july, all_aug, all_sep) %>% select(-f)
 } #years
 
-setwd('~/Documents/SAFS/PigeonGuillemots/WhidbeyData')
+setwd('~/Documents/SAFS/PigeonGuillemots/PiGuData/EnvData')
 
 sst_sea2010 <- read.csv('CO-OPS_Seattle2010.csv', header = T, stringsAsFactors = F) %>%
   transform(station = 9447130) %>%
@@ -280,7 +282,7 @@ for (i in id_whid) {
   tides <- query_tides_data(
     station = i,
     start_date = '20080601',
-    end_date = '20180930',
+    end_date = '20150930',
     data_product = 'predictions',
     datum = 'MLLW',
     interval = 'hilo')
@@ -288,7 +290,22 @@ for (i in id_whid) {
   all_whidbey <- rbind(all_whidbey, tides)
 }
 
+all_whidbey2 <- data.frame() #break into 2 so don't exceed query quota
+
+for (i in id_whid) {
+  tides <- query_tides_data(
+    station = i,
+    start_date = '20160601',
+    end_date = '20180930',
+    data_product = 'predictions',
+    datum = 'MLLW',
+    interval = 'hilo')
+  tides$station <- i
+  all_whidbey2 <- rbind(all_whidbey2, tides)
+}
+
 all_whidbey <- all_whidbey %>%
+  bind_rows(all_whidbey2) %>%
   merge(station_id_whid %>% select(-grp), by = 'station')
 
 all_SS <- data.frame()
@@ -308,11 +325,18 @@ for (i in id_SS) {
 all_SS <- all_SS %>%
   merge(station_id_SS %>% select(-grp), by = 'station')
 
-tides_all <- all_SS %>%
-  bind_rows(all_whidbey) %>%
+# tides_all <- all_SS %>%
+#   bind_rows(all_whidbey) %>%
+#   transform(month = month(t), date = as.Date(t)) %>%
+#   filter(month >=6 & month <= 9) %>%
+#   transform(time = as.POSIXlt(t, "%Y-%m-%d %H:%M:%S"))
+
+tides_all <- all_whidbey %>%
   transform(month = month(t), date = as.Date(t)) %>%
   filter(month >=6 & month <= 9) %>%
   transform(time = as.POSIXlt(t, "%Y-%m-%d %H:%M:%S"))
+
+setwd('~/Documents/SAFS/PigeonGuillemots')
 
 write.csv(tides_all, "tides_all.csv", row.names = F)
 

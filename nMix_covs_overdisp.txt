@@ -1,0 +1,52 @@
+model
+{
+    for (t in 1:nyear) {
+        for (k in 1:nsite) {
+            log(lambda[k, t]) <- lambda.mu[t] + b.upwell * upwell[t] + 
+                b.temp * temp[t] + b.mins * lam.mins[k, t] + 
+                b.height * lam.height[k, t] + eps_t[t] + eps_k[k]
+            for (j in 1:reps) {
+                lp[k, j, t] ~ dnorm(beta[t], tau.p)
+                p[k, j, t] <- 1/(1 + exp(-lp[k, j, t]))
+            }
+        }
+    }
+    b.upwell ~ dunif(-10, 10)
+    b.temp ~ dunif(-10, 10)
+    b.height ~ dunif(-10, 10)
+    b.mins ~ dunif(-10, 10)
+    for (t in 1:nyear) {
+        eps_t[t] ~ dnorm(0.00000E+00, tau.t)
+        beta[t] ~ dnorm(0.00000E+00, 0.1)
+        lambda.mu[t] ~ dunif(-10, 10)
+    }
+    for (k in 1:nsite) {
+        eps_k[k] ~ dnorm(0.00000E+00, tau.k)
+    }
+    tau.k <- 1/(sd.k * sd.k)
+    sd.k ~ dunif(0.00000E+00, 2)
+    tau.t <- 1/(sd.t * sd.t)
+    sd.t ~ dunif(0.00000E+00, 2)
+    tau.p <- 1/(sd.p * sd.p)
+    sd.p ~ dunif(0.00000E+00, 2)
+    p.mu ~ dunif(-10, 10)
+    for (t in 1:nyear) {
+        for (k in 1:nsite) {
+            N[k, t] ~ dpois(lambda[k, t])
+            for (j in 1:reps) {
+                y[k, j, t] ~ dbin(p[k, j, t], N[k, t])
+                eval[k, j, t] <- p[k, j, t] * N[k, t]
+                E[k, j, t] <- pow((y[k, j, t] - eval[k, j, t]), 
+                  2)/(eval[k, j, t] + 0.5)
+                y.new[k, j, t] ~ dbin(p[k, j, t], N[k, t])
+                E.new[k, j, t] <- pow((y.new[k, j, t] - eval[k, 
+                  j, t]), 2)/(eval[k, j, t] + 0.5)
+            }
+        }
+        N_est[t] <- sum(N[, t])
+        mean.p.t[t] <- mean(p[, , t])
+    }
+    fit <- sum(E[, , ])
+    fit.new <- sum(E.new[, , ])
+    mean.p <- mean(mean.p.t)
+}
