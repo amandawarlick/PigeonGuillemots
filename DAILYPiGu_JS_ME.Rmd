@@ -27,30 +27,10 @@ library(magrittr)
 
 path <- getActiveDocumentContext()$path 
 setwd(dirname(path))
-#print(getwd())
 
 #setwd("~/Documents/SAFS/PigeonGuillemots")
 #setwd("C:\\Nathan\\UW\\projects\\PigeonGuillemotNestSurvival\\data")
-plot_theme <- function(...) {
-  theme(
-    #text = element_text(size = 11),
-    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, color = "black", size = 10), 
-    axis.text = element_text(vjust = 0.5, color = "black", size = 10), 
-    axis.title = element_text(size = 11),
-    axis.line.y = element_line(colour = "black"), 
-    axis.line.x = element_line(colour = "black"), 
-    plot.background = element_rect(), 
-    panel.background = element_rect(fill = 'white'),
-    panel.border = element_rect(fill = NA),
-    panel.grid = element_blank(), 
-    legend.key = element_blank(),
-    strip.background = element_blank(), 
-    strip.text = element_text(size = 10),
-    legend.text = element_text(size = 9),
-    ...)
-}
 
-fig_theme <- plot_theme
 
 ```
 
@@ -59,7 +39,7 @@ fig_theme <- plot_theme
 
 ####REAL DATA
 #effort <- read.csv("survey_days.csv", header = T)
-effort <- survey_days
+survey_days <- survey_days
 #ch <- read.csv('ch_dat.csv', header = T)
 ch <- ch_dat
 y <- ch
@@ -332,7 +312,7 @@ model.file = paste(getwd(),"model_MEJS.txt", sep="/")
 # Bundle data
 jags.data <- list(y = y, n.occasions = max(effort, na.rm = T), nyear = length(unique(year_i)),
                   #z = z.st, 
-                  effort = effort, #from setup, survey_days
+                  survey_day = survey_days, #from setup, survey_days
                   visits_i = visits_i, year_i = year_i,
                   M = dim(ch)[1])
 

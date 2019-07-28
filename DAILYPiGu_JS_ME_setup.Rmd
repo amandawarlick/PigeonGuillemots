@@ -30,12 +30,12 @@ setwd(dirname(path))
 
 #load data from PigeonGuillemot_whidbey.Rmd
 
-filter <- c('Mutiny Sands', 'Double Bluff North', 'Cliffside', 'Harrington North', 'Lagoon South', 'Shore Meadows', 'Mutiny Sands', 'Malmo Bluff')
+# filter <- c('Mutiny Sands', 'Double Bluff North', 'Cliffside', 'Harrington North', 'Lagoon South', 'Shore Meadows', 'Mutiny Sands', 'Malmo Bluff')
 #contains single row where burrow_name == NA when no activity was detected, but survey started
 data_burrow_all <- read.csv("data_burrow.csv", header = T, stringsAsFactors = F) %>%
   filter(region == 'Whidbey') %>%
   dplyr::select(-c(Gunnel, Sculpin, Other)) %>%
-  filter(site %in% filter) %>%
+  #filter(site %in% filter) %>%
   #filter(year > 2016) %>%
   distinct()  #2 duplicates, all lagoon south 2017
 
@@ -48,21 +48,44 @@ no_vis <- data_burrow_all %>%
   filter(is.na(burrow_name)) %>%
   dplyr::select(region, year, site, week, yday)
 
+#this doesn't quite get all the day combinations
 all_days <- data_burrow_all %>%
   #filter(is.na(burrow_name)) %>%
   group_by(region, year, site) %>%
   distinct(yday)
+# n_sites <- length(unique(data_burrow_all$site))
+# sites <- unique(data_burrow_all$site)
+
+nyear <- length(unique(data_burrow_all$year))
+min_yday <- min(data_burrow_all$yday)
+max_day <- max(data_burrow_all$yday)
+max_days <- max(data_burrow_all$yday)-min(data_burrow_all$yday)+5
+
+# all_days <- data.frame(yday = rep(c(min_day:(min_day+max_days)), times = n_sites),
+#                        year = rep(c(2008:2018), each = length(c(min_day:(min_day+max_days)))*n_sites),
+#                        site = as.character(rep(sites, each = length(c(min_day:(min_day+max_days))))))
+# all_days$site = as.character(all_days$site)
+
+fill_full <- data.frame(year = rep(as.numeric(2020), times = length(c(min_yday:(min_yday+max_days)))),
+                        burrow_name = as.character(rep('XXX', times = length(c(min_yday:(min_yday+max_days))))),
+                        site = as.character(rep('Dummy', times = length(c(min_yday:(min_yday+max_days))))),
+                        yday = c(min_yday:(min_yday+max_days)))
+fill_full$region <- 'Whidbey'
+fill_full <- fill_full %>%
+  dplyr::select(region, year, site, burrow_name, yday)
+  
 fill <- data_burrow_all %>%  #all day-burrow combinations
   filter(!is.na(burrow_name)) %>%
   group_by(region, year, site, burrow_name) %>%
   distinct(burrow_name) %>%
-  merge(all_days, all = T) 
+  merge(all_days, by = c('region', 'year', 'site'), all = T) %>%
+  bind_rows(fill_full)
 
 burrow <- data_burrow_all %>%
   filter(!is.na(burrow_name)) %>% #remove all dummy rows where no burrows were seen
   merge(fill, by = c('region', 'site', 'year', 'burrow_name', 'yday'), all = T) %>%
   merge(start_end_all, by = c('region', 'year'), all = T) %>%
-  transform(study_day = yday - start_day + 1) #%>% arrange(burrow_name)
+  transform(study_day = ifelse(site == 'Dummy', yday-min_yday + 1, yday - start_day + 1)) #%>% arrange(burrow_name)
 
 #burrow visit and prey visit start stops
 prey_start_end <- burrow %>%
@@ -80,7 +103,8 @@ start_end_visits <- prey_start_end %>%
 
 day_range <- burrow %>%
   group_by(region, year, site) %>%
-  summarize(min_day = min(study_day, na.rm = T), max_day = max(study_day, na.rm = T))
+  summarize(min_day = min(study_day, na.rm = T), max_day = max(study_day, na.rm = T)) %>%
+  transform(dif = max_day-min_day)
 
 week_range <- burrow %>%
   group_by(region, year, site) %>%
@@ -105,11 +129,12 @@ burrow_CH <- burrow %>%
                        100))))) %>% 
   dplyr::select(region, year, site, week, yday, start_day, study_day, n_visits, 
          min_day, max_day, burrow_name, capt_hist) %>% distinct() %>%
-  dcast(region + year + site + burrow_name + min_day + max_day ~ study_day, value.var = 'capt_hist', 
+  dcast(region + year + site + burrow_name + min_day + max_day ~ yday, value.var = 'capt_hist', 
         fun.aggregate = mean) %>%
   filter(!is.na(burrow_name)) %>%
+  filter(site != 'Dummy') %>%
   melt(id.vars = c('region', 'year', 'site', 'burrow_name', 'min_day', 'max_day')) %>%
-  transform(study_day = as.numeric(as.character(variable))) %>% 
+  transform(study_day = as.numeric(as.character(variable))-min_yday+1) %>% 
   transform(capt_hist = ifelse(study_day < min_day | study_day > max_day, NA, value)) %>%
   dplyr::select(region, year, site, burrow_name, study_day, capt_hist) %>% #NA outside start/stop days
   dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist') 
@@ -121,9 +146,11 @@ survey <- burrow %>%
   #transform(occ = week-min_week) %>%
   dplyr::select(region, year, site, yday, burrow_name, study_day, n_visits, week, max_week) %>%
   #dcast(region + year + site + burrow_name + n_visits ~ week, value.var = 'study_day', fun.aggregate = mean)
-  dcast(region + year + site + n_visits + burrow_name ~ study_day, value.var = 'study_day', fun.aggregate = mean)
+  dcast(region + year + site + n_visits + burrow_name ~ study_day, value.var = 'study_day', fun.aggregate = mean) %>%
+  filter(site != 'Dummy')
 
 max_recap <- max(survey$n_visits) #max number of resights for ncol, NOT distinct study days
+
 
 ```
 
@@ -133,13 +160,14 @@ max_recap <- max(survey$n_visits) #max number of resights for ncol, NOT distinct
 
 #number of nests per site per year - for proportion
 num_nests <- burrow %>%
+  filter(site != 'Dummy') %>%
   group_by(region, year, site) %>%
   summarize(nest_cnt = n_distinct(burrow_name)) %>%
   transform(burrow_name = 'XXX') %>%
   merge(n_visits, by = c('region', 'year', 'site')) %>%
   transform(aug = round(0.2*nest_cnt)) %>%
   transform(aug = ifelse(aug < 1, 1, aug)) %>%
-  dplyr::select(-nest_cnt)
+  dplyr::select(-nest_cnt) 
 
 aug_fun <- function(df, id_cols, visit_col){
   # Keep only the needed columns. 
@@ -162,7 +190,7 @@ aug_fun <- function(df, id_cols, visit_col){
 }
 
 aug_id <- aug_fun(num_nests, c('region', 'year', 'site', 'burrow_name', 'n_visits'), 'aug') %>%
-  transform(V4 = 'XXX')
+  transform(V4 = 'XXX') 
 colnames(aug_id) <- c('region', 'year', 'site', 'burrow_name', 'n_visits') 
 
 #take just id cols and days
@@ -189,20 +217,25 @@ for (i in 1:nrow(ch_obs)) {
 aug_inds_CH <- aug_id %>%
   merge(ch_obs, by = c('region', 'year', 'site', 'n_visits'), all = T) %>%
   transform(year = as.integer(year)) %>%
-  dplyr::select(-n_visits)
+  dplyr::select(-n_visits) 
 colnames(aug_inds_CH) <- colnames(burrow_CH)
 
 burrow_CH_aug <- burrow_CH %>%
   bind_rows(aug_inds_CH) 
 
 ##collapse so that all data are at beginning, trailing NAs for the rest
-ch_dat <- matrix(NA, nrow = dim(burrow_CH_aug)[1], ncol = max_recap)
+#update - need this instead to be daily, not collapsed, with 3 in between
+# ch_dat <- matrix(NA, nrow = dim(burrow_CH_aug)[1], ncol = max_recap)
+# 
+# for (i in 1:dim(burrow_CH_aug)[1]) {
+#   temp <- as.numeric(burrow_CH_aug[i, 4 + c(which(!is.na(burrow_CH_aug[i,5:dim(burrow_CH_aug)[2]])))])
+#   num <- length(temp)
+#   ch_dat[i,] <- c(temp, rep(NA, max_recap-num))
+# }
 
-for (i in 1:dim(burrow_CH_aug)[1]) {
-  temp <- as.numeric(burrow_CH_aug[i, 4 + c(which(!is.na(burrow_CH_aug[i,5:dim(burrow_CH_aug)[2]])))])
-  num <- length(temp)
-  ch_dat[i,] <- c(temp, rep(NA, max_recap-num))
-}
+ch_day <- burrow_CH_aug[,5:dim(burrow_CH_aug)[2]]
+#ch_day[is.na(ch_day)] <- 3 #skipping over NAs, so probably don't need this?
+ch_day <- as.matrix(round(ch_day))
 
 max_visits <- max(n_visits$n_visits)
 
