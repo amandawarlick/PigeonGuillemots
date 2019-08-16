@@ -48,29 +48,30 @@ no_vis <- data_burrow_all %>%
   filter(is.na(burrow_name)) %>%
   dplyr::select(region, year, site, week, yday)
 
-#this doesn't quite get all the day combinations
 all_days <- data_burrow_all %>%
   #filter(is.na(burrow_name)) %>%
   group_by(region, year, site) %>%
   distinct(yday)
-# n_sites <- length(unique(data_burrow_all$site))
-# sites <- unique(data_burrow_all$site)
 
-nyear <- length(unique(data_burrow_all$year))
+yday_range <- data_burrow_all %>%
+  group_by(region, year, site) %>%
+  summarize(min_day = min(yday, na.rm = T), max_day = max(yday, na.rm = T)) %>%
+  transform(dif = max_day-min_day)
+
+#nyear <- length(unique(data_burrow_all$year))
 min_yday <- min(data_burrow_all$yday)
-max_day <- max(data_burrow_all$yday)
-max_days <- max(data_burrow_all$yday)-min(data_burrow_all$yday)+5
+# max_day <- max(data_burrow_all$yday)
+# max_days <- max(data_burrow_all$yday)-min(data_burrow_all$yday)+5
 
-# all_days <- data.frame(yday = rep(c(min_day:(min_day+max_days)), times = n_sites),
-#                        year = rep(c(2008:2018), each = length(c(min_day:(min_day+max_days)))*n_sites),
-#                        site = as.character(rep(sites, each = length(c(min_day:(min_day+max_days))))))
-# all_days$site = as.character(all_days$site)
-
-fill_full <- data.frame(year = rep(as.numeric(2020), times = length(c(min_yday:(min_yday+max_days)))),
-                        burrow_name = as.character(rep('XXX', times = length(c(min_yday:(min_yday+max_days))))),
-                        site = as.character(rep('Dummy', times = length(c(min_yday:(min_yday+max_days))))),
-                        yday = c(min_yday:(min_yday+max_days)))
+fill_full <- data.frame(year = rep(as.numeric(2020), 
+                  times = length(c(min_yday:(min_yday+max(yday_range$dif))))),
+                        burrow_name = as.character(rep('XXX', 
+                  times = length(c(min_yday:(min_yday+max(yday_range$dif)))))),
+                        site = as.character(rep('Dummy', 
+                  times = length(c(min_yday:(min_yday+max(yday_range$dif)))))),
+                        yday = c(min_yday:(min_yday+max(yday_range$dif))))
 fill_full$region <- 'Whidbey'
+
 fill_full <- fill_full %>%
   dplyr::select(region, year, site, burrow_name, yday)
   
@@ -129,12 +130,13 @@ burrow_CH <- burrow %>%
                        100))))) %>% 
   dplyr::select(region, year, site, week, yday, start_day, study_day, n_visits, 
          min_day, max_day, burrow_name, capt_hist) %>% distinct() %>%
-  dcast(region + year + site + burrow_name + min_day + max_day ~ yday, value.var = 'capt_hist', 
+  dcast(region + year + site + burrow_name + min_day + max_day ~ study_day, value.var = 'capt_hist', 
         fun.aggregate = mean) %>%
   filter(!is.na(burrow_name)) %>%
   filter(site != 'Dummy') %>%
   melt(id.vars = c('region', 'year', 'site', 'burrow_name', 'min_day', 'max_day')) %>%
-  transform(study_day = as.numeric(as.character(variable))-min_yday+1) %>% 
+  transform(study_day = as.numeric(as.character(variable))) %>% 
+  #transform(study_day = as.numeric(as.character(variable))-min_yday+1) %>% 
   transform(capt_hist = ifelse(study_day < min_day | study_day > max_day, NA, value)) %>%
   dplyr::select(region, year, site, burrow_name, study_day, capt_hist) %>% #NA outside start/stop days
   dcast(region + year + site + burrow_name ~ study_day, value.var = 'capt_hist') 

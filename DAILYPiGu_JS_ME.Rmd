@@ -41,7 +41,8 @@ setwd(dirname(path))
 #effort <- read.csv("survey_days.csv", header = T)
 survey_days <- survey_days
 #ch <- read.csv('ch_dat.csv', header = T)
-ch <- ch_dat
+# ch <- ch_dat
+ch <- ch_day
 y <- ch
 nyear <- length(unique(year_i))
 
@@ -310,7 +311,7 @@ model.file = paste(getwd(),"model_MEJS.txt", sep="/")
 ```{r run annual}
 
 # Bundle data
-jags.data <- list(y = y, n.occasions = max(effort, na.rm = T), nyear = length(unique(year_i)),
+jags.data <- list(y = y, n.occasions = max(survey_days, na.rm = T), nyear = length(unique(year_i)),
                   #z = z.st, 
                   survey_day = survey_days, #from setup, survey_days
                   visits_i = visits_i, year_i = year_i,
@@ -318,7 +319,7 @@ jags.data <- list(y = y, n.occasions = max(effort, na.rm = T), nyear = length(un
 
 inits <- function(){list(#mean.phi = runif(2, 0, 1), 
                          #z = z.init,
-                         z = matrix(3, nrow = dim(ch)[1], ncol = max(effort, na.rm = T)),
+                         z = matrix(3, nrow = dim(ch)[1], ncol = max(survey_days, na.rm = T)),
                          mean.p = runif(2, 0, 1))}  
 
 # Parameters monitored
