@@ -1,0 +1,674 @@
+
+```{r local}
+
+# Specify model
+CJS_full_local_sel <- function () {
+
+# Priors and constraints
+for (i in 1:n_ind) {
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiP[i,t]) <- mu.p + b.sshP*ssh[t] + b.mldP*mld[t] + b.uwndP*uwnd[t] + b.chla.wP*chla.w[t] +
+              b.sst.wP*sst.w[t] + b.vwndP*vwnd[t] + b.bmi.p*bmi[i] #+ b.regP[region[i]] + epsP[t]
+            logit(phi1[i,t]) <- mu.1 + b.ssh1*ssh[t] + b.mld1*mld[t] + b.uwnd1*uwnd[t] + b.chla.w1*chla.w[t] +
+              b.sst.w1*sst.w[t]+ b.vwnd1*vwnd[t] + b.bmi.1*bmi[i] #+ b.reg1[region[i]] + eps1[t]
+            logit(phi2[i,t]) <- mu.2 + b.ssh2*ssh[t] + b.mld2*mld[t] + b.uwnd2*uwnd[t] + b.chla.w2*chla.w[t] +
+              b.sst.w2*sst.w[t]+ b.vwnd2*vwnd[t] #+b.reg2[region[i]] + eps2[t]
+            logit(phi3[i,t]) <- mu.3 + b.sshPB*ssh[t] + b.mldPB*mld[t] + b.uwndPB*uwnd[t] + b.chla.wPB*chla.w[t] +
+              b.sst.wPB*sst.w[t]+ b.vwndPB*vwnd[t] #+b.regPB[region[i]] + epsPB[t]
+            logit(phi4[i,t]) <- mu.4 + b.sshPB*ssh[t] + b.mldPB*mld[t] + b.uwndPB*uwnd[t] + b.chla.wPB*chla.w[t] +
+              b.sst.wPB*sst.w[t]+ b.vwndPB*vwnd[t]#+b.regPB[region[i]] + epsPB[t]
+            logit(phi5[i,t]) <- mu.5 + b.sshPB*ssh[t] + b.mldPB*mld[t] + b.uwndPB*uwnd[t] + b.chla.wPB*chla.w[t] +
+              b.sst.wPB*sst.w[t]+ b.vwndPB*vwnd[t]#+b.regPB[region[i]] + epsPB[t]
+            logit(phiB[i,t]) <- mu.B + b.sshB*ssh[t] + b.mldB*mld[t] + b.uwndB*uwnd[t] + b.chla.wB*chla.w[t] + 
+              b.sst.wB*sst.w[t] + b.vwndB*vwnd[t] #+b.regB[region[i]] + epsB[t]
+            logit(phiSk[i,t]) <- mu.Sk + b.sshSk*ssh[t] + b.mldSk*mld[t] + b.uwndSk*uwnd[t] + b.chla.wSk*chla.w[t] +
+              b.sst.wSk*sst.w[t] + b.vwndSk*vwnd[t]#+b.regSk[region[i]] + epsSk[t]
+            logit(delB[i,t]) <- b.delB[resights[i,t]]
+            
+            p1[i,t] <- mean.p1 + b.eff[eff[t]]
+            p2[i,t] <- mean.p2 + b.eff[eff[t]]
+            p3[i,t] <- mean.p3 + b.eff[eff[t]]
+            p4[i,t] <- mean.p4 + b.eff[eff[t]]
+            p5[i,t] <- mean.p5 + b.eff[eff[t]]
+            pB[i,t] <- mean.pB + b.eff[eff[t]]
+            pSk[i,t] <- mean.pSk + b.eff[eff[t]]
+            
+            logit(psi3[i,t]) <- mean.psi3 + b.ssh.psi3*ssh[t] + b.chla.w.psi3*chla.w[t] + b.uwnd.psi3*uwnd[t] + 
+              b.mld.psi3*mld[t] + b.vwnd.psi3*vwnd[t] + b.bmi.psi3*bmi[i] + b.sst.w.psi3*sst.w[t] #+  b.psi3.reg[region[i]]
+            logit(psi4[i,t]) <- mean.psi4 + b.ssh.psi4*ssh[t] + b.chla.w.psi4*chla.w[t] + b.uwnd.psi4*uwnd[t] + 
+              b.mld.psi4*mld[t] + b.vwnd.psi4*vwnd[t] + b.sst.w.psi4*sst.w[t] + b.bmi.psi4*bmi[i] #+  b.psi4.reg[region[i]]
+            logit(psi5[i,t]) <- mean.psi5 + b.ssh.psi5*ssh[t] + b.chla.w.psi5*chla.w[t] + b.uwnd.psi5*uwnd[t] + 
+              b.mld.psi5*mld[t] + b.vwnd.psi5*vwnd[t] + b.sst.w.psi5*sst.w[t] #+  b.psi5.reg[region[i]]
+            logit(psiB[i,t]) <- mean.psiB + b.ssh.psiB*ssh[t] + b.chla.w.psiB*chla.w[t] + b.uwnd.psiB*uwnd[t] + 
+              b.mld.psiB*mld[t] + b.vwnd.psiB*vwnd[t] + b.sst.w.psiB*sst.w[t] #+ b.psiB.reg[region[i]]
+            logit(psiSk[i,t]) <- mean.psiSk + b.ssh.psiSk*ssh[t] + b.chla.w.psiSk*chla.w[t] + b.uwnd.psiSk*uwnd[t] +
+              b.mld.psiSk*mld[t] + b.vwnd.psiSk*vwnd[t] + b.sst.w.psiSk*sst.w[t]#+ b.psiSk.reg[region[i]]
+        }
+}
+  
+    p.delB[1] ~ dunif(0,1)
+    b.delB[1] <- log(p.delB[1]/(1-p.delB[1]))
+    p.delB[2] ~ dunif(0,1)
+    b.delB[2] <- log(p.delB[2]/(1-p.delB[2]))
+    p.delB[3] ~ dunif(0,1)
+    b.delB[3] <- log(p.delB[3]/(1-p.delB[3]))
+    p.delB[4] <- 0
+    b.delB[4] <- log(p.delB[4]/(1-p.delB[4])) #should be 0.5 (0 on probability scale, right?)
+  
+    b.eff[1] <- 0
+    b.eff[2] ~ dnorm(0, 0.001)
+    mean.psi3 ~ dnorm(0, 0.001)
+    mean.psi4 ~ dnorm(0, 0.001)
+    mean.psi5 ~ dnorm(0, 0.001)
+    mean.psiB ~ dnorm(0, 0.001)
+    mean.psiSk ~ dnorm(0, 0.001)
+    mean.p1 ~ dunif(0,1)
+    mean.p2 ~ dunif(0,1)
+    mean.p3 ~ dunif(0,1)
+    mean.p4 ~ dunif(0,1)
+    mean.p5 ~ dunif(0,1)
+    mean.pB ~ dunif(0,1)
+    mean.pSk ~ dunif(0,1)
+    #psi
+    b.bmi.psi3 ~ dnorm(0, pow(s.bmi.psi3,-2))
+    s.bmi.psi3 ~ dexp(1)
+    b.bmi.psi4 ~ dnorm(0, pow(s.bmi.psi4,-2))
+    s.bmi.psi4 ~ dexp(1)
+    b.bmi.psi5 ~ dnorm(0, pow(s.bmi.psi5,-2))
+    s.bmi.psi5 ~ dexp(1)
+    
+    b.ssh.psi3 ~ dnorm(0, pow(s.ssh.psi3,-2))
+    s.ssh.psi3 ~ dexp(1)
+    b.ssh.psi4 ~ dnorm(0, pow(s.ssh.psi4,-2))
+    s.ssh.psi4 ~ dexp(1)
+    b.ssh.psi5 ~ dnorm(0, pow(s.ssh.psi5,-2))
+    s.ssh.psi5 ~ dexp(1)
+    b.ssh.psiB ~ dnorm(0, pow(s.ssh.psiB,-2))
+    s.ssh.psiB ~ dexp(1)
+    b.ssh.psiSk ~ dnorm(0, pow(s.ssh.psiSk,-2))
+    s.ssh.psiSk ~ dexp(1)
+    
+    b.mld.psi3 ~ dnorm(0, pow(s.mld.psi3,-2))
+    s.mld.psi3 ~ dexp(1)
+    b.mld.psi4 ~ dnorm(0, pow(s.mld.psi4,-2))
+    s.mld.psi4 ~ dexp(1)
+    b.mld.psi5 ~ dnorm(0, pow(s.mld.psi5,-2))
+    s.mld.psi5 ~ dexp(1)
+    b.mld.psiB ~ dnorm(0, pow(s.mld.psiB,-2))
+    s.mld.psiB ~ dexp(1)
+    b.mld.psiSk ~ dnorm(0, pow(s.mld.psiSk,-2))
+    s.mld.psiSk ~ dexp(1)
+    
+    b.vwnd.psi3 ~ dnorm(0, pow(s.vwnd.psi3,-2))
+    s.vwnd.psi3 ~ dexp(1)
+    b.vwnd.psi4 ~ dnorm(0, pow(s.vwnd.psi4,-2))
+    s.vwnd.psi4 ~ dexp(1)
+    b.vwnd.psi5 ~ dnorm(0, pow(s.vwnd.psi5,-2))
+    s.vwnd.psi5 ~ dexp(1)
+    b.vwnd.psiB ~ dnorm(0, pow(s.vwnd.psiB,-2))
+    s.vwnd.psiB ~ dexp(1)
+    b.vwnd.psiSk ~ dnorm(0, pow(s.vwnd.psiSk,-2))
+    s.vwnd.psiSk ~ dexp(1)
+    
+    b.uwnd.psi3 ~ dnorm(0, pow(s.uwnd.psi3,-2))
+    s.uwnd.psi3 ~ dexp(1)
+    b.uwnd.psi4 ~ dnorm(0, pow(s.uwnd.psi4,-2))
+    s.uwnd.psi4 ~ dexp(1)
+    b.uwnd.psi5 ~ dnorm(0, pow(s.uwnd.psi5,-2))
+    s.uwnd.psi5 ~ dexp(1)
+    b.uwnd.psiB ~ dnorm(0, pow(s.uwnd.psiB,-2))
+    s.uwnd.psiB ~ dexp(1)
+    b.uwnd.psiSk ~ dnorm(0, pow(s.uwnd.psiSk,-2))
+    s.uwnd.psiSk ~ dexp(1)
+    
+    b.chla.w.psi3 ~ dnorm(0, pow(s.chla.w.psi3,-2))
+    s.chla.w.psi3 ~ dexp(1)
+    b.chla.w.psi4 ~ dnorm(0, pow(s.chla.w.psi4,-2))
+    s.chla.w.psi4 ~ dexp(1)
+    b.chla.w.psi5 ~ dnorm(0, pow(s.chla.w.psi5,-2))
+    s.chla.w.psi5 ~ dexp(1)
+    b.chla.w.psiB ~ dnorm(0, pow(s.chla.w.psiB,-2))
+    s.chla.w.psiB ~ dexp(1)
+    b.chla.w.psiSk ~ dnorm(0, pow(s.chla.w.psiSk,-2))
+    s.chla.w.psiSk ~ dexp(1)
+
+    b.sst.w.psi3 ~ dnorm(0, pow(s.psi3.sst.w, -2))
+    s.psi3.sst.w ~ dexp(1)
+    b.sst.w.psi4 ~ dnorm(0, pow(s.psi4.sst.w, -2))
+    s.psi4.sst.w ~ dexp(1)
+    b.sst.w.psi5 ~ dnorm(0, pow(s.psi5.sst.w, -2))
+    s.psi5.sst.w ~ dexp(1)
+    b.sst.w.psiB ~ dnorm(0, pow(s.psiB.sst.w, -2))
+    s.psiB.sst.w ~ dexp(1)
+    b.sst.w.psiSk ~ dnorm(0, pow(s.psiSk.sst.w, -2))
+    s.psiSk.sst.w ~ dexp(1)
+    
+    # b.psi3.reg[1] ~ dnorm(0, pow(s.psi3.reg,-2))
+    # s.psi3.reg ~ dexp(1)
+    # b.psi4.reg[1] ~ dnorm(0, pow(s.psi4.reg,-2))
+    # s.psi4.reg ~ dexp(1)
+    # b.psi5.reg[1] ~ dnorm(0, pow(s.psi5.reg,-2))
+    # s.psi5.reg ~ dexp(1)
+    # b.psiB.reg[1] ~ dnorm(0, pow(s.psiB.reg,-2))
+    # s.psiB.reg ~ dexp(1)
+    # b.psiSk.reg[1] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    # s.psiSk.reg ~ dexp(1)
+    # b.psi3.reg[2] ~ dnorm(0, pow(s.psi3.reg,-2))
+    # b.psi4.reg[2] ~ dnorm(0, pow(s.psi4.reg,-2))
+    # b.psi5.reg[2] ~ dnorm(0, pow(s.psi5.reg,-2))
+    # b.psiB.reg[2] ~ dnorm(0, pow(s.psiB.reg,-2))
+    # b.psiSk.reg[2] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    # b.psi3.reg[3] <- 0  #third region beta is mu
+    # b.psi4.reg[3] <- 0
+    # b.psi5.reg[3] <- 0
+    # b.psiB.reg[3] <- 0
+    # b.psiSk.reg[3] <- 0
+    
+    b.bmi.p ~ dnorm(0, pow(s.bmi.p,-2))
+    s.bmi.p ~ dexp(1)
+    b.bmi.1 ~ dnorm(0, pow(s.bmi.1,-2))
+    s.bmi.1 ~ dexp(1)
+    b.uwndP ~ dnorm(0, pow(s.uwndP,-2))
+    s.uwndP ~ dexp(1)
+    b.uwnd1 ~ dnorm(0, pow(s.uwnd1,-2))
+    s.uwnd1 ~ dexp(1)
+    b.uwnd2 ~ dnorm(0, pow(s.uwnd2,-2))
+    s.uwnd2 ~ dexp(1)
+    b.uwndPB ~ dnorm(0, pow(s.uwndPB,-2))
+    s.uwndPB ~ dexp(1)
+    b.uwndB ~ dnorm(0, pow(s.uwndB,-2))
+    s.uwndB ~ dexp(1)
+    b.uwndSk ~ dnorm(0, pow(s.uwndSk,-2))
+    s.uwndSk ~ dexp(1)
+    b.chla.wP ~ dnorm(0, pow(s.chla.wP,-2))
+    s.chla.wP ~ dexp(1)
+    b.chla.w1 ~ dnorm(0, pow(s.chla.w1,-2))
+    s.chla.w1 ~ dexp(1)
+    b.chla.w2 ~ dnorm(0, pow(s.chla.w2,-2))
+    s.chla.w2 ~ dexp(1)
+    b.chla.wPB ~ dnorm(0, pow(s.chla.wPB,-2))
+    s.chla.wPB ~ dexp(1)
+    b.chla.wB ~ dnorm(0, pow(s.chla.wB,-2))
+    s.chla.wB ~ dexp(1)
+    b.chla.wSk ~ dnorm(0, pow(s.chla.wSk,-2))
+    s.chla.wSk ~ dexp(1)
+    b.sshP ~ dnorm(0, pow(s.sshP,-2))
+    s.sshP ~ dexp(1)
+    b.ssh1 ~ dnorm(0, pow(s.ssh1,-2))
+    s.ssh1 ~ dexp(1)
+    b.ssh2 ~ dnorm(0, pow(s.ssh2,-2))
+    s.ssh2 ~ dexp(1)
+    b.sshPB ~ dnorm(0, pow(s.sshPB,-2))
+    s.sshPB ~ dexp(1)
+    b.sshB ~ dnorm(0, pow(s.sshB,-2))
+    s.sshB ~ dexp(1)
+    b.sshSk ~ dnorm(0, pow(s.sshSk,-2))
+    s.sshSk ~ dexp(1)
+    b.mldP ~ dnorm(0, pow(s.mldP,-2))
+    s.mldP ~ dexp(1)
+    b.mld1 ~ dnorm(0, pow(s.mld1,-2))
+    s.mld1 ~ dexp(1)
+    b.mld2 ~ dnorm(0, pow(s.mld2,-2))
+    s.mld2 ~ dexp(1)
+    b.mldPB ~ dnorm(0, pow(s.mldPB,-2))
+    s.mldPB ~ dexp(1)
+    b.mldB ~ dnorm(0, pow(s.mldB,-2))
+    s.mldB ~ dexp(1)
+    b.mldSk ~ dnorm(0, pow(s.mldSk,-2))
+    s.mldSk ~ dexp(1)
+    b.vwndP ~ dnorm(0, pow(s.vwndP,-2))
+    s.vwndP ~ dexp(1)
+    b.vwnd1 ~ dnorm(0, pow(s.vwnd1,-2))
+    s.vwnd1 ~ dexp(1)
+    b.vwnd2 ~ dnorm(0, pow(s.vwnd2,-2))
+    s.vwnd2 ~ dexp(1)
+    b.vwndPB ~ dnorm(0, pow(s.vwndPB,-2))
+    s.vwndPB ~ dexp(1)
+    b.vwndB ~ dnorm(0, pow(s.vwndB,-2))
+    s.vwndB ~ dexp(1)
+    b.vwndSk ~ dnorm(0, pow(s.vwndSk,-2))
+    s.vwndSk ~ dexp(1)
+    b.sst.wP ~ dnorm(0, pow(s.sst.wP,-2))
+    s.sst.wP ~ dexp(1)
+    b.sst.w1 ~ dnorm(0, pow(s.sst.w1,-2))
+    s.sst.w1 ~ dexp(1)
+    b.sst.w2 ~ dnorm(0, pow(s.sst.w2,-2))
+    s.sst.w2 ~ dexp(1)
+    b.sst.wPB ~ dnorm(0, pow(s.sst.wPB,-2))
+    s.sst.wPB ~ dexp(1)
+    b.sst.wB ~ dnorm(0, pow(s.sst.wB,-2))
+    s.sst.wB ~ dexp(1)
+    b.sst.wSk ~ dnorm(0, pow(s.sst.wSk,-2))
+    s.sst.wSk ~ dexp(1)
+    
+    # for (t in 1:(n_occasions-1)){
+    #   epsP[t] ~ dnorm(0, tauP)
+    #   eps1[t] ~ dnorm(0, tau1)
+    #   eps2[t] ~ dnorm(0, tau2)
+    #   epsPB[t] ~ dnorm(0, tauPB)
+    #   epsB[t] ~ dnorm(0, tauB)
+    #   epsSk[t] ~ dnorm(0, tauSk)
+    # } #t
+    # 
+    # sigmaP ~ dunif(0, 10)    
+    # tauP <- pow(sigmaP, -2)
+    # sigma2.P <- pow(sigmaP, 2)
+    # sigma1 ~ dunif(0, 10)    
+    # tau1 <- pow(sigma1, -2)
+    # sigma2.1 <- pow(sigma1, 2)
+    # sigma2 ~ dunif(0, 10)    
+    # tau2 <- pow(sigma2, -2)
+    # sigma2.2 <- pow(sigma2, 2)
+    # sigmaPB ~ dunif(0, 10)    
+    # tauPB <- pow(sigmaPB, -2)
+    # sigma2.PB <- pow(sigmaPB, 2)
+    # sigmaB ~ dunif(0, 10)    
+    # tauB <- pow(sigmaB, -2)
+    # sigma2.B <- pow(sigmaB, 2)
+    # sigmaSk ~ dunif(0, 10)    
+    # tauSk <- pow(sigmaSk, -2)
+    # sigma2.Sk <- pow(sigmaSk, 2)
+    
+    mu.p <- log(int.phiP/(1 - int.phiP))
+    mu.1 <- log(int.phi1/(1 - int.phi1))
+    mu.2 <- log(int.phi2/(1 - int.phi2))
+    mu.3 <- log(int.phi3/(1 - int.phi3))
+    mu.4 <- log(int.phi4/(1 - int.phi4))
+    mu.5 <- log(int.phi5/(1 - int.phi5))
+    mu.B <- log(int.phiB/(1 - int.phiB))
+    mu.Sk <- log(int.phiSk/(1 - int.phiSk))
+    int.phiP ~ dunif(0,1)
+    int.phi1 ~ dunif(0,1)
+    int.phi2 ~ dunif(0,1)
+    int.phi3 ~ dunif(0,1)
+    int.phi4 ~ dunif(0,1)
+    int.phi5 ~ dunif(0,1)
+    int.phiB ~ dunif(0,1)
+    int.phiSk ~ dunif(0,1)
+
+    #likelihood
+for (i in 1:n_ind) {
+    z[i, fc[i]] <- 1
+for (t in (fc[i] + 1):n_occasions) {
+    z[i,t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+    y[i,t] ~ dcat(po[z[i,t], i, t - 1, ])
+    }
+}
+    
+# Transition and observation matrices
+for (i in 1:n_ind){
+  for (t in 1:(n_occasions-1)) {
+     # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 0              
+      ps[1,i,t,2] <- phiP[i,t]        #pup to yearling
+      ps[1,i,t,3] <- 0            
+      ps[1,i,t,4] <- 0              
+      ps[1,i,t,5] <- 0
+      ps[1,i,t,6] <- 0
+      ps[1,i,t,7] <- 0
+      ps[1,i,t,8] <- 0
+      ps[1,i,t,9] <- 0
+      ps[1,i,t,10]<- 0
+      ps[1,i,t,11]<- 0
+      ps[1,i,t,12]<- 1-phiP[i,t]      #pup dies
+      ps[2,i,t,1] <- 0              
+      ps[2,i,t,2] <- 0              
+      ps[2,i,t,3] <- phi1[i,t]        #yearling to 2yr
+      ps[2,i,t,4] <- 0              
+      ps[2,i,t,5] <- 0
+      ps[2,i,t,6] <- 0
+      ps[2,i,t,7] <- 0
+      ps[2,i,t,8] <- 0
+      ps[2,i,t,9] <- 0
+      ps[2,i,t,10]<- 0
+      ps[2,i,t,11]<- 0
+      ps[2,i,t,12]<- 1-phi1[i,t]      #yearling dies
+      ps[3,i,t,1] <- 0              
+      ps[3,i,t,2] <- 0              
+      ps[3,i,t,3] <- 0            
+      ps[3,i,t,4] <- phi2[i,t]        #2-3yr
+      ps[3,i,t,5] <- 0
+      ps[3,i,t,6] <- 0
+      ps[3,i,t,7] <- 0
+      ps[3,i,t,8] <- 0
+      ps[3,i,t,9] <- 0
+      ps[3,i,t,10]<- 0
+      ps[3,i,t,11]<- 0
+      ps[3,i,t,12]<- 1-phi2[i,t]    #2yr dies
+      ps[4,i,t,1] <- 0              
+      ps[4,i,t,2] <- 0              
+      ps[4,i,t,3] <- 0            
+      ps[4,i,t,4] <- 0              
+      ps[4,i,t,5] <- phi3[i,t]*(1-psi3[i,t])   #3yr becomes 4yr prebreeder
+      ps[4,i,t,6] <- 0
+      ps[4,i,t,7] <- phi3[i,t]*psi3[i,t]       #3yr becomes 4yr breeder
+      ps[4,i,t,8] <- 0
+      ps[4,i,t,9] <- 0
+      ps[4,i,t,10]<- 0
+      ps[4,i,t,11]<- 0
+      ps[4,i,t,12]<- 1-phi3[i,t]      #3yr dies
+      ps[5,i,t,1] <- 0              
+      ps[5,i,t,2] <- 0              
+      ps[5,i,t,3] <- 0            
+      ps[5,i,t,4] <- 0              
+      ps[5,i,t,5] <- 0
+      ps[5,i,t,6] <- phi4[i,t]*(1-psi4[i,t])     #4yr prebreeder becomes 5yr prebreeder
+      ps[5,i,t,7] <- 0
+      ps[5,i,t,8] <- phi4[i,t]*psi4[i,t]         #4yr prebreeder becomes 5yr breeder
+      ps[5,i,t,9] <- 0
+      ps[5,i,t,10]<- 0
+      ps[5,i,t,11]<- 0
+      ps[5,i,t,12]<- 1-phi4[i,t]            #4yr dies
+      ps[6,i,t,1] <- 0              
+      ps[6,i,t,2] <- 0              
+      ps[6,i,t,3] <- 0            
+      ps[6,i,t,4] <- 0              
+      ps[6,i,t,5] <- 0
+      ps[6,i,t,6] <- 0
+      ps[6,i,t,7] <- 0
+      ps[6,i,t,8] <- 0
+      ps[6,i,t,9] <- phi5[i,t]*psi5[i,t]  #5yr becomes 6yr breeder, psi5 no longer fixed to 1.0
+      ps[6,i,t,10]<- 0
+      ps[6,i,t,11]<- phi5[i,t]*(1-psi5[i,t]) #5yr becomes 6yr n.b.
+      ps[6,i,t,12]<- 1-phi5[i,t]    #5yr dies
+      ps[7,i,t,1] <- 0              
+      ps[7,i,t,2] <- 0              
+      ps[7,i,t,3] <- 0            
+      ps[7,i,t,4] <- 0              
+      ps[7,i,t,5] <- 0
+      ps[7,i,t,6] <- 0
+      ps[7,i,t,7] <- 0
+      ps[7,i,t,8] <- phi4[i,t]*(psiB[i,t])   #4yr breeder becomes 5yr breeder 
+      ps[7,i,t,9] <- 0
+      ps[7,i,t,10]<- phi4[i,t]*(1-psiB[i,t])  #4yr breeder becomes 5yr NB
+      ps[7,i,t,11]<- 0
+      ps[7,i,t,12]<- 1-phi4[i,t] #4yr dies
+      ps[8,i,t,1] <- 0              
+      ps[8,i,t,2] <- 0              
+      ps[8,i,t,3] <- 0            
+      ps[8,i,t,4] <- 0              
+      ps[8,i,t,5] <- 0
+      ps[8,i,t,6] <- 0
+      ps[8,i,t,7] <- 0
+      ps[8,i,t,8] <- 0
+      ps[8,i,t,9] <- phi5[i,t]*(psiB[i,t])  #5yr breeder becomes 6+yr breeder 
+      ps[8,i,t,10]<- 0
+      ps[8,i,t,11]<- phi5[i,t]*(1-psiB[i,t])  #5yr breeder becomes 6+ NB
+      ps[8,i,t,12]<- 1-phi5[i,t]  #5yr dies
+      ps[9,i,t,1] <- 0              
+      ps[9,i,t,2] <- 0              
+      ps[9,i,t,3] <- 0            
+      ps[9,i,t,4] <- 0              
+      ps[9,i,t,5] <- 0
+      ps[9,i,t,6] <- 0
+      ps[9,i,t,7] <- 0
+      ps[9,i,t,8] <- 0
+      ps[9,i,t,9] <- phiB[i,t]*(psiB[i,t])  #6+ breeder stays a breeder
+      ps[9,i,t,10]<- 0
+      ps[9,i,t,11]<- phiB[i,t]*(1-psiB[i,t])  #6+ breeder becomes a NB
+      ps[9,i,t,12]<- 1-phiB[i,t]  #breeder dies
+      ps[10,i,t,1] <- 0              
+      ps[10,i,t,2] <- 0              
+      ps[10,i,t,3] <- 0            
+      ps[10,i,t,4] <- 0              
+      ps[10,i,t,5] <- 0
+      ps[10,i,t,6] <- 0
+      ps[10,i,t,7] <- 0
+      ps[10,i,t,8] <- 0
+      ps[10,i,t,9] <- phiSk[i,t]*psiSk[i,t]   #5yr NB becomes a breeder
+      ps[10,i,t,10]<- 0  
+      ps[10,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t]) #5yr NB stays NB by not becoming breeder
+      ps[10,i,t,12]<- 1-phiSk[i,t]  #NB dies
+      ps[11,i,t,1] <- 0              
+      ps[11,i,t,2] <- 0              
+      ps[11,i,t,3] <- 0            
+      ps[11,i,t,4] <- 0              
+      ps[11,i,t,5] <- 0
+      ps[11,i,t,6] <- 0
+      ps[11,i,t,7] <- 0
+      ps[11,i,t,8] <- 0
+      ps[11,i,t,9] <- phiSk[i,t]*psiSk[i,t]  #6yr NB becomes a breeder
+      ps[11,i,t,10]<- 0
+      ps[11,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t])  #6yr NB stays NB by not becoming breeder
+      ps[11,i,t,12]<- 1-phiSk[i,t]
+      ps[12,i,t,1] <- 0              
+      ps[12,i,t,2] <- 0              
+      ps[12,i,t,3] <- 0            
+      ps[12,i,t,4] <- 0              
+      ps[12,i,t,5] <- 0
+      ps[12,i,t,6] <- 0
+      ps[12,i,t,7] <- 0
+      ps[12,i,t,8] <- 0
+      ps[12,i,t,9] <- 0
+      ps[12,i,t,10]<- 0
+      ps[12,i,t,11]<- 0
+      ps[12,i,t,12]<- 1  #stays dead
+      
+     # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 1        #pups always observed as a pup      
+      po[1,i,t,2] <- 0        
+      po[1,i,t,3] <- 0            
+      po[1,i,t,4] <- 0              
+      po[1,i,t,5] <- 0
+      po[1,i,t,6] <- 0
+      po[1,i,t,7] <- 0
+      po[1,i,t,8] <- 0
+      po[1,i,t,9] <- 0
+      po[1,i,t,10]<- 0
+      po[1,i,t,11]<- 0
+      po[2,i,t,1] <- 0              
+      po[2,i,t,2] <- p1[i,t]  #detection of yearlings              
+      po[2,i,t,3] <- 0        
+      po[2,i,t,4] <- 0              
+      po[2,i,t,5] <- 0
+      po[2,i,t,6] <- 0
+      po[2,i,t,7] <- 0
+      po[2,i,t,8] <- 0
+      po[2,i,t,9] <- 0
+      po[2,i,t,10]<- 0
+      po[2,i,t,11]<- 1-p1[i,t]      #yearling ND
+      po[3,i,t,1] <- 0              
+      po[3,i,t,2] <- 0              
+      po[3,i,t,3] <- p2[i,t]         #detection of 2yr            
+      po[3,i,t,4] <- 0
+      po[3,i,t,5] <- 0
+      po[3,i,t,6] <- 0
+      po[3,i,t,7] <- 0
+      po[3,i,t,8] <- 0
+      po[3,i,t,9] <- 0
+      po[3,i,t,10]<- 0
+      po[3,i,t,11]<- 1-p2[i,t]    #2yr ND
+      po[4,i,t,1] <- 0              
+      po[4,i,t,2] <- 0              
+      po[4,i,t,3] <- 0            
+      po[4,i,t,4] <- p3[i,t]       #detection of 3yr              
+      po[4,i,t,5] <- 0
+      po[4,i,t,6] <- 0
+      po[4,i,t,7] <- 0
+      po[4,i,t,8] <- 0
+      po[4,i,t,9] <- 0
+      po[4,i,t,10]<- 0
+      po[4,i,t,11]<- 1-p3[i,t]      #3yr ND
+      po[5,i,t,1] <- 0              
+      po[5,i,t,2] <- 0              
+      po[5,i,t,3] <- 0            
+      po[5,i,t,4] <- 0              
+      po[5,i,t,5] <- p4[i,t]#*delPB[i,t]    #4yr prebreeder seen and correctly ascertained w/o pup 
+      po[5,i,t,6] <- 0
+      po[5,i,t,7] <- 0
+      po[5,i,t,8] <- 0
+      po[5,i,t,9] <- 0
+      po[5,i,t,10]<- 0
+      po[5,i,t,11]<- 1-p4[i,t]            #4yr ND
+      po[6,i,t,1] <- 0              
+      po[6,i,t,2] <- 0              
+      po[6,i,t,3] <- 0            
+      po[6,i,t,4] <- 0 
+      po[6,i,t,5] <- 0
+      po[6,i,t,6] <- 0
+      po[6,i,t,7] <- p5[i,t]#*delPB[i,t]        #5yr prebreeder seen and correctly ascertained w/o pup
+      po[6,i,t,8] <- 0
+      #po[6,i,t,8] <- p5[i,t]*(1-delPB[i,t])   #5yr prebreeder seen and incorrectly ascertained as breeder
+      po[6,i,t,9] <- 0
+      po[6,i,t,10]<- 0
+      po[6,i,t,11]<- 1-p5[i,t]    #5yr ND
+      po[7,i,t,1] <- 0              
+      po[7,i,t,2] <- 0              
+      po[7,i,t,3] <- 0            
+      po[7,i,t,4] <- 0              
+      po[7,i,t,5] <- pB[i,t]*(1-delB[i,t])  #4yr breeder incorrectly ascertained w/o pup (false -)
+      po[7,i,t,6] <- pB[i,t]*delB[i,t]      #4yr breeder correctly ascertained w pup
+      po[7,i,t,7] <- 0
+      po[7,i,t,8] <- 0
+      po[7,i,t,9] <- 0
+      po[7,i,t,10]<- 0
+      po[7,i,t,11]<- 1-pB[i,t] #4yr ND
+      po[8,i,t,1] <- 0              
+      po[8,i,t,2] <- 0              
+      po[8,i,t,3] <- 0            
+      po[8,i,t,4] <- 0              
+      po[8,i,t,5] <- 0
+      po[8,i,t,6] <- 0
+      po[8,i,t,7] <- pB[i,t]*(1-delB[i,t])   #5yr breeder incorrectly ascertained w/o pup
+      po[8,i,t,8] <- pB[i,t]*delB[i,t]     #5yr breeder correctly ascertained w pup
+      po[8,i,t,9] <- 0
+      po[8,i,t,10]<- 0
+      po[8,i,t,11]<- 1-pB[i,t]  #5yr ND
+      po[9,i,t,1] <- 0              
+      po[9,i,t,2] <- 0              
+      po[9,i,t,3] <- 0            
+      po[9,i,t,4] <- 0              
+      po[9,i,t,5] <- 0
+      po[9,i,t,6] <- 0
+      po[9,i,t,7] <- 0
+      po[9,i,t,8] <- 0
+      po[9,i,t,9] <- pB[i,t]*(1-delB[i,t])  #6+ breeder incorrectly ascertained w/o pup 
+      po[9,i,t,10]<- pB[i,t]*delB[i,t]  #6+ breeder correctly ascertained as breeder
+      po[9,i,t,11]<- 1-pB[i,t]  #breeder ND
+      po[10,i,t,1] <- 0              
+      po[10,i,t,2] <- 0              
+      po[10,i,t,3] <- 0            
+      po[10,i,t,4] <- 0              
+      po[10,i,t,5] <- 0
+      po[10,i,t,6] <- 0
+      po[10,i,t,7] <- pSk[i,t]#*delSk[i,t]     #5yr NB correctly ascertained w/o pup
+      #po[10,i,t,8] <- pSk[i,t]*(1-delSk[i,t])  #5yr NB incorrectly ascertained w pup
+      po[10,i,t,8] <- 0                          #5yr NB incorrectly ascertained w pup
+      po[10,i,t,9] <- 0
+      po[10,i,t,10]<- 0
+      po[10,i,t,11]<- 1-pSk[i,t]  #5yr NB ND
+      po[11,i,t,1] <- 0              
+      po[11,i,t,2] <- 0              
+      po[11,i,t,3] <- 0            
+      po[11,i,t,4] <- 0              
+      po[11,i,t,5] <- 0
+      po[11,i,t,6] <- 0
+      po[11,i,t,7] <- 0
+      po[11,i,t,8] <- 0
+      po[11,i,t,9] <- pSk[i,t]#*delSk[i,t] 
+      po[11,i,t,10]<- 0
+      po[11,i,t,11]<- 1-pSk[i,t]  #6+ yr NB not seen
+      po[12,i,t,1] <- 0              
+      po[12,i,t,2] <- 0              
+      po[12,i,t,3] <- 0            
+      po[12,i,t,4] <- 0              
+      po[12,i,t,5] <- 0
+      po[12,i,t,6] <- 0
+      po[12,i,t,7] <- 0
+      po[12,i,t,8] <- 0
+      po[12,i,t,9] <- 0  
+      po[12,i,t,10]<- 0  
+      po[12,i,t,11]<- 1  #dead not seen 
+    } #t 
+  }#i
+}
+
+write.model(CJS_full_local_sel, "CJS_full_local_sel.txt")
+model.file = paste(getwd(),"CJS_full_local_sel.txt", sep="/")
+
+```
+
+```{r local run}
+
+# Bundle data
+jags.data <- list(y = y, fc = fc,
+                  z = z.st, resights = res_mat, eff = eff, 
+                  sst.e = sst.e, chla.e = chla.e, mld = mld, uwnd = uwnd, vwnd = vwnd, ssh = ssh,
+                  sst.w = sst.w, chla.w = chla.w,
+                  bmi = bmi, #MEI = MEI, NOI = NOI, NPI = NPI, NPGO = NPGO, AOI = AOI, PDO = PDO,
+                  region = region_f,
+                  n_occasions = n_occasions, n_ind = dim(ch)[1])
+
+inits <- function(){list(
+  # mean.psi = runif(1, 0, 1),
+  # mean.del = runif(1, 0, 1),
+  # mean.p = runif(1, 0, 1),
+  #eps = runif(17, 0, 1),
+  #sigma = runif(1, 0, 1),
+  z = z.init)}    
+
+parameters <- c('int.phiP', 'int.phi1', 'int.phi2', 'int.phi3', 'int.phi4', 'int.phi5', 'int.phiB', 'int.phiSk',
+                'mean.p1', 'mean.p2', 'mean.p3', 'mean.p4', 'mean.p5', 'mean.pB', 'mean.pSk', 'p.delB', 'b.eff', 
+                "mean.psi3", 'mean.psi4', 'mean.psi5', 'mean.psiB', 'mean.psiSk', #mean psi
+                'b.bmi.psi3', 'b.bmi.psi4', 'b.bmi.psi5', 'b.bmi.p', 'b.bmi.1',           #bmi on psi3-5 and P/1 phi
+                #'b.psi3.reg', 'b.psi4.reg', 'b.psi5.reg', 'b.psiB.reg', 'b.psiPB.reg', #region on psi
+                'b.uwnd.psi3', 'b.uwnd.psi4', 'b.uwnd.psi5', 'b.uwnd.psiB', 'b.uwnd.psiSk', 
+                'b.vwnd.psi3', 'b.vwnd.psi4', 'b.vwnd.psi5', 'b.vwnd.psiB', 'b.vwnd.psiSk', 
+                'b.mld.psi3', 'b.mld.psi4', 'b.mld.psi5', 'b.mld.psiB', 'b.mld.psiSk',
+                'b.ssh.psi3', 'b.ssh.psi4', 'b.ssh.psi5', 'b.ssh.psiB', 'b.ssh.psiSk',
+                'b.sst.e.psi3', 'b.sst.e.psi4', 'b.sst.e.psi5', 'b.sst.e.psiB', 'b.sst.e.psiSk',
+                'b.chla.e.psi3', 'b.chla.e.psi4', 'b.chla.e.psi5', 'b.chla.e.psiB', 'b.chla.e.psiSk',
+                'b.sst.w.psi3', 'b.sst.w.psi4', 'b.sst.w.psi5', 'b.sst.w.psiB', 'b.sst.w.psiSk',
+                'b.chla.w.psi3', 'b.chla.w.psi4', 'b.chla.w.psi5', 'b.chla.w.psiB', 'b.chla.w.psiSk',
+                'mu.p', 'mu.1', 'mu.2', 'mu.3', 'mu.4', 'mu.5', 'mu.B', 'mu.Sk', #mean phi
+                'b.mldP', 'b.mld1', 'b.mld2', 'b.mldPB', 'b.mldB', 'b.mldSk', 
+                'b.chla.eP', 'b.chla.e1', 'b.chla.e2', 'b.chla.ePB', 'b.chla.eB', 'b.chla.eSk',
+                'b.uwndP', 'b.uwnd1', 'b.uwnd2', 'b.uwndPB', 'b.uwndB', 'b.uwndSk',
+                'b.sst.eP', 'b.sst.e1', 'b.sst.e2', 'b.sst.ePB', 'b.sst.eB', 'b.sst.eSk',
+                'b.sst.wP', 'b.sst.w1', 'b.sst.w2', 'b.sst.wPB', 'b.sst.wB', 'b.sst.wSk',
+                'b.sshP', 'b.ssh1', 'b.ssh2', 'b.sshPB', 'b.sshB', 'b.sshSk',
+                'b.vwndP', 'b.vwnd1', 'b.vwnd2', 'b.vwndPB', 'b.vwndB', 'b.vwndSk',
+                #'b.regP', 'b.reg1', 'b.reg2', 'b.regPB', 'b.regB', 'b.regSk',  #region on phi
+                #'epsP', 'sigma2.P', 'eps1', 'sigma2.1', 'eps2', 'sigma2.2', 'epsPB', 'sigma2.PB',  #RE year on phi
+                'epsB', 'sigma2.B', 'epsSk', 'sigma2.Sk')
+
+# MCMC settings
+ni <- 35000; nb <- 10000; nc <- 3
+#nt <- 2
+
+out_local <- jagsUI::jags(jags.data, inits, parameters,
+            model.file = model.file,
+            n.chains = nc,
+            #n.thin = nt,
+            n.iter = ni, n.burnin = nb, parallel = T)
+
+### Save output
+saveRDS(out_local, file = "out_loc_NB_e.rds")
+# saveRDS(out_local, file = "out_loc_spr_e.rds")
+# saveRDS(out_local, file = "out_loc_sum_e.rds")
+# saveRDS(out_local, file = "out_loc_fall_e.rds")
+# saveRDS(out_local, file = "out_loc_win_e.rds")
+
+# saveRDS(out_local, file = "out_loc_NB_w.rds")
+# saveRDS(out_local, file = "out_loc_spr_w.rds")
+# saveRDS(out_local, file = "out_loc_sum_w.rds")
+# saveRDS(out_local, file = "out_loc_fall_w.rds")
+# saveRDS(out_local, file = "out_loc_win_w.rds")
+
+## Update output
+out_local_up <- update(out_local, n.iter = 10000)
+
+## Save updated output
+saveRDS(out_local_up, file = 'out_loc_NB_e_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_spr_e_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_sum_e_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_fall_e_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_win_e_up.rds')
+
+# saveRDS(out_local_up, file = 'out_loc_NB_w_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_spr_w_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_sum_w_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_fall_w_up.rds')
+# saveRDS(out_local_up, file = 'out_loc_win_w_up.rds')
+
+```
