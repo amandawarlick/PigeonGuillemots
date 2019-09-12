@@ -1,20 +1,59 @@
 ---
-title: "Untitled"
+title: "PiGu Mods"
 author: "Amanda Warlick"
 date: "2/5/2019"
 output: word_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, comment=NA, cache=TRUE, tidy.opts=list(width.cutoff=60), tidy=TRUE, fig.align='center')
 ```
+
+
+Timeseries count model with tides on detection
+
+$$
+\begin{equation}
+\begin{gathered}
+\mathbf{x}_{i,t} = \mathbf{B} \mathbf{x}_{i,t-1}+\mathbf{u}+\mathbf{w}_{i,t} \text{ where } \mathbf{w}_{i,t} \sim \,\text{N}(0,\mathbf{Q}) \\
+\mathbf{y}_{i,t} = \mathbf{Z}\mathbf{x}_{i,t}+\mathbf{a}+\mathbf{v}_{i,t} \text{ where } \mathbf{v}_{i,t} \sim \,\text{N}(0,\mathbf{R}) \\
+\mathbf{x}_0 = \boldsymbol{\mu}
+\end{gathered} 
+\end{equation}
+$$
+
+$$
+\begin{equation}
+\begin{gathered}
+\mathbf{x}_{i,t} = \mathbf{B}_{i,t} \mathbf{x}_{t-1} + \mathbf{u}_{i,t} + \mathbf{w}_{i,t}, \text{ where } \mathbf{w}_{i,t} \sim \,\text{MVN}(0,\mathbf{Q}) \\
+\mathbf{y}_{i,t} = \mathbf{Z}_{i,t}\mathbf{x}_{i,t} + \mathbf{a}_{i,t} + \mathbf{D}_{i,t}\mathbf{d}_{i,t} + \mathbf{v}_{i,t}, \text{ where } \mathbf{v}_{i,t} \sim \,\text{MVN}(0,\mathbf{R}) 
+\end{gathered}
+\end{equation}
+$$
+
+
+
 
 General population dynamics  
 $N_{t+1} = N_t + N_tr$
 
 $N_{t+1} = Adults_t*Survival + Chicks$
 
-N-mixture model  
+IPM pop model matrix
+$$ \left[\begin{array}
+{l}
+N_{F,t} = N_{A,t}*fec_t \\
+N_{1,t} = N_{F,t-1}*\phi_{F}\\
+N_{2,t} = N_{1,t-1}*\phi_{1}\\
+N_{A,t} = N_{2,t-1}*\phi_{2} + N_{A,t-1}*\phi_{A}\\
+\end{array}\right] 
+$$ 
+Where $f_t$ = rate of fledged females per female breeder.  
+
+Assume $\phi_1 = \phi_2 = \phi_A$
+
+
+N-mixture model  (old, wrong)
 $N_{i,t} \sim Poisson(\lambda_{i,t})$  
 $log(\lambda_{i,t}) = \alpha_0+\alpha_{year}*year_{i,t}+\alpha_{tide}*tide_{i,t} + \gamma_{site} + \gamma_{year} + \epsilon$  
 $\gamma_{year} \sim Normal(0, \sigma_{year})$  
@@ -36,21 +75,6 @@ $\phi_{i,a}~ \sim ~\mu_a$
 $\phi_{i,t,a}~ \sim ~\mu_{t,a}$  
 $\phi_{i,t,a}~ \sim ~\mu_{a} + \epsilon_t$ 
 
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1[region_i]+ \epsilon_t$
-
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1[cohort_i]+ \epsilon_t$
-
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i+ \epsilon_t$   
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i + \epsilon_t$   
-
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aNOI_t$  
-
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aNOI_t + \beta3_aBMI_i+\epsilon_t$  
-
-<!-- using -->
-$\phi_{i,t,a}~ \sim ~\mu_a + \beta1_aBMI_i+\epsilon_t$   
-
-$\psi_{i,t,a}~ \sim ~\mu_a + \beta1_aMEI_t + \beta2_aBMI_i$   
 
 
-SRKW equations
+
