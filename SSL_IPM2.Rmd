@@ -1,0 +1,2732 @@
+
+
+```{r}
+#install.packages('rstudioapi')
+# install.packages(c('rjags', 'jagsUI', 'R2OpenBUGS', 'dplyr', 'tidyr', 'reshape2', 'data.table', 'ggplot2', 'scales', 'knitr', 'stringr', 'lubridate', 'stats', 'zoo'))
+
+library(rstudioapi)
+#library(rjags)
+library(jagsUI)
+library(R2OpenBUGS)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(data.table)
+library(ggplot2)
+#library(cowplot) 
+library(loo)
+library(scales)
+library(knitr)
+library(stringr)
+library(lubridate)
+library(stats) 
+library(zoo)
+library(boot) #corr()
+library(Hmisc) #rcorr()
+library(corrplot)
+#library(nimble)
+
+path <- getActiveDocumentContext()$path 
+setwd(dirname(path))
+
+
+```
+
+```{r load data}
+
+#environmental variables: adjusted year is the phi period (adj year == 1 is pups born in 2000 surviving to 2001)
+#fall and summer adj_year 0 == NA (would be Sept-Dec 1999)
+#spring and winter adj_year 18 == NA (would be Jan-May 2018, for pups born in 2017)
+#if want to study lag time (pups born in June 2000 strongly affected by mom's forage availability in 
+# winter 1999-2000 rather than first solo foraging winter 2000-2001), get June-Dec 1999 data 
+# ocean_SSL <- read.csv('ocean_all_adj.csv', header = T) %>%
+#   filter(adj_year > 0 & adj_year < 18) #exclude 1999 and 2018, just want up through May/Spring of 2017 for pups born in 2016
+
+#capture histories
+ch_fem <- read.csv('ch_fem.csv', header = T)
+ch_m <- read.csv('ch_m.csv', header = T)
+
+resights <- read.csv('num_resight.csv', header = T) #number of times females seen per year
+
+#subsample to test - old
+ch_fem <- ch_fem[sample(nrow(ch_fem), 20),]
+ch_m <- ch_m[sample(nrow(ch_m), 20),]
+ch_fem <- ch_fem %>% arrange(AnimalID)
+resights <- resights %>% filter(AnimalID %in% ch_fem$AnimalID)
+
+# n_ind <- dim(ch_wide)[1]
+n_occasions <- dim(ch_fem)[2]-7 #subtract id columns
+res_mat <- as.matrix(resights[,3:20]) #pus are in for indexing purposes, 1: 1-2 resights, 2: 3-8, 3: 9+, 4: ND
+eff <- c(rep(1, 16), 2)[1:17]
+# eff_mat <- matrix(1, nrow = n_ind, ncol = n_occasions)
+# eff_mat[,n_occasions] <- 2
+
+#variables have to be sex-specific too
+region_f <- as.numeric(factor(ch_fem$reg_0)) #levels = CGULF, EALEU, EGULF
+region_m <- as.numeric(factor(ch_m$reg_0)) 
+
+bmi_f <- ch_fem$bmi_std
+bmi_f[which(is.na(bmi_f))] <- 0
+bmi_m <- ch_m$bmi_std
+bmi_m[which(is.na(bmi_m))] <- 0
+
+###count data
+cnt_dat <- read.csv('IPM_cnts.csv', header = T, stringsAsFactors = F) #created in count_data_cleaning.R
+
+cnt_yr <- cnt_dat %>%
+  group_by(Year) %>%
+  dplyr::summarize(Pup = sum(Pup))
+
+Npup <- c(rep(10000,8), cnt_yr$Pup)
+
+```
+
+```{r ocean covariates}
+
+#indexing for ocean_SSL: adj_year 1 = survival from 2000 to 2001; 17 = survival from 2016 to 2017
+#adj_year <- ocean_SSL$adj_year[1:17]
+PDO <- ocean_SSL$PDO_NB[1:17]
+#MEI <- ocean_SSL$MEI_NB[1:17]
+AOI <- ocean_SSL$AOI_NB[1:17]
+NOI <- ocean_SSL$NOI_NB[1:17]
+NPI <- ocean_SSL$NPI_NB[1:17]
+#NPGO <- ocean_SSL$NPGO_NB[1:17]
+#upwell   <- ocean_SSL$upwell_NB[1:17]
+chla <- scale(ocean_SSL$chla_NB)[1:17]
+sst <- scale(ocean_SSL$sst_NB)[1:17]
+ssh <- scale(ocean_SSL$ssh_NB)[1:17]
+so <- scale(ocean_SSL$so_NB)[1:17]
+temp <- scale(ocean_SSL$temp_NB)[1:17]
+mld <- scale(ocean_SSL$mld_NB)[1:17]
+uwnd <- scale(ocean_SSL$uwnd_NB)[1:17]
+vwnd <- scale(ocean_SSL$vwnd_NB)[1:17]
+
+PDO <- ocean_SSL$PDO_spring[1:17]
+#MEI<- ocean_SSL$MEI_spring[1:17]
+AOI <- ocean_SSL$AOI_spring[1:17]
+NOI <- ocean_SSL$NOI_spring[1:17]
+NPI <- ocean_SSL$NPI_spring[1:17]
+#upwell   <- ocean_SSL$upwell_spring[1:17]
+#NPGO <- ocean_SSL$NPGO_spring[1:17]
+chla <- scale(ocean_SSL$chla_spring)[1:17]
+sst <- scale(ocean_SSL$sst_spring)[1:17]
+ssh <- scale(ocean_SSL$ssh_spring)[1:17]
+so <- scale(ocean_SSL$so_spring)[1:17]
+temp <- scale(ocean_SSL$temp_spring)[1:17]
+mld <- scale(ocean_SSL$mld_spring)[1:17]
+uwnd <- scale(ocean_SSL$uwnd_spring)[1:17]
+vwnd <- scale(ocean_SSL$vwnd_spring)[1:17]
+
+PDO <- ocean_SSL$PDO_summer[1:17]
+#MEI<- ocean_SSL$MEI_summer[1:17]
+AOI <- ocean_SSL$AOI_summer[1:17]
+NOI <- ocean_SSL$NOI_summer[1:17]
+NPI <- ocean_SSL$NPI_summer[1:17]
+#upwell   <- ocean_SSL$upwell_summer[1:17]
+#NPGO <- ocean_SSL$NPGO_summer[1:17]
+chla <- scale(ocean_SSL$chla_summer)[1:17]
+sst <- scale(ocean_SSL$sst_summer)[1:17]
+ssh <- scale(ocean_SSL$ssh_summer)[1:17]
+so <- scale(ocean_SSL$so_summer)[1:17]
+temp <- scale(ocean_SSL$temp_summer)[1:17]
+mld <- scale(ocean_SSL$mld_summer)[1:17]
+uwnd <- scale(ocean_SSL$uwnd_summer)[1:17]
+vwnd <- scale(ocean_SSL$vwnd_summer)[1:17]
+
+PDO <- ocean_SSL$PDO_fall[1:17]
+#MEI<- ocean_SSL$MEI_fall[1:17]
+AOI <- ocean_SSL$AOI_fall[1:17]
+NOI <- ocean_SSL$NOI_fall[1:17]
+NPI <- ocean_SSL$NPI_fall[1:17]
+#upwell   <- ocean_SSL$upwell_fall[1:17]
+#NPGO <- ocean_SSL$NPGO_fall[1:17]
+chla <- scale(ocean_SSL$chla_fall)[1:17]
+sst <- scale(ocean_SSL$sst_fall)[1:17]
+temp <- scale(ocean_SSL$temp_fall)[1:17]
+ssh <- scale(ocean_SSL$ssh_fall)[1:17]
+so <- scale(ocean_SSL$so_fall)[1:17]
+mld <- scale(ocean_SSL$mld_fall)[1:17]
+uwnd <- scale(ocean_SSL$uwnd_fall)[1:17]
+vwnd <- scale(ocean_SSL$vwnd_fall)[1:17]
+
+#NPGO <- ocean_SSL$NPGO_winter[1:17]
+NOI <- ocean_SSL$NOI_winter[1:17]
+AOI <- ocean_SSL$AOI_winter[1:17]
+#MEI<- ocean_SSL$MEI_winter[1:17]
+PDO <- ocean_SSL$PDO_winter[1:17]
+NPI <- ocean_SSL$NPI_winter[1:17]
+#upwell   <- ocean_SSL$upwell_winter[1:17]
+chla <- scale(ocean_SSL$chla_winter)[1:17]
+sst <- scale(ocean_SSL$sst_winter)[1:17]
+ssh <- scale(ocean_SSL$ssh_winter)[1:17]
+so <- scale(ocean_SSL$so_winter)[1:17]
+temp <- scale(ocean_SSL$temp_winter)[1:17]
+mld <- scale(ocean_SSL$mld_winter)[1:17]
+uwnd <- scale(ocean_SSL$uwnd_winter)[1:17]
+vwnd <- scale(ocean_SSL$vwnd_winter)[1:17]
+
+chla[is.na(chla)] <- 0
+sst[is.na(sst)] <- 0
+
+
+
+# wt.pred <- seq(-3, 4, by = 0.1)
+# len.pred <- seq(-3.5, 3.5, length.out = length(wt.pred))
+# bmi.pred <- seq(-5, 10, length.out = length(wt.pred))
+# MEI.pred <- seq(-1.2, 2.2, length.out = length(wt.pred))
+# NOI.pred <- seq(-1.5, 3.2, length.out = length(wt.pred))
+# PDO.pred <- seq(-2, 3, length.out = length(wt.pred))
+
+```
+
+```{r fc inits female}
+#first capture
+get.first <- function(x) min(which(x == 1))
+fc <- apply(ch_fem[,-c(1:7)], 1, get.first)
+
+ch <- ch_fem[,-c(1:7)]
+for (i in 1:dim(ch)[1]) {
+  if(fc[i] > 1) {ch[i, 1:(fc[i]-1)] <- NA }
+}
+
+y <- as.matrix(ch)
+
+# Initial values for possible states
+# "NA" for the latent state at all places before an individual was observed, 
+# if t > fc & t <= fc + 3, then init = t-fc
+# if t = fc + 4, then ind is 4yr, init = either 5 or 7
+# if t = fc + 5, then ind is 5yr, init = either 6, 8, 10
+# if t >= fc + 6, then ind is 6yr, init = either 9 or 10
+
+cjs.me.init <- function(ch, fc){
+  inits <- ch    #initialize with observations up until states diverge from observations (4yr olds)
+  for(i in 1:dim(ch)[1]) { 
+    inits[i,fc[i]] <- NA #pups at release
+      if(n_occasions-fc[i]>=1){   
+        inits[i,(fc[i] + 1)] <- 2} #1 yr old
+      if(n_occasions-fc[i]>=2){
+        inits[i,(fc[i] + 2)] <- 3}  #2 yr old
+      if(n_occasions-fc[i]>=3){
+        inits[i,(fc[i] + 3)] <- 4} #3 yr old
+      if(n_occasions-fc[i]>=4) {
+        inits[i,(fc[i] + 4)] <- 7} #all 4yrs are (pre-)breeders
+      if(n_occasions-fc[i]>=5) {
+        inits[i,(fc[i] + 5)] <- 8} #all 5yrs are breeders
+      if(n_occasions-fc[i]>=6) {
+        inits[i,((fc[i] + 6):n_occasions)] <- 9} #all 6yrs+ are breeders
+  } #i
+  return(inits)
+}
+
+z.init = as.matrix(cjs.me.init(ch, fc))
+#if giving latent z.st as data, change z.init in these ways:
+z.init[which(y < 5)] <- NA #all obs pre-breeders are known state, so don't estimate
+z.init[which(y == 6)] <- NA  #all obs w pup are known state, don't estimate
+z.init[which(y == 8)] <- NA
+z.init[which(y == 10)] <- NA
+
+#want NAs where we're estimating, minus ==1 since that is set in the model
+z.st <- as.matrix(ch)
+z.st[which(z.st == 1)] <- NA
+z.st[which(z.st == 11)] <- NA #all ND are unknown state
+z.st[which(z.st == 5)] <- NA  #all obs w/o pup are unknown state, otherwise state can be obs equivalent
+z.st[which(z.st == 7)] <- NA
+z.st[which(z.st == 9)] <- NA
+z.st[which(z.st == 6)] <- 7 #obs of 6 is state 7
+z.st[which(z.st == 10)] <- 9 #obs of 10 is state 9; obs of 8 is state 8 leave as is
+
+```
+
+```{r fc inits male}
+#first capture
+fc_m <- apply(ch_m[,-c(1:7)], 1, get.first)
+
+ch_m <- ch_m[,-c(1:7)]
+for (i in 1:dim(ch_m)[1]) {
+  if(fc_m[i] > 1) {ch_m[i, 1:(fc_m[i]-1)] <- NA }
+}
+
+ym <- as.matrix(ch_m)
+
+cjs.me.init.m <- function(ch, fc) {
+    inits <- ch    #initialize with observations up until states diverge from observations (4yr olds)
+    for(i in 1:dim(ch)[1]) { 
+    inits[i,fc[i]] <- NA #pups at release
+      if(n_occasions-fc[i]>=1){    
+        inits[i,(fc[i] + 1)] <- 2} #1 yr old
+      if(n_occasions-fc[i]>=2){
+        inits[i,(fc[i] + 2)] <- 3}  #2 yr old
+      if(n_occasions-fc[i]>=3){
+        inits[i,(fc[i] + 3)] <- 4} #3 yr old
+      if(n_occasions-fc[i]>=4) {
+        inits[i,(fc[i] + 4)] <- 5} #4 yr old
+      if(n_occasions-fc[i]>=5) {
+        inits[i,((fc[i] + 5):n_occasions)] <- 6} #5+ year old
+  } #i
+  return(inits)
+}
+
+z.init.m = as.matrix(cjs.me.init.m(ch_m, fc_m))
+#if giving latent z.st as data, change z.init in these ways:
+z.init.m[which(ym == 1)] <- NA
+z.init.m[which(ym == 2)] <- NA
+z.init.m[which(ym == 3)] <- NA
+z.init.m[which(ym == 4)] <- NA
+z.init.m[which(ym == 5)] <- NA
+z.init.m[which(ym == 6)] <- NA
+
+#want NAs where we're estimating, minus ==1 since that is set in the model
+z.st.m <- as.matrix(ch_m)
+z.st.m[which(z.st.m == 1)] <- NA
+z.st.m[which(z.st.m == 7)] <- NA
+
+```
+
+
+```{r params states}
+# Parameters:
+# phiP surv pup to yearling
+# phi1 surv of yearling
+# phi2 surv of 2 year old
+# phi3 surv of 3 pre-breeder
+# phi4 surv of 4 pre-breeder
+# phi5 surv of 5 pre-breeder
+# phi4B survival of 4 year old breeders
+# phi5B survival of 5 year old breeders
+# phiB surv of breeders 6+ years old
+# phiSk surv of n.b. breeders 5+ years old 
+# phiPM surv pup to yearling male
+# phi1M surv of yearling male
+# phi2M surv of 2 male
+# phi3M surv of 3 male
+# phi4M surv of 4 male
+# phi5M surv of 5+male
+    
+# psi3 = prob of 3 year old becoming 4 year old B
+# psi4 = prob of 4 year old becoming 5 year old B
+# psi5 = prob of 5 year old becoming 6 year old B 
+# psiB = prob of staying breeder given were a breeder
+# psiSk = prob of becoming breeder given were a NB
+    
+# p1 = detection of yearling
+# P2 = detection of 2
+# p3 = detection of 3 (pre-breeder)
+# p4 = detection of 4
+# p5 = detection of 5
+# pB = detection of B
+# pSk = detection of Sk 
+# p1M = detection of yearling male
+# P2M = detection of 2 male
+# p3M = detection of 3 male
+# p4M = detection of 4 male
+# p5M = detection of 5+ male
+    
+# delPB = prob of correctly ascertaining presence of pup for prebreeders #not in model, no false + 
+# delB = prob of correctly ascertaining presence of pup for breeders
+# delSk = prob of correctly ascertaining presence of pup for NBs #not in model, no false +
+
+# OBSERVATIONS
+# 1 = pup w/o
+# 2 = 1 w/o
+# 3 = 2 w/o
+# 4 = 3 w/o
+# 5 = 4 w/o
+# 6 = 4 w
+# 7 = 5 w/o
+# 8 = 5 w
+# 9 = 6+ w/o
+# 10 = 6+ w
+# 11 = ND
+# 12 = pup male
+# 13 = 1 male
+# 14 = 2 male
+# 15 = 3 male
+# 16 = 4 male
+# 17 = 5+ male
+# 18 = ND male
+
+# STATES
+# 1 = pup
+# 2 = Pre1
+# 3 = Pre2
+# 4 = Pre3
+# 5 = Pre4
+# 6 = Pre5
+# 7 = 4B
+# 8 = 5B
+# 9 = 6+B
+# 10 = 5Sk
+# 11 = 6+Sk
+# 12 = dead
+# 13 = pup_m
+# 14 = 1_m
+# 15 = 2_m
+# 16 = 3_m
+# 17 = 4_m
+# 18 = 5+m
+# 19 = D_m
+
+```
+
+```{r null model}
+
+IPM_null <- function () {
+  
+# Priors and constraints
+for (i in 1:n_fem) { #females
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiP[i,t]) <- mu.p
+            logit(phi1[i,t]) <- mu.1
+            logit(phi2[i,t]) <- mu.2
+            logit(phi3[i,t]) <- mu.3
+            logit(phi4[i,t]) <- mu.4
+            logit(phi5[i,t]) <- mu.5
+            logit(phiB[i,t]) <- mu.B
+            logit(phiSk[i,t]) <- mu.Sk
+            logit(delB[i,t]) <- b.delB[resights[i,t]]
+            p1[i,t] <- mean.p1 + b.eff[eff[t]]
+            p2[i,t] <- mean.p2 + b.eff[eff[t]]
+            p3[i,t] <- mean.p3 + b.eff[eff[t]]
+            p4[i,t] <- mean.p4 + b.eff[eff[t]]
+            p5[i,t] <- mean.p5 + b.eff[eff[t]]
+            pB[i,t] <- mean.pB + b.eff[eff[t]]
+            pSk[i,t] <- mean.pSk + b.eff[eff[t]]
+            psi3[i,t] <- mean.psi3
+            psi4[i,t] <- mean.psi4
+            psi5[i,t] <- mean.psi5
+            psiB[i,t] <- mean.psiB
+            psiSk[i,t] <- mean.psiSk
+        }
+}
+  for (i in 1:n_m) { #males
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiPM[i,t]) <- mu.pM
+            logit(phi1M[i,t]) <- mu.1M
+            logit(phi2M[i,t]) <- mu.2M
+            logit(phi3M[i,t]) <- mu.3M
+            logit(phi4M[i,t]) <- mu.4M
+            logit(phi5M[i,t]) <- mu.5M
+            p1M[i,t] <- mean.p1M + b.eff[eff[t]]
+            p2M[i,t] <- mean.p2M + b.eff[eff[t]]
+            p3M[i,t] <- mean.p3M + b.eff[eff[t]]
+            p4M[i,t] <- mean.p4M + b.eff[eff[t]]
+            p5M[i,t] <- mean.p5M + b.eff[eff[t]]
+        }
+}
+  
+    mean.psi3 ~ dunif(0,1)
+    mean.psi4 ~ dunif(0,1)
+    mean.psi5 ~ dunif(0,1)
+    mean.psiB ~ dunif(0,1)
+    mean.psiSk ~ dunif(0,1)
+    mean.p1 ~ dunif(0,1)
+    mean.p2 ~ dunif(0,1)
+    mean.p3 ~ dunif(0,1)
+    mean.p4 ~ dunif(0,1)
+    mean.p5 ~ dunif(0,1)
+    mean.pB ~ dunif(0,1)
+    mean.pSk ~ dunif(0,1)
+    mean.p1M ~ dunif(0,1)
+    mean.p2M ~ dunif(0,1)
+    mean.p3M ~ dunif(0,1)
+    mean.p4M ~ dunif(0,1)
+    mean.p5M ~ dunif(0,1)
+    
+    mu.p <- log(int.phiP/(1 - int.phiP))
+    mu.1 <- log(int.phi1/(1 - int.phi1))
+    mu.2 <- log(int.phi2/(1 - int.phi2))
+    mu.3 <- log(int.phi3/(1 - int.phi3))
+    mu.4 <- log(int.phi4/(1 - int.phi4))
+    mu.5 <- log(int.phi5/(1 - int.phi5))
+    mu.B <- log(int.phiB/(1 - int.phiB))
+    mu.Sk <- log(int.phiSk/(1 - int.phiSk))
+    mu.pM <- log(int.phiPM/(1 - int.phiPM))
+    mu.1M <- log(int.phi1M/(1 - int.phi1M))
+    mu.2M <- log(int.phi2M/(1 - int.phi2M))
+    mu.3M <- log(int.phi3M/(1 - int.phi3M))
+    mu.4M <- log(int.phi4M/(1 - int.phi4M))
+    mu.5M <- log(int.phi5M/(1 - int.phi5M))
+    int.phiP ~ dunif(0,1)
+    int.phi1 ~ dunif(0,1)
+    int.phi2 ~ dunif(0,1)
+    int.phi3 ~ dunif(0,1)
+    int.phi4 ~ dunif(0,1)
+    int.phi5 ~ dunif(0,1)
+    int.phiB ~ dunif(0,1)
+    int.phiSk ~ dunif(0,1)
+    int.phiPM ~ dunif(0,1)
+    int.phi1M ~ dunif(0,1)
+    int.phi2M ~ dunif(0,1)
+    int.phi3M ~ dunif(0,1)
+    int.phi4M ~ dunif(0,1)
+    int.phi5M ~ dunif(0,1)
+    
+    p.delB[1] ~ dunif(0,1)
+    b.delB[1] <- log(p.delB[1]/(1-p.delB[1]))
+    p.delB[2] ~ dunif(0,1)
+    b.delB[2] <- log(p.delB[2]/(1-p.delB[2]))
+    p.delB[3] ~ dunif(0,1)
+    b.delB[3] <- log(p.delB[3]/(1-p.delB[3]))
+    b.delB[4] <- -2 #0 on probability scale
+    
+    b.eff[1] <- 0
+    b.eff[2] ~ dnorm(0, 0.001)
+
+    #likelihood
+for (i in 1:n_fem) { #females
+    z[i, fc[i]] <- 1
+for (t in (fc[i] + 1):n_occasions) {
+    z[i,t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+    y[i,t] ~ dcat(po[z[i,t], i, t - 1, ])
+    }
+}
+   for (i in 1:n_m) { #males
+    zm[i, fc_m[i]] <- 1
+for (t in (fc_m[i] + 1):n_occasions) {
+    zm[i,t] ~ dcat(ps_m[zm[i, t - 1], i, t - 1, ])
+    ym[i,t] ~ dcat(po_m[zm[i,t], i, t - 1, ])
+    }
+   }
+    
+# Transition and observation matrices
+    ###FEMALE
+for (i in 1:n_fem){
+  for (t in 1:(n_occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 0              
+      ps[1,i,t,2] <- phiP[i,t]        #pup to yearling
+      ps[1,i,t,3] <- 0            
+      ps[1,i,t,4] <- 0              
+      ps[1,i,t,5] <- 0
+      ps[1,i,t,6] <- 0
+      ps[1,i,t,7] <- 0
+      ps[1,i,t,8] <- 0
+      ps[1,i,t,9] <- 0
+      ps[1,i,t,10]<- 0
+      ps[1,i,t,11]<- 0
+      ps[1,i,t,12]<- 1-phiP[i,t]      #pup dies
+      ps[2,i,t,1] <- 0              
+      ps[2,i,t,2] <- 0              
+      ps[2,i,t,3] <- phi1[i,t]        #yearling to 2yr
+      ps[2,i,t,4] <- 0              
+      ps[2,i,t,5] <- 0
+      ps[2,i,t,6] <- 0
+      ps[2,i,t,7] <- 0
+      ps[2,i,t,8] <- 0
+      ps[2,i,t,9] <- 0
+      ps[2,i,t,10]<- 0
+      ps[2,i,t,11]<- 0
+      ps[2,i,t,12]<- 1-phi1[i,t]      #yearling dies
+      ps[3,i,t,1] <- 0              
+      ps[3,i,t,2] <- 0              
+      ps[3,i,t,3] <- 0            
+      ps[3,i,t,4] <- phi2[i,t]        #2-3yr
+      ps[3,i,t,5] <- 0
+      ps[3,i,t,6] <- 0
+      ps[3,i,t,7] <- 0
+      ps[3,i,t,8] <- 0
+      ps[3,i,t,9] <- 0
+      ps[3,i,t,10]<- 0
+      ps[3,i,t,11]<- 0
+      ps[3,i,t,12]<- 1-phi2[i,t]    #2yr dies
+      ps[4,i,t,1] <- 0              
+      ps[4,i,t,2] <- 0              
+      ps[4,i,t,3] <- 0            
+      ps[4,i,t,4] <- 0              
+      ps[4,i,t,5] <- phi3[i,t]*(1-psi3[i,t])   #3yr becomes 4yr prebreeder
+      ps[4,i,t,6] <- 0
+      ps[4,i,t,7] <- phi3[i,t]*psi3[i,t]       #3yr becomes 4yr breeder
+      ps[4,i,t,8] <- 0
+      ps[4,i,t,9] <- 0
+      ps[4,i,t,10]<- 0
+      ps[4,i,t,11]<- 0
+      ps[4,i,t,12]<- 1-phi3[i,t]      #3yr dies
+      ps[5,i,t,1] <- 0              
+      ps[5,i,t,2] <- 0              
+      ps[5,i,t,3] <- 0            
+      ps[5,i,t,4] <- 0              
+      ps[5,i,t,5] <- 0
+      ps[5,i,t,6] <- phi4[i,t]*(1-psi4[i,t])     #4yr prebreeder becomes 5yr prebreeder
+      ps[5,i,t,7] <- 0
+      ps[5,i,t,8] <- phi4[i,t]*psi4[i,t]         #4yr prebreeder becomes 5yr breeder
+      ps[5,i,t,9] <- 0
+      ps[5,i,t,10]<- 0
+      ps[5,i,t,11]<- 0
+      ps[5,i,t,12]<- 1-phi4[i,t]            #4yr dies
+      ps[6,i,t,1] <- 0              
+      ps[6,i,t,2] <- 0              
+      ps[6,i,t,3] <- 0            
+      ps[6,i,t,4] <- 0              
+      ps[6,i,t,5] <- 0
+      ps[6,i,t,6] <- 0
+      ps[6,i,t,7] <- 0
+      ps[6,i,t,8] <- 0
+      ps[6,i,t,9] <- phi5[i,t]*psi5[i,t]  #5yr becomes 6yr breeder, psi5 no longer fixed to 1.0
+      ps[6,i,t,10]<- 0
+      ps[6,i,t,11]<- phi5[i,t]*(1-psi5[i,t]) #5yr becomes 6yr n.b.
+      ps[6,i,t,12]<- 1-phi5[i,t]    #5yr dies
+      ps[7,i,t,1] <- 0              
+      ps[7,i,t,2] <- 0              
+      ps[7,i,t,3] <- 0            
+      ps[7,i,t,4] <- 0              
+      ps[7,i,t,5] <- 0
+      ps[7,i,t,6] <- 0
+      ps[7,i,t,7] <- 0
+      ps[7,i,t,8] <- phi4[i,t]*(psiB[i,t])   #4yr breeder becomes 5yr breeder 
+      ps[7,i,t,9] <- 0
+      ps[7,i,t,10]<- phi4[i,t]*(1-psiB[i,t])  #4yr breeder becomes 5yr skipper
+      ps[7,i,t,11]<- 0
+      ps[7,i,t,12]<- 1-phi4[i,t] #4yr dies
+      ps[8,i,t,1] <- 0              
+      ps[8,i,t,2] <- 0              
+      ps[8,i,t,3] <- 0            
+      ps[8,i,t,4] <- 0              
+      ps[8,i,t,5] <- 0
+      ps[8,i,t,6] <- 0
+      ps[8,i,t,7] <- 0
+      ps[8,i,t,8] <- 0
+      ps[8,i,t,9] <- phi5[i,t]*(psiB[i,t])  #5yr breeder becomes 6+yr breeder 
+      ps[8,i,t,10]<- 0
+      ps[8,i,t,11]<- phi5[i,t]*(1-psiB[i,t])  #5yr breeder becomes 6+ NB
+      ps[8,i,t,12]<- 1-phi5[i,t]  #5yr dies
+      ps[9,i,t,1] <- 0              
+      ps[9,i,t,2] <- 0              
+      ps[9,i,t,3] <- 0            
+      ps[9,i,t,4] <- 0              
+      ps[9,i,t,5] <- 0
+      ps[9,i,t,6] <- 0
+      ps[9,i,t,7] <- 0
+      ps[9,i,t,8] <- 0
+      ps[9,i,t,9] <- phiB[i,t]*(psiB[i,t])  #6+ breeder stays a breeder
+      ps[9,i,t,10]<- 0
+      ps[9,i,t,11]<- phiB[i,t]*(1-psiB[i,t])  #6+ breeder becomes a skipper
+      ps[9,i,t,12]<- 1-phiB[i,t]  #breeder dies
+      ps[10,i,t,1] <- 0              
+      ps[10,i,t,2] <- 0              
+      ps[10,i,t,3] <- 0            
+      ps[10,i,t,4] <- 0              
+      ps[10,i,t,5] <- 0
+      ps[10,i,t,6] <- 0
+      ps[10,i,t,7] <- 0
+      ps[10,i,t,8] <- 0
+      ps[10,i,t,9] <- phiSk[i,t]*psiSk[i,t]   #5yr NB becomes a breeder
+      ps[10,i,t,10]<- 0  
+      ps[10,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t]) #5yr NB stays NB by not becoming breeder
+      ps[10,i,t,12]<- 1-phiSk[i,t]  #NB dies
+      ps[11,i,t,1] <- 0              
+      ps[11,i,t,2] <- 0              
+      ps[11,i,t,3] <- 0            
+      ps[11,i,t,4] <- 0              
+      ps[11,i,t,5] <- 0
+      ps[11,i,t,6] <- 0
+      ps[11,i,t,7] <- 0
+      ps[11,i,t,8] <- 0
+      ps[11,i,t,9] <- phiSk[i,t]*psiSk[i,t]  #6yr NB becomes a breeder
+      ps[11,i,t,10]<- 0
+      ps[11,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t])  #6yr NB stays NB by not becoming breeder
+      ps[11,i,t,12]<- 1-phiSk[i,t]
+      ps[12,i,t,1] <- 0              
+      ps[12,i,t,2] <- 0              
+      ps[12,i,t,3] <- 0            
+      ps[12,i,t,4] <- 0              
+      ps[12,i,t,5] <- 0
+      ps[12,i,t,6] <- 0
+      ps[12,i,t,7] <- 0
+      ps[12,i,t,8] <- 0
+      ps[12,i,t,9] <- 0
+      ps[12,i,t,10]<- 0
+      ps[12,i,t,11]<- 0
+      ps[12,i,t,12]<- 1  #stays dead
+      
+     # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 1        #pups always observed as a pup      
+      po[1,i,t,2] <- 0        
+      po[1,i,t,3] <- 0            
+      po[1,i,t,4] <- 0              
+      po[1,i,t,5] <- 0
+      po[1,i,t,6] <- 0
+      po[1,i,t,7] <- 0
+      po[1,i,t,8] <- 0
+      po[1,i,t,9] <- 0
+      po[1,i,t,10]<- 0
+      po[1,i,t,11]<- 0
+      po[2,i,t,1] <- 0              
+      po[2,i,t,2] <- p1[i,t]  #detection of yearlings              
+      po[2,i,t,3] <- 0        
+      po[2,i,t,4] <- 0              
+      po[2,i,t,5] <- 0
+      po[2,i,t,6] <- 0
+      po[2,i,t,7] <- 0
+      po[2,i,t,8] <- 0
+      po[2,i,t,9] <- 0
+      po[2,i,t,10]<- 0
+      po[2,i,t,11]<- 1-p1[i,t]      #yearling ND
+      po[3,i,t,1] <- 0              
+      po[3,i,t,2] <- 0              
+      po[3,i,t,3] <- p2[i,t]         #detection of 2yr            
+      po[3,i,t,4] <- 0
+      po[3,i,t,5] <- 0
+      po[3,i,t,6] <- 0
+      po[3,i,t,7] <- 0
+      po[3,i,t,8] <- 0
+      po[3,i,t,9] <- 0
+      po[3,i,t,10]<- 0
+      po[3,i,t,11]<- 1-p2[i,t]    #2yr ND
+      po[4,i,t,1] <- 0              
+      po[4,i,t,2] <- 0              
+      po[4,i,t,3] <- 0            
+      po[4,i,t,4] <- p3[i,t]       #detection of 3yr              
+      po[4,i,t,5] <- 0
+      po[4,i,t,6] <- 0
+      po[4,i,t,7] <- 0
+      po[4,i,t,8] <- 0
+      po[4,i,t,9] <- 0
+      po[4,i,t,10]<- 0
+      po[4,i,t,11]<- 1-p3[i,t]      #3yr ND
+      po[5,i,t,1] <- 0              
+      po[5,i,t,2] <- 0              
+      po[5,i,t,3] <- 0            
+      po[5,i,t,4] <- 0              
+      po[5,i,t,5] <- p4[i,t]#*delPB[i,t]    #4yr prebreeder seen and correctly ascertained w/o pup 
+      po[5,i,t,6] <- 0
+      po[5,i,t,7] <- 0
+      po[5,i,t,8] <- 0
+      po[5,i,t,9] <- 0
+      po[5,i,t,10]<- 0
+      po[5,i,t,11]<- 1-p4[i,t]            #4yr ND
+      po[6,i,t,1] <- 0              
+      po[6,i,t,2] <- 0              
+      po[6,i,t,3] <- 0            
+      po[6,i,t,4] <- 0 
+      po[6,i,t,5] <- 0
+      po[6,i,t,6] <- 0
+      po[6,i,t,7] <- p5[i,t]#*delPB[i,t]        #5yr prebreeder seen and correctly ascertained w/o pup
+      po[6,i,t,8] <- 0
+      po[6,i,t,9] <- 0
+      po[6,i,t,10]<- 0
+      po[6,i,t,11]<- 1-p5[i,t]    #5yr ND
+      po[7,i,t,1] <- 0              
+      po[7,i,t,2] <- 0              
+      po[7,i,t,3] <- 0            
+      po[7,i,t,4] <- 0              
+      po[7,i,t,5] <- pB[i,t]*(1-delB[i,t])  #4yr breeder incorrectly ascertained w/o pup (false -)
+      po[7,i,t,6] <- pB[i,t]*delB[i,t]      #4yr breeder correctly ascertained w pup
+      po[7,i,t,7] <- 0
+      po[7,i,t,8] <- 0
+      po[7,i,t,9] <- 0
+      po[7,i,t,10]<- 0
+      po[7,i,t,11]<- 1-pB[i,t] #4yr ND
+      po[8,i,t,1] <- 0              
+      po[8,i,t,2] <- 0              
+      po[8,i,t,3] <- 0            
+      po[8,i,t,4] <- 0              
+      po[8,i,t,5] <- 0
+      po[8,i,t,6] <- 0
+      po[8,i,t,7] <- pB[i,t]*(1-delB[i,t])   #5yr breeder incorrectly ascertained w/o pup
+      po[8,i,t,8] <- pB[i,t]*delB[i,t]     #5yr breeder correctly ascertained w pup
+      po[8,i,t,9] <- 0
+      po[8,i,t,10]<- 0
+      po[8,i,t,11]<- 1-pB[i,t]  #5yr ND
+      po[9,i,t,1] <- 0              
+      po[9,i,t,2] <- 0              
+      po[9,i,t,3] <- 0            
+      po[9,i,t,4] <- 0              
+      po[9,i,t,5] <- 0
+      po[9,i,t,6] <- 0
+      po[9,i,t,7] <- 0
+      po[9,i,t,8] <- 0
+      po[9,i,t,9] <- pB[i,t]*(1-delB[i,t])  #6+ breeder incorrectly ascertained w/o pup as skipper
+      po[9,i,t,10]<- pB[i,t]*delB[i,t]  #6+ breeder correctly ascertained as breeder
+      po[9,i,t,11]<- 1-pB[i,t]  #breeder ND
+      po[10,i,t,1] <- 0              
+      po[10,i,t,2] <- 0              
+      po[10,i,t,3] <- 0            
+      po[10,i,t,4] <- 0              
+      po[10,i,t,5] <- 0
+      po[10,i,t,6] <- 0
+      po[10,i,t,7] <- pSk[i,t]#*delSk[i,t]     #5yr skipper correctly ascertained w/o pup
+      #po[10,i,t,8] <- pSk[i,t]*(1-delSk[i,t])  #5yr skipper incorrectly ascertained w pup
+      po[10,i,t,8] <- 0
+      po[10,i,t,9] <- 0
+      po[10,i,t,10]<- 0
+      po[10,i,t,11]<- 1-pSk[i,t]  #5yr skipper ND
+      po[11,i,t,1] <- 0              
+      po[11,i,t,2] <- 0              
+      po[11,i,t,3] <- 0            
+      po[11,i,t,4] <- 0              
+      po[11,i,t,5] <- 0
+      po[11,i,t,6] <- 0
+      po[11,i,t,7] <- 0
+      po[11,i,t,8] <- 0
+      po[11,i,t,9] <- pSk[i,t]#*delSk[i,t] 
+      po[11,i,t,10]<- 0
+      #po[11,i,t,10]<- pSk[i,t]*(1-delSk[i,t]) 
+      po[11,i,t,11]<- 1-pSk[i,t]  #6+ yr skipper not seen
+      po[12,i,t,1] <- 0              
+      po[12,i,t,2] <- 0              
+      po[12,i,t,3] <- 0            
+      po[12,i,t,4] <- 0              
+      po[12,i,t,5] <- 0
+      po[12,i,t,6] <- 0
+      po[12,i,t,7] <- 0
+      po[12,i,t,8] <- 0
+      po[12,i,t,9] <- 0  
+      po[12,i,t,10]<- 0  
+      po[12,i,t,11]<- 1  #dead not seen 
+  }
+}
+  for (i in 1:n_m){
+    for (t in 1:(n_occasions-1)) {
+      ###MALE 
+      ps_m[1,i,t,1] <- 0              
+      ps_m[1,i,t,2] <- phiPM[i,t]        #pup to yearling
+      ps_m[1,i,t,3] <- 0            
+      ps_m[1,i,t,4] <- 0              
+      ps_m[1,i,t,5] <- 0
+      ps_m[1,i,t,6] <- 0
+      ps_m[1,i,t,7] <- 1-phiPM[i,t]      #pup dies
+      ps_m[2,i,t,1] <- 0              
+      ps_m[2,i,t,2] <- 0              
+      ps_m[2,i,t,3] <- phi1M[i,t]        #yearling to 2yr
+      ps_m[2,i,t,4] <- 0              
+      ps_m[2,i,t,5] <- 0
+      ps_m[2,i,t,6] <- 0
+      ps_m[2,i,t,7] <- 1-phi1M[i,t]      #yearling dies
+      ps_m[3,i,t,1] <- 0              
+      ps_m[3,i,t,2] <- 0              
+      ps_m[3,i,t,3] <- 0            
+      ps_m[3,i,t,4] <- phi2M[i,t]        #2-3yr
+      ps_m[3,i,t,5] <- 0
+      ps_m[3,i,t,6] <- 0
+      ps_m[3,i,t,7] <- 1-phi2M[i,t]    #2yr dies
+      ps_m[4,i,t,1] <- 0              
+      ps_m[4,i,t,2] <- 0              
+      ps_m[4,i,t,3] <- 0            
+      ps_m[4,i,t,4] <- 0              
+      ps_m[4,i,t,5] <- phi3M[i,t]   #3yr becomes 4yr 
+      ps_m[4,i,t,6] <- 0
+      ps_m[4,i,t,7] <- 1-phi3M[i,t]      #3yr dies
+      ps_m[5,i,t,1] <- 0              
+      ps_m[5,i,t,2] <- 0              
+      ps_m[5,i,t,3] <- 0            
+      ps_m[5,i,t,4] <- 0              
+      ps_m[5,i,t,5] <- 0
+      ps_m[5,i,t,6] <- phi4M[i,t]    #4yr becomes 5yr 
+      ps_m[5,i,t,7] <- 1-phi4M[i,t]            #4yr dies
+      ps_m[6,i,t,1] <- 0              
+      ps_m[6,i,t,2] <- 0              
+      ps_m[6,i,t,3] <- 0            
+      ps_m[6,i,t,4] <- 0              
+      ps_m[6,i,t,5] <- 0
+      ps_m[6,i,t,6] <- phi5M[i,t]  #5yr becomes 6yr
+      ps_m[6,i,t,7] <- 1-phi5M[i,t]    #5yr dies
+      ps_m[7,i,t,1] <- 0              
+      ps_m[7,i,t,2] <- 0              
+      ps_m[7,i,t,3] <- 0            
+      ps_m[7,i,t,4] <- 0              
+      ps_m[7,i,t,5] <- 0
+      ps_m[7,i,t,6] <- 0
+      ps_m[7,i,t,7] <- 1
+      
+      po_m[1,i,t,1] <- 1        #pups always observed as a pup      
+      po_m[1,i,t,2] <- 0        
+      po_m[1,i,t,3] <- 0            
+      po_m[1,i,t,4] <- 0              
+      po_m[1,i,t,5] <- 0
+      po_m[1,i,t,6] <- 0
+      po_m[1,i,t,7] <- 0
+      po_m[2,i,t,1] <- 0              
+      po_m[2,i,t,2] <- p1M[i,t]  #detection of yearlings              
+      po_m[2,i,t,3] <- 0        
+      po_m[2,i,t,4] <- 0              
+      po_m[2,i,t,5] <- 0
+      po_m[2,i,t,6] <- 0
+      po_m[2,i,t,7] <- 1-p1M[i,t]      #yearling ND
+      po_m[3,i,t,1] <- 0              
+      po_m[3,i,t,2] <- 0              
+      po_m[3,i,t,3] <- p2M[i,t]         #detection of 2yr            
+      po_m[3,i,t,4] <- 0
+      po_m[3,i,t,5] <- 0
+      po_m[3,i,t,6] <- 0
+      po_m[3,i,t,7] <- 1-p2M[i,t]    #2yr ND
+      po_m[4,i,t,1] <- 0              
+      po_m[4,i,t,2] <- 0              
+      po_m[4,i,t,3] <- 0            
+      po_m[4,i,t,4] <- p3M[i,t]       #detection of 3yr              
+      po_m[4,i,t,5] <- 0
+      po_m[4,i,t,6] <- 0
+      po_m[4,i,t,7] <- 1-p3M[i,t]      #3yr ND
+      po_m[5,i,t,1] <- 0              
+      po_m[5,i,t,2] <- 0              
+      po_m[5,i,t,3] <- 0            
+      po_m[5,i,t,4] <- 0              
+      po_m[5,i,t,5] <- p4M[i,t]
+      po_m[5,i,t,6] <- 0
+      po_m[5,i,t,7] <- 1-p4M[i,t]            #4yr ND
+      po_m[6,i,t,1] <- 0              
+      po_m[6,i,t,2] <- 0              
+      po_m[6,i,t,3] <- 0            
+      po_m[6,i,t,4] <- 0 
+      po_m[6,i,t,5] <- 0
+      po_m[6,i,t,6] <- p5M[i,t]
+      po_m[6,i,t,7] <- 1-p5M[i,t]    #5yr ND
+      po_m[7,i,t,1] <- 0              
+      po_m[7,i,t,2] <- 0              
+      po_m[7,i,t,3] <- 0            
+      po_m[7,i,t,4] <- 0              
+      po_m[7,i,t,5] <- 0
+      po_m[7,i,t,6] <- 0
+      po_m[7,i,t,7] <- 1  #dead not seen 
+      } #t 
+  }#i
+    
+  #### population model
+    
+     Np[1] <- Npup[1]/2
+     
+    # neo_mort ~ dnorm(0.05, 0.001) #use these bits if branding is pre-neo mortality
+    # Np[1] <- (Npup[1] + Npup[1]*neo_mort)/2  #neonate mortality interesting for fecundity, but branding occurs post
+     for (t in 2:n_occasions) {              #neo mortality, and we're not using Nb for Np
+       #females
+       # Np[t] <- (Npup[t] + Npup[t]*neo_mort)/2
+       Np[t] <- Npup[t]/2
+       N1[t] <- Np[t-1]*int.phiP 
+       N2[t] <- N1[t-1]*int.phi1
+       N3[t] <- N2[t-1]*int.phi2
+       N4[t] <- N3[t-1]*int.phi3*(1-mean.psi3)
+       N5[t] <- N4[t-1]*int.phi4*(1-mean.psi4)
+       NB[t] <- N3[t-1]*int.phi3*mean.psi3 + N4[t-1]*int.phi4*mean.psi4 + N5[t-1]*int.phi5*mean.psi5 + 
+         NB[t-1]*int.phiB*mean.psiB + Nnb[t-1]*int.phiSk*mean.psiSk
+       Nnb[t]<- NB[t-1]*int.phiB*(1-mean.psiB) + Nnb[t-1]*int.phiSk*(1-mean.psiSk)
+       
+       #males
+       N1M[t] <- Np[t-1]*int.phiPM
+       N2M[t] <- N1M[t-1]*int.phi1M
+       N3M[t] <- N2M[t-1]*int.phi2M
+       N4M[t] <- N3M[t-1]*int.phi3M
+       N5M[t] <- N4M[t-1]*int.phi4M + N5M[t-1]*int.phi5M
+       
+       Ntot[t] <- Np[t]*2 + N1[t] + N2[t] + N3[t] + N4[t] + N5[t] + NB[t] + Nnb[t] + #females
+         Npm[t] + N1M[t] + N2M[t] + N3M[t] + N4M[t] + N5M[t] #males
+
+       # N1[t] ~ dbin(int.phiP, Np[t-1])
+       # N2[t] ~ dbin(int.phi1, N1[t-1])
+       # N3[t] ~ dbin(int.phi2, N2[t-1])
+       # N4[t] ~ dbin(int.phi3*(1-mean.psi3), N3[t-1])
+       # N5[t] ~ dbin(int.phi4*(1-mean.psi4), N4[t-1])
+       # NB[t] ~ dbin(int.phi3*mean.psi3, N3[t-1]) + dbin(int.phi4*mean.psi4, N4[t-1])....
+  } #t
+    for (t in 1:n_occasions-1) {
+      lambda[t] <- Ntot[t+1]/Ntot[t]
+    }
+} #mod
+  
+write.model(IPM_null, "IPM_null.txt")
+model.file = paste(getwd(),"IPM_null.txt", sep="/") 
+
+
+```
+
+```{r null run}
+
+# Bundle data
+jags.data <- list(y = y, ym = ym, fc = fc, fc_m = fc_m, z = z.st, zm = z.st.m, 
+                  resights = res_mat, n_fem = dim(ch_fem)[1], n_m = dim(ch_m)[1],
+                  Npup = Npup,
+                  eff = eff, n_occasions = n_occasions)
+
+inits <- function(){list(
+  z = z.init, zm = z.init.m
+  )}    
+ 
+# params
+parameters <- c('mean.p1', 'mean.p2', 'mean.p3', 'mean.p4', 'mean.p5', 'mean.pB', 'mean.pSk',
+                'mean.p1M', 'mean.p2M', 'mean.p3M', 'mean.p4M', 'mean.p5M', 
+                "mean.psi3", 'mean.psi4', 'mean.psi5', 'mean.psiB', 'mean.psiSk', 
+                'int.phiP', 'int.phi1', 'int.phi2', 'int.phi3', 'int.phi4', 'int.phi5', 'int.phiB', 'int.phiSk',
+                'int.phiPM', 'int.phi1M', 'int.phi2M', 'int.phi3M', 'int.phi4M', 'int.phi5M', 
+                'b.delB', 'p.delB', 'b.eff',
+                'lambda', 'Ntot',
+                'mu.p', 'mu.1', 'mu.2', 'mu.3', 'mu.4', 'mu.5', 'mu.B', 'mu.Sk',
+                'mu.pM', 'mu.1M', 'mu.2M', 'mu.3M', 'mu.4M', 'mu.5M')
+
+# MCMC settings
+ni <- 4; nb <- 1; nc <- 2; 
+#ni <- 10000; nb <- 4000; nc <- 3; 
+nt <- 1
+
+out_null <- jags(jags.data, inits, parameters, 
+            model.file = model.file,
+            n.chains = nc, n.thin = nt, 
+            n.iter = ni, n.burnin = nb, parallel = T)
+
+# Save object
+# saveRDS(out_null, file = "out_null.rds")
+
+# out_null_up <- update(out_null, n.iter = 20000)
+# saveRDS(out_null_up, file = 'out_null_up.rds')
+
+```
+
+
+```{r bmi}
+
+# Specify model
+IPM_reg <- function () {
+  
+# Priors and constraints
+for (i in 1:n_fem) { #females
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiP[i,t]) <- mu.p + b.bmi.p*bmi_f[i]
+            logit(phi1[i,t]) <- mu.1 #+ b.reg1[region_f[i]]
+            logit(phi2[i,t]) <- mu.2 #+ b.reg2[region_f[i]]
+            logit(phi3[i,t]) <- mu.3 #+ b.regPB[region_f[i]]
+            logit(phi4[i,t]) <- mu.4 #+ b.regPB[region_f[i]]
+            logit(phi5[i,t]) <- mu.5 #+ b.regPB[region_f[i]]
+            logit(phiB[i,t]) <- mu.B #+ b.regB[region_f[i]]
+            logit(phiSk[i,t]) <- mu.Sk #+ b.regSk[region_f[i]]
+            logit(delB[i,t]) <- b.delB[resights[i,t]]
+            p1[i,t] <- mean.p1 + b.eff[eff[t]]
+            p2[i,t] <- mean.p2 + b.eff[eff[t]]
+            p3[i,t] <- mean.p3 + b.eff[eff[t]]
+            p4[i,t] <- mean.p4 + b.eff[eff[t]]
+            p5[i,t] <- mean.p5 + b.eff[eff[t]]
+            pB[i,t] <- mean.pB + b.eff[eff[t]]
+            pSk[i,t] <- mean.pSk + b.eff[eff[t]]
+            psi3[i,t] <- mean.psi3 +  b.bmi.psi3*bmi_f[i] #b.reg.psi3[region_f[i]] +
+            psi4[i,t] <- mean.psi4 #+ b.reg.psi4[region_f[i]]
+            psi5[i,t] <- mean.psi5 #+ b.reg.psi5[region_f[i]]
+            psiB[i,t] <- mean.psiB #+ b.reg.psiB[region_f[i]]
+            psiSk[i,t] <- mean.psiSk #+ b.reg.psiSk[region_f[i]]
+        }
+}
+  for (i in 1:n_m) { #males
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiPM[i,t]) <- mu.pM + b.bmi.pm*bmi_f[i] #b.regPM[region_m[i]] +
+            logit(phi1M[i,t]) <- mu.1M #+ b.reg1M[region_m[i]]
+            logit(phi2M[i,t]) <- mu.2M #+ b.reg2M[region_m[i]]
+            logit(phi3M[i,t]) <- mu.3M #+ b.reg3M[region_m[i]]
+            logit(phi4M[i,t]) <- mu.4M #+ b.reg4M[region_m[i]]
+            logit(phi5M[i,t]) <- mu.5M #+ b.reg5M[region_m[i]]
+            p1M[i,t] <- mean.p1M + b.eff[eff[t]]
+            p2M[i,t] <- mean.p2M + b.eff[eff[t]]
+            p3M[i,t] <- mean.p3M + b.eff[eff[t]]
+            p4M[i,t] <- mean.p4M + b.eff[eff[t]]
+            p5M[i,t] <- mean.p5M + b.eff[eff[t]]
+        }
+}
+  
+    mean.psi3 <- log(int.psi3/(1 - int.psi3))
+    mean.psi4 <- log(int.psi4/(1 - int.psi4))
+    mean.psi5 <- log(int.psi5/(1 - int.psi5))
+    mean.psiB <- log(int.psiB/(1 - int.psiB))
+    mean.psiSk <- log(int.psiSk/(1 - int.psiSk))
+    int.psi3 ~ dunif(0,1)
+    int.psi4 ~ dunif(0,1)
+    int.psi5 ~ dunif(0,1)
+    int.psiB ~ dunif(0,1)
+    int.psiSk ~ dunif(0,1)
+    
+    mean.p1 ~ dunif(0,1)
+    mean.p2 ~ dunif(0,1)
+    mean.p3 ~ dunif(0,1)
+    mean.p4 ~ dunif(0,1)
+    mean.p5 ~ dunif(0,1)
+    mean.pB ~ dunif(0,1)
+    mean.pSk ~ dunif(0,1)
+    mean.p1M ~ dunif(0,1)
+    mean.p2M ~ dunif(0,1)
+    mean.p3M ~ dunif(0,1)
+    mean.p4M ~ dunif(0,1)
+    mean.p5M ~ dunif(0,1)
+    
+    mu.p <- log(int.phiP/(1 - int.phiP))
+    mu.1 <- log(int.phi1/(1 - int.phi1))
+    mu.2 <- log(int.phi2/(1 - int.phi2))
+    mu.3 <- log(int.phi3/(1 - int.phi3))
+    mu.4 <- log(int.phi4/(1 - int.phi4))
+    mu.5 <- log(int.phi5/(1 - int.phi5))
+    mu.B <- log(int.phiB/(1 - int.phiB))
+    mu.Sk <- log(int.phiSk/(1 - int.phiSk))
+    mu.pM <- log(int.phiPM/(1 - int.phiPM))
+    mu.1M <- log(int.phi1M/(1 - int.phi1M))
+    mu.2M <- log(int.phi2M/(1 - int.phi2M))
+    mu.3M <- log(int.phi3M/(1 - int.phi3M))
+    mu.4M <- log(int.phi4M/(1 - int.phi4M))
+    mu.5M <- log(int.phi5M/(1 - int.phi5M))
+    int.phiP ~ dunif(0,1)
+    int.phi1 ~ dunif(0,1)
+    int.phi2 ~ dunif(0,1)
+    int.phi3 ~ dunif(0,1)
+    int.phi4 ~ dunif(0,1)
+    int.phi5 ~ dunif(0,1)
+    int.phiB ~ dunif(0,1)
+    int.phiSk ~ dunif(0,1)
+    int.phiPM ~ dunif(0,1)
+    int.phi1M ~ dunif(0,1)
+    int.phi2M ~ dunif(0,1)
+    int.phi3M ~ dunif(0,1)
+    int.phi4M ~ dunif(0,1)
+    int.phi5M ~ dunif(0,1)
+    
+    p.delB[1] ~ dunif(0,1)
+    b.delB[1] <- log(p.delB[1]/(1-p.delB[1]))
+    p.delB[2] ~ dunif(0,1)
+    b.delB[2] <- log(p.delB[2]/(1-p.delB[2]))
+    p.delB[3] ~ dunif(0,1)
+    b.delB[3] <- log(p.delB[3]/(1-p.delB[3]))
+    b.delB[4] <- -2 #0 on probability scale
+    
+    b.eff[1] <- 0
+    b.eff[2] ~ dnorm(0, 0.001)
+    
+    # b.reg.psi3[1] ~ dnorm(0, pow(s.psi3.reg,-2))
+    # s.psi3.reg ~ dexp(1)
+    # b.reg.psi4[1] ~ dnorm(0, pow(s.psi4.reg,-2))
+    # s.psi4.reg ~ dexp(1)
+    # b.reg.psi5[1] ~ dnorm(0, pow(s.psi5.reg,-2))
+    # s.psi5.reg ~ dexp(1)
+    # b.reg.psiB[1] ~ dnorm(0, pow(s.psiB.reg,-2))
+    # s.psiB.reg ~ dexp(1)
+    # b.reg.psiSk[1] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    # s.psiSk.reg ~ dexp(1)
+    # b.reg.psi3[2] ~ dnorm(0, pow(s.psi3.reg,-2))
+    # b.reg.psi4[2] ~ dnorm(0, pow(s.psi4.reg,-2))
+    # b.reg.psi5[2] ~ dnorm(0, pow(s.psi5.reg,-2))
+    # b.reg.psiB[2] ~ dnorm(0, pow(s.psiB.reg,-2))
+    # b.reg.psiSk[2] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    # b.reg.psi3[3] <- 0  #third region beta is mu
+    # b.reg.psi4[3] <- 0
+    # b.reg.psi5[3] <- 0
+    # b.reg.psiB[3] <- 0
+    # b.reg.psiSk[3] <- 0
+    
+    # b.regP[1] ~ dnorm(0, pow(s.regP,-2))
+    # s.regP ~ dexp(1)
+    # b.reg1[1] ~ dnorm(0, pow(s.reg1,-2))
+    # s.reg1 ~ dexp(1)
+    # b.reg2[1] ~ dnorm(0, pow(s.reg2,-2))
+    # s.reg2 ~ dexp(1)
+    # b.regPB[1] ~ dnorm(0, pow(s.regPB,-2))
+    # s.regPB ~ dexp(1)
+    # b.regB[1] ~ dnorm(0, pow(s.regB,-2))
+    # s.regB ~ dexp(1)
+    # b.regSk[1] ~ dnorm(0, pow(s.regSk,-2))
+    # s.regSk ~ dexp(1)
+    # b.regP[2] ~ dnorm(0, pow(s.regP,-2))
+    # b.reg1[2] ~ dnorm(0, pow(s.reg1,-2))
+    # b.reg2[2] ~ dnorm(0, pow(s.reg2,-2))
+    # b.regPB[2] ~ dnorm(0, pow(s.regPB,-2))
+    # b.regB[2] ~ dnorm(0, pow(s.regB,-2))
+    # b.regSk[2] ~ dnorm(0, pow(s.regSk,-2))
+    # b.regP[3] <- 0  #third region beta is mu
+    # b.reg1[3] <- 0
+    # b.reg2[3] <- 0
+    # b.regPB[3] <- 0
+    # b.regB[3] <- 0
+    # b.regSk[3] <- 0
+    
+    b.bmi.psi3 ~ dnorm(0, pow(s.bmi.psi3, -2))
+    s.bmi.psi3 ~ dexp(1)
+    b.bmi.p ~ dnorm(0, pow(s.bmi.p, -2))
+    s.bmi.p ~ dexp(1)
+    # b.bmi.1 ~ dnorm(0, pow(s.bmi.1,-2))
+    # s.bmi.1 ~ dexp(1)
+    b.bmi.pm ~ dnorm(0, pow(s.bmi.pm, -2))
+    s.bmi.pm ~ dexp(1)
+
+    #likelihood
+for (i in 1:n_fem) { #females
+    z[i, fc[i]] <- 1
+for (t in (fc[i] + 1):n_occasions) {
+    z[i,t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+    y[i,t] ~ dcat(po[z[i,t], i, t - 1, ])
+    }
+}
+   for (i in 1:n_m) { #males
+    zm[i, fc_m[i]] <- 1
+for (t in (fc_m[i] + 1):n_occasions) {
+    zm[i,t] ~ dcat(ps_m[zm[i, t - 1], i, t - 1, ])
+    ym[i,t] ~ dcat(po_m[zm[i,t], i, t - 1, ])
+    }
+   }
+    
+# Transition and observation matrices
+    ###FEMALE
+for (i in 1:n_fem){
+  for (t in 1:(n_occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 0              
+      ps[1,i,t,2] <- phiP[i,t]        #pup to yearling
+      ps[1,i,t,3] <- 0            
+      ps[1,i,t,4] <- 0              
+      ps[1,i,t,5] <- 0
+      ps[1,i,t,6] <- 0
+      ps[1,i,t,7] <- 0
+      ps[1,i,t,8] <- 0
+      ps[1,i,t,9] <- 0
+      ps[1,i,t,10]<- 0
+      ps[1,i,t,11]<- 0
+      ps[1,i,t,12]<- 1-phiP[i,t]      #pup dies
+      ps[2,i,t,1] <- 0              
+      ps[2,i,t,2] <- 0              
+      ps[2,i,t,3] <- phi1[i,t]        #yearling to 2yr
+      ps[2,i,t,4] <- 0              
+      ps[2,i,t,5] <- 0
+      ps[2,i,t,6] <- 0
+      ps[2,i,t,7] <- 0
+      ps[2,i,t,8] <- 0
+      ps[2,i,t,9] <- 0
+      ps[2,i,t,10]<- 0
+      ps[2,i,t,11]<- 0
+      ps[2,i,t,12]<- 1-phi1[i,t]      #yearling dies
+      ps[3,i,t,1] <- 0              
+      ps[3,i,t,2] <- 0              
+      ps[3,i,t,3] <- 0            
+      ps[3,i,t,4] <- phi2[i,t]        #2-3yr
+      ps[3,i,t,5] <- 0
+      ps[3,i,t,6] <- 0
+      ps[3,i,t,7] <- 0
+      ps[3,i,t,8] <- 0
+      ps[3,i,t,9] <- 0
+      ps[3,i,t,10]<- 0
+      ps[3,i,t,11]<- 0
+      ps[3,i,t,12]<- 1-phi2[i,t]    #2yr dies
+      ps[4,i,t,1] <- 0              
+      ps[4,i,t,2] <- 0              
+      ps[4,i,t,3] <- 0            
+      ps[4,i,t,4] <- 0              
+      ps[4,i,t,5] <- phi3[i,t]*(1-psi3[i,t])   #3yr becomes 4yr prebreeder
+      ps[4,i,t,6] <- 0
+      ps[4,i,t,7] <- phi3[i,t]*psi3[i,t]       #3yr becomes 4yr breeder
+      ps[4,i,t,8] <- 0
+      ps[4,i,t,9] <- 0
+      ps[4,i,t,10]<- 0
+      ps[4,i,t,11]<- 0
+      ps[4,i,t,12]<- 1-phi3[i,t]      #3yr dies
+      ps[5,i,t,1] <- 0              
+      ps[5,i,t,2] <- 0              
+      ps[5,i,t,3] <- 0            
+      ps[5,i,t,4] <- 0              
+      ps[5,i,t,5] <- 0
+      ps[5,i,t,6] <- phi4[i,t]*(1-psi4[i,t])     #4yr prebreeder becomes 5yr prebreeder
+      ps[5,i,t,7] <- 0
+      ps[5,i,t,8] <- phi4[i,t]*psi4[i,t]         #4yr prebreeder becomes 5yr breeder
+      ps[5,i,t,9] <- 0
+      ps[5,i,t,10]<- 0
+      ps[5,i,t,11]<- 0
+      ps[5,i,t,12]<- 1-phi4[i,t]            #4yr dies
+      ps[6,i,t,1] <- 0              
+      ps[6,i,t,2] <- 0              
+      ps[6,i,t,3] <- 0            
+      ps[6,i,t,4] <- 0              
+      ps[6,i,t,5] <- 0
+      ps[6,i,t,6] <- 0
+      ps[6,i,t,7] <- 0
+      ps[6,i,t,8] <- 0
+      ps[6,i,t,9] <- phi5[i,t]*psi5[i,t]  #5yr becomes 6yr breeder, psi5 no longer fixed to 1.0
+      ps[6,i,t,10]<- 0
+      ps[6,i,t,11]<- phi5[i,t]*(1-psi5[i,t]) #5yr becomes 6yr n.b.
+      ps[6,i,t,12]<- 1-phi5[i,t]    #5yr dies
+      ps[7,i,t,1] <- 0              
+      ps[7,i,t,2] <- 0              
+      ps[7,i,t,3] <- 0            
+      ps[7,i,t,4] <- 0              
+      ps[7,i,t,5] <- 0
+      ps[7,i,t,6] <- 0
+      ps[7,i,t,7] <- 0
+      ps[7,i,t,8] <- phi4[i,t]*(psiB[i,t])   #4yr breeder becomes 5yr breeder 
+      ps[7,i,t,9] <- 0
+      ps[7,i,t,10]<- phi4[i,t]*(1-psiB[i,t])  #4yr breeder becomes 5yr skipper
+      ps[7,i,t,11]<- 0
+      ps[7,i,t,12]<- 1-phi4[i,t] #4yr dies
+      ps[8,i,t,1] <- 0              
+      ps[8,i,t,2] <- 0              
+      ps[8,i,t,3] <- 0            
+      ps[8,i,t,4] <- 0              
+      ps[8,i,t,5] <- 0
+      ps[8,i,t,6] <- 0
+      ps[8,i,t,7] <- 0
+      ps[8,i,t,8] <- 0
+      ps[8,i,t,9] <- phi5[i,t]*(psiB[i,t])  #5yr breeder becomes 6+yr breeder 
+      ps[8,i,t,10]<- 0
+      ps[8,i,t,11]<- phi5[i,t]*(1-psiB[i,t])  #5yr breeder becomes 6+ NB
+      ps[8,i,t,12]<- 1-phi5[i,t]  #5yr dies
+      ps[9,i,t,1] <- 0              
+      ps[9,i,t,2] <- 0              
+      ps[9,i,t,3] <- 0            
+      ps[9,i,t,4] <- 0              
+      ps[9,i,t,5] <- 0
+      ps[9,i,t,6] <- 0
+      ps[9,i,t,7] <- 0
+      ps[9,i,t,8] <- 0
+      ps[9,i,t,9] <- phiB[i,t]*(psiB[i,t])  #6+ breeder stays a breeder
+      ps[9,i,t,10]<- 0
+      ps[9,i,t,11]<- phiB[i,t]*(1-psiB[i,t])  #6+ breeder becomes a skipper
+      ps[9,i,t,12]<- 1-phiB[i,t]  #breeder dies
+      ps[10,i,t,1] <- 0              
+      ps[10,i,t,2] <- 0              
+      ps[10,i,t,3] <- 0            
+      ps[10,i,t,4] <- 0              
+      ps[10,i,t,5] <- 0
+      ps[10,i,t,6] <- 0
+      ps[10,i,t,7] <- 0
+      ps[10,i,t,8] <- 0
+      ps[10,i,t,9] <- phiSk[i,t]*psiSk[i,t]   #5yr NB becomes a breeder
+      ps[10,i,t,10]<- 0  
+      ps[10,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t]) #5yr NB stays NB by not becoming breeder
+      ps[10,i,t,12]<- 1-phiSk[i,t]  #NB dies
+      ps[11,i,t,1] <- 0              
+      ps[11,i,t,2] <- 0              
+      ps[11,i,t,3] <- 0            
+      ps[11,i,t,4] <- 0              
+      ps[11,i,t,5] <- 0
+      ps[11,i,t,6] <- 0
+      ps[11,i,t,7] <- 0
+      ps[11,i,t,8] <- 0
+      ps[11,i,t,9] <- phiSk[i,t]*psiSk[i,t]  #6yr NB becomes a breeder
+      ps[11,i,t,10]<- 0
+      ps[11,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t])  #6yr NB stays NB by not becoming breeder
+      ps[11,i,t,12]<- 1-phiSk[i,t]
+      ps[12,i,t,1] <- 0              
+      ps[12,i,t,2] <- 0              
+      ps[12,i,t,3] <- 0            
+      ps[12,i,t,4] <- 0              
+      ps[12,i,t,5] <- 0
+      ps[12,i,t,6] <- 0
+      ps[12,i,t,7] <- 0
+      ps[12,i,t,8] <- 0
+      ps[12,i,t,9] <- 0
+      ps[12,i,t,10]<- 0
+      ps[12,i,t,11]<- 0
+      ps[12,i,t,12]<- 1  #stays dead
+      
+     # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 1        #pups always observed as a pup      
+      po[1,i,t,2] <- 0        
+      po[1,i,t,3] <- 0            
+      po[1,i,t,4] <- 0              
+      po[1,i,t,5] <- 0
+      po[1,i,t,6] <- 0
+      po[1,i,t,7] <- 0
+      po[1,i,t,8] <- 0
+      po[1,i,t,9] <- 0
+      po[1,i,t,10]<- 0
+      po[1,i,t,11]<- 0
+      po[2,i,t,1] <- 0              
+      po[2,i,t,2] <- p1[i,t]  #detection of yearlings              
+      po[2,i,t,3] <- 0        
+      po[2,i,t,4] <- 0              
+      po[2,i,t,5] <- 0
+      po[2,i,t,6] <- 0
+      po[2,i,t,7] <- 0
+      po[2,i,t,8] <- 0
+      po[2,i,t,9] <- 0
+      po[2,i,t,10]<- 0
+      po[2,i,t,11]<- 1-p1[i,t]      #yearling ND
+      po[3,i,t,1] <- 0              
+      po[3,i,t,2] <- 0              
+      po[3,i,t,3] <- p2[i,t]         #detection of 2yr            
+      po[3,i,t,4] <- 0
+      po[3,i,t,5] <- 0
+      po[3,i,t,6] <- 0
+      po[3,i,t,7] <- 0
+      po[3,i,t,8] <- 0
+      po[3,i,t,9] <- 0
+      po[3,i,t,10]<- 0
+      po[3,i,t,11]<- 1-p2[i,t]    #2yr ND
+      po[4,i,t,1] <- 0              
+      po[4,i,t,2] <- 0              
+      po[4,i,t,3] <- 0            
+      po[4,i,t,4] <- p3[i,t]       #detection of 3yr              
+      po[4,i,t,5] <- 0
+      po[4,i,t,6] <- 0
+      po[4,i,t,7] <- 0
+      po[4,i,t,8] <- 0
+      po[4,i,t,9] <- 0
+      po[4,i,t,10]<- 0
+      po[4,i,t,11]<- 1-p3[i,t]      #3yr ND
+      po[5,i,t,1] <- 0              
+      po[5,i,t,2] <- 0              
+      po[5,i,t,3] <- 0            
+      po[5,i,t,4] <- 0              
+      po[5,i,t,5] <- p4[i,t]#*delPB[i,t]    #4yr prebreeder seen and correctly ascertained w/o pup 
+      po[5,i,t,6] <- 0
+      po[5,i,t,7] <- 0
+      po[5,i,t,8] <- 0
+      po[5,i,t,9] <- 0
+      po[5,i,t,10]<- 0
+      po[5,i,t,11]<- 1-p4[i,t]            #4yr ND
+      po[6,i,t,1] <- 0              
+      po[6,i,t,2] <- 0              
+      po[6,i,t,3] <- 0            
+      po[6,i,t,4] <- 0 
+      po[6,i,t,5] <- 0
+      po[6,i,t,6] <- 0
+      po[6,i,t,7] <- p5[i,t]#*delPB[i,t]        #5yr prebreeder seen and correctly ascertained w/o pup
+      po[6,i,t,8] <- 0
+      po[6,i,t,9] <- 0
+      po[6,i,t,10]<- 0
+      po[6,i,t,11]<- 1-p5[i,t]    #5yr ND
+      po[7,i,t,1] <- 0              
+      po[7,i,t,2] <- 0              
+      po[7,i,t,3] <- 0            
+      po[7,i,t,4] <- 0              
+      po[7,i,t,5] <- pB[i,t]*(1-delB[i,t])  #4yr breeder incorrectly ascertained w/o pup (false -)
+      po[7,i,t,6] <- pB[i,t]*delB[i,t]      #4yr breeder correctly ascertained w pup
+      po[7,i,t,7] <- 0
+      po[7,i,t,8] <- 0
+      po[7,i,t,9] <- 0
+      po[7,i,t,10]<- 0
+      po[7,i,t,11]<- 1-pB[i,t] #4yr ND
+      po[8,i,t,1] <- 0              
+      po[8,i,t,2] <- 0              
+      po[8,i,t,3] <- 0            
+      po[8,i,t,4] <- 0              
+      po[8,i,t,5] <- 0
+      po[8,i,t,6] <- 0
+      po[8,i,t,7] <- pB[i,t]*(1-delB[i,t])   #5yr breeder incorrectly ascertained w/o pup
+      po[8,i,t,8] <- pB[i,t]*delB[i,t]     #5yr breeder correctly ascertained w pup
+      po[8,i,t,9] <- 0
+      po[8,i,t,10]<- 0
+      po[8,i,t,11]<- 1-pB[i,t]  #5yr ND
+      po[9,i,t,1] <- 0              
+      po[9,i,t,2] <- 0              
+      po[9,i,t,3] <- 0            
+      po[9,i,t,4] <- 0              
+      po[9,i,t,5] <- 0
+      po[9,i,t,6] <- 0
+      po[9,i,t,7] <- 0
+      po[9,i,t,8] <- 0
+      po[9,i,t,9] <- pB[i,t]*(1-delB[i,t])  #6+ breeder incorrectly ascertained w/o pup as skipper
+      po[9,i,t,10]<- pB[i,t]*delB[i,t]  #6+ breeder correctly ascertained as breeder
+      po[9,i,t,11]<- 1-pB[i,t]  #breeder ND
+      po[10,i,t,1] <- 0              
+      po[10,i,t,2] <- 0              
+      po[10,i,t,3] <- 0            
+      po[10,i,t,4] <- 0              
+      po[10,i,t,5] <- 0
+      po[10,i,t,6] <- 0
+      po[10,i,t,7] <- pSk[i,t]#*delSk[i,t]     #5yr skipper correctly ascertained w/o pup
+      #po[10,i,t,8] <- pSk[i,t]*(1-delSk[i,t])  #5yr skipper incorrectly ascertained w pup
+      po[10,i,t,8] <- 0
+      po[10,i,t,9] <- 0
+      po[10,i,t,10]<- 0
+      po[10,i,t,11]<- 1-pSk[i,t]  #5yr skipper ND
+      po[11,i,t,1] <- 0              
+      po[11,i,t,2] <- 0              
+      po[11,i,t,3] <- 0            
+      po[11,i,t,4] <- 0              
+      po[11,i,t,5] <- 0
+      po[11,i,t,6] <- 0
+      po[11,i,t,7] <- 0
+      po[11,i,t,8] <- 0
+      po[11,i,t,9] <- pSk[i,t]#*delSk[i,t] 
+      po[11,i,t,10]<- 0
+      #po[11,i,t,10]<- pSk[i,t]*(1-delSk[i,t]) 
+      po[11,i,t,11]<- 1-pSk[i,t]  #6+ yr skipper not seen
+      po[12,i,t,1] <- 0              
+      po[12,i,t,2] <- 0              
+      po[12,i,t,3] <- 0            
+      po[12,i,t,4] <- 0              
+      po[12,i,t,5] <- 0
+      po[12,i,t,6] <- 0
+      po[12,i,t,7] <- 0
+      po[12,i,t,8] <- 0
+      po[12,i,t,9] <- 0  
+      po[12,i,t,10]<- 0  
+      po[12,i,t,11]<- 1  #dead not seen 
+  }
+}
+  for (i in 1:n_m){
+    for (t in 1:(n_occasions-1)) {
+      ###MALE 
+      ps_m[1,i,t,1] <- 0              
+      ps_m[1,i,t,2] <- phiPM[i,t]        #pup to yearling
+      ps_m[1,i,t,3] <- 0            
+      ps_m[1,i,t,4] <- 0              
+      ps_m[1,i,t,5] <- 0
+      ps_m[1,i,t,6] <- 0
+      ps_m[1,i,t,7] <- 1-phiPM[i,t]      #pup dies
+      ps_m[2,i,t,1] <- 0              
+      ps_m[2,i,t,2] <- 0              
+      ps_m[2,i,t,3] <- phi1M[i,t]        #yearling to 2yr
+      ps_m[2,i,t,4] <- 0              
+      ps_m[2,i,t,5] <- 0
+      ps_m[2,i,t,6] <- 0
+      ps_m[2,i,t,7] <- 1-phi1M[i,t]      #yearling dies
+      ps_m[3,i,t,1] <- 0              
+      ps_m[3,i,t,2] <- 0              
+      ps_m[3,i,t,3] <- 0            
+      ps_m[3,i,t,4] <- phi2M[i,t]        #2-3yr
+      ps_m[3,i,t,5] <- 0
+      ps_m[3,i,t,6] <- 0
+      ps_m[3,i,t,7] <- 1-phi2M[i,t]    #2yr dies
+      ps_m[4,i,t,1] <- 0              
+      ps_m[4,i,t,2] <- 0              
+      ps_m[4,i,t,3] <- 0            
+      ps_m[4,i,t,4] <- 0              
+      ps_m[4,i,t,5] <- phi3M[i,t]   #3yr becomes 4yr 
+      ps_m[4,i,t,6] <- 0
+      ps_m[4,i,t,7] <- 1-phi3M[i,t]      #3yr dies
+      ps_m[5,i,t,1] <- 0              
+      ps_m[5,i,t,2] <- 0              
+      ps_m[5,i,t,3] <- 0            
+      ps_m[5,i,t,4] <- 0              
+      ps_m[5,i,t,5] <- 0
+      ps_m[5,i,t,6] <- phi4M[i,t]    #4yr becomes 5yr 
+      ps_m[5,i,t,7] <- 1-phi4M[i,t]            #4yr dies
+      ps_m[6,i,t,1] <- 0              
+      ps_m[6,i,t,2] <- 0              
+      ps_m[6,i,t,3] <- 0            
+      ps_m[6,i,t,4] <- 0              
+      ps_m[6,i,t,5] <- 0
+      ps_m[6,i,t,6] <- phi5M[i,t]  #5yr becomes 6yr
+      ps_m[6,i,t,7] <- 1-phi5M[i,t]    #5yr dies
+      ps_m[7,i,t,1] <- 0              
+      ps_m[7,i,t,2] <- 0              
+      ps_m[7,i,t,3] <- 0            
+      ps_m[7,i,t,4] <- 0              
+      ps_m[7,i,t,5] <- 0
+      ps_m[7,i,t,6] <- 0
+      ps_m[7,i,t,7] <- 1
+      
+      po_m[1,i,t,1] <- 1        #pups always observed as a pup      
+      po_m[1,i,t,2] <- 0        
+      po_m[1,i,t,3] <- 0            
+      po_m[1,i,t,4] <- 0              
+      po_m[1,i,t,5] <- 0
+      po_m[1,i,t,6] <- 0
+      po_m[1,i,t,7] <- 0
+      po_m[2,i,t,1] <- 0              
+      po_m[2,i,t,2] <- p1M[i,t]  #detection of yearlings              
+      po_m[2,i,t,3] <- 0        
+      po_m[2,i,t,4] <- 0              
+      po_m[2,i,t,5] <- 0
+      po_m[2,i,t,6] <- 0
+      po_m[2,i,t,7] <- 1-p1M[i,t]      #yearling ND
+      po_m[3,i,t,1] <- 0              
+      po_m[3,i,t,2] <- 0              
+      po_m[3,i,t,3] <- p2M[i,t]         #detection of 2yr            
+      po_m[3,i,t,4] <- 0
+      po_m[3,i,t,5] <- 0
+      po_m[3,i,t,6] <- 0
+      po_m[3,i,t,7] <- 1-p2M[i,t]    #2yr ND
+      po_m[4,i,t,1] <- 0              
+      po_m[4,i,t,2] <- 0              
+      po_m[4,i,t,3] <- 0            
+      po_m[4,i,t,4] <- p3M[i,t]       #detection of 3yr              
+      po_m[4,i,t,5] <- 0
+      po_m[4,i,t,6] <- 0
+      po_m[4,i,t,7] <- 1-p3M[i,t]      #3yr ND
+      po_m[5,i,t,1] <- 0              
+      po_m[5,i,t,2] <- 0              
+      po_m[5,i,t,3] <- 0            
+      po_m[5,i,t,4] <- 0              
+      po_m[5,i,t,5] <- p4M[i,t]
+      po_m[5,i,t,6] <- 0
+      po_m[5,i,t,7] <- 1-p4M[i,t]            #4yr ND
+      po_m[6,i,t,1] <- 0              
+      po_m[6,i,t,2] <- 0              
+      po_m[6,i,t,3] <- 0            
+      po_m[6,i,t,4] <- 0 
+      po_m[6,i,t,5] <- 0
+      po_m[6,i,t,6] <- p5M[i,t]
+      po_m[6,i,t,7] <- 1-p5M[i,t]    #5yr ND
+      po_m[7,i,t,1] <- 0              
+      po_m[7,i,t,2] <- 0              
+      po_m[7,i,t,3] <- 0            
+      po_m[7,i,t,4] <- 0              
+      po_m[7,i,t,5] <- 0
+      po_m[7,i,t,6] <- 0
+      po_m[7,i,t,7] <- 1  #dead not seen 
+      } #t 
+  }#i
+    
+  #population model
+  #    for (t in 1:n_occasions) {
+  #     #     Np[t] <- Npup[t]
+  #     #     N1[t] <- Npup[t-1]*phiP
+  #     #     N2[t] <- sum(z[1:n_ind,t] == 3)
+  #     #     N3[t] <- sum(z[1:n_ind,t] == 4)
+  #     #     N4[t] <- sum(z[1:n_ind,t] == 5)
+  #     #     N5[t] <- sum(z[1:n_ind,t] == 6)
+  #     #     Nb[t] <- sum(z[1:n_ind,t] == 7) + sum(z[1:n_ind,t] == 8) + sum(z[1:n_ind,t] == 9)
+  #     #     Nnb[t] <- sum(z[1:n_ind,t] == 10) + sum(z[1:n_ind,t] == 11)
+  # } #t
+} #mod
+
+    
+write.model(IPM_reg, "IPM_reg.txt")
+model.file = paste(getwd(),"IPM_reg.txt", sep="/")
+
+```
+
+```{r bmi run}
+
+# Bundle data
+jags.data <- list(y = y, ym = ym, fc = fc, fc_m = fc_m, z = z.st, zm = z.st.m, 
+                  resights = res_mat, n_fem = dim(ch_fem)[1], n_m = dim(ch_m)[1],
+                  bmi_f = bmi_f, bmi_m = bmi_m,
+                  eff = eff, n_occasions = n_occasions)
+
+inits <- function(){list(
+  zm = z.init.m,
+  z = z.init)}    
+
+# params
+parameters <- c('mean.p1', 'mean.p2', 'mean.p3', 'mean.p4', 'mean.p5', 'mean.pB', 'mean.pSk',
+                'mean.p1M', 'mean.p2M', 'mean.p3M', 'mean.p4M', 'mean.p5M', 
+                "mean.psi3", 'mean.psi4', 'mean.psi5', 'mean.psiB', 'mean.psiSk', 
+                'int.phiP', 'int.phi1', 'int.phi2', 'int.phi3', 'int.phi4', 'int.phi5', 'int.phiB', 'int.phiSk',
+                'int.phiPM', 'int.phi1M', 'int.phi2M', 'int.phi3M', 'int.phi4M', 'int.phi5M', 
+                'b.delB', 'p.delB', 'b.eff',
+                'b.bmi.p', 'b.bmi.psi3', 'b.bmi.pm',
+                #'N1', 'N2', 'N3', 'N4', 'N5', 'Nb', 'Nnb',
+                'mu.p', 'mu.1', 'mu.2', 'mu.3', 'mu.4', 'mu.5', 'mu.B', 'mu.Sk',
+                'mu.pM', 'mu.1M', 'mu.2M', 'mu.3M', 'mu.4M', 'mu.5M')
+
+# MCMC settings
+# ni <- 20000; nb <- 10000; nc <- 3
+ni <- 4; nb <- 1; nc <- 2
+#nt <- 2
+
+out_bmi <- jags(jags.data, inits, parameters, 
+            model.file = model.file,
+            n.chains = nc, 
+            #n.thin = nt, 
+            n.iter = ni, n.burnin = nb, parallel = T)
+
+# Save object
+saveRDS(out_reg, file = "out_reg.rds")
+
+out_reg_up <- update(out_reg, n.iter = 20000)
+saveRDS(out_reg_up, file = 'out_reg_up.rds')
+# # Restore the object
+saved_full <- readRDS(file = "out_mod_sprup5.rds")
+
+```
+
+
+```{r RE model}
+
+CJS_null <- function () {
+  
+# Priors and constraints
+for (i in 1:n_ind) {
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiP[i,t]) <- mu.p + epsP[t]
+            logit(phi1[i,t]) <- mu.1 + eps1[t]
+            logit(phi2[i,t]) <- mu.2 + eps2[t]
+            logit(phi3[i,t]) <- mu.3 + epsPB[t]
+            logit(phi4[i,t]) <- mu.4 + epsPB[t]
+            logit(phi5[i,t]) <- mu.5 + epsPB[t]
+            logit(phiB[i,t]) <- mu.B + epsB[t]
+            logit(phiSk[i,t]) <- mu.Sk + epsSk[t]
+            logit(delB[i,t]) <- b.delB[resights[i,t]]
+            p1[i,t] <- mean.p1 + b.eff[eff[t]]
+            p2[i,t] <- mean.p2 + b.eff[eff[t]]
+            p3[i,t] <- mean.p3 + b.eff[eff[t]]
+            p4[i,t] <- mean.p4 + b.eff[eff[t]]
+            p5[i,t] <- mean.p5 + b.eff[eff[t]]
+            pB[i,t] <- mean.pB + b.eff[eff[t]]
+            pSk[i,t] <- mean.pSk + b.eff[eff[t]]
+            logit(psi3[i,t]) <- mean.psi3 + eps.psi3[t]
+            logit(psi4[i,t]) <- mean.psi4 + eps.psi4[t]
+            logit(psi5[i,t]) <- mean.psi5 + eps.psi5[t]
+            logit(psiB[i,t]) <- mean.psiB + eps.psiB[t]
+            logit(psiSk[i,t]) <- mean.psiSk + eps.psiSk[t]
+        }
+}
+
+    mean.psi3 <- log(int.psi3/(1 - int.psi3))
+    mean.psi4 <- log(int.psi4/(1 - int.psi4))
+    mean.psi5 <- log(int.psi5/(1 - int.psi5))
+    mean.psiB <- log(int.psiB/(1 - int.psiB))
+    mean.psiSk <- log(int.psiSk/(1 - int.psiSk))
+    int.psi3 ~ dunif(0,1)
+    int.psi4 ~ dunif(0,1)
+    int.psi5 ~ dunif(0,1)
+    int.psiB ~ dunif(0,1)
+    int.psiSk ~ dunif(0,1)
+    
+    mu.p <- log(int.phiP/(1 - int.phiP))
+    mu.1 <- log(int.phi1/(1 - int.phi1))
+    mu.2 <- log(int.phi2/(1 - int.phi2))
+    mu.3 <- log(int.phi3/(1 - int.phi3))
+    mu.4 <- log(int.phi4/(1 - int.phi4))
+    mu.5 <- log(int.phi5/(1 - int.phi5))
+    mu.B <- log(int.phiB/(1 - int.phiB))
+    mu.Sk <- log(int.phiSk/(1 - int.phiSk))
+    int.phiP ~ dunif(0,1)
+    int.phi1 ~ dunif(0,1)
+    int.phi2 ~ dunif(0,1)
+    int.phi3 ~ dunif(0,1)
+    int.phi4 ~ dunif(0,1)
+    int.phi5 ~ dunif(0,1)
+    int.phiB ~ dunif(0,1)
+    int.phiSk ~ dunif(0,1)
+    
+    mean.p1 ~ dunif(0,1)
+    mean.p2 ~ dunif(0,1)
+    mean.p3 ~ dunif(0,1)
+    mean.p4 ~ dunif(0,1)
+    mean.p5 ~ dunif(0,1)
+    mean.pB ~ dunif(0,1)
+    mean.pSk ~ dunif(0,1)
+    
+    p.delB[1] ~ dunif(0,1)
+    b.delB[1] <- log(p.delB[1]/(1-p.delB[1]))
+    p.delB[2] ~ dunif(0,1)
+    b.delB[2] <- log(p.delB[2]/(1-p.delB[2]))
+    p.delB[3] ~ dunif(0,1)
+    b.delB[3] <- log(p.delB[3]/(1-p.delB[3]))
+    b.delB[4] <- -2 #0 on probability scale
+    b.eff[1] <- 0
+    b.eff[2] ~ dnorm(0, 0.001)
+    
+    for (t in 1:(n_occasions-1)){
+      epsP[t] ~ dnorm(0, tauP)
+      eps1[t] ~ dnorm(0, tau1)
+      eps2[t] ~ dnorm(0, tau2)
+      epsPB[t] ~ dnorm(0, tauPB)
+      epsB[t] ~ dnorm(0, tauB)
+      epsSk[t] ~ dnorm(0, tauSk)
+    } #t
+
+    sigmaP ~ dunif(0, 10)    
+    tauP <- pow(sigmaP, -2)
+    sigma2.P <- pow(sigmaP, 2)
+    
+    sigma1 ~ dunif(0, 10)    
+    tau1 <- pow(sigma1, -2)
+    sigma2.1 <- pow(sigma1, 2)
+    sigma2 ~ dunif(0, 10)    
+    tau2 <- pow(sigma2, -2)
+    sigma2.2 <- pow(sigma2, 2)
+    sigmaPB ~ dunif(0, 10)    
+    tauPB <- pow(sigmaPB, -2)
+    sigma2.PB <- pow(sigmaPB, 2)
+    sigmaB ~ dunif(0, 10)    
+    tauB <- pow(sigmaB, -2)
+    sigma2.B <- pow(sigmaB, 2)
+    sigmaSk ~ dunif(0, 10)    
+    tauSk <- pow(sigmaSk, -2)
+    sigma2.Sk <- pow(sigmaSk, 2)
+    
+   for (t in 1:(n_occasions-1)){
+      eps.psi3[t] ~ dnorm(0, tau.psi3)
+      eps.psi4[t] ~ dnorm(0, tau.psi4)
+      eps.psi5[t] ~ dnorm(0, tau.psi5)
+      eps.psiB[t] ~ dnorm(0, tau.psiB)
+      eps.psiSk[t] ~ dnorm(0, tau.psiSk)
+    } #t
+    
+    sigma.psi3 ~ dunif(0, 10)    
+    tau.psi3 <- pow(sigma.psi3, -2)
+    sigma2.psi3 <- pow(sigma.psi3, 2)
+    
+    sigma.psi4 ~ dunif(0, 10)    
+    tau.psi4 <- pow(sigma.psi4, -2)
+    sigma2.psi4 <- pow(sigma.psi4, 2)
+    
+    sigma.psi5 ~ dunif(0, 10)    
+    tau.psi5 <- pow(sigma.psi5, -2)
+    sigma2.psi5 <- pow(sigma.psi5, 2)
+    
+    sigma.psiB ~ dunif(0, 10)    
+    tau.psiB <- pow(sigma.psiB, -2)
+    sigma2.psiB <- pow(sigma.psiB, 2)
+    
+    sigma.psiSk ~ dunif(0, 10)    
+    tau.psiSk <- pow(sigma.psiSk, -2)
+    sigma2.psiSk <- pow(sigma.psiSk, 2)
+
+    #likelihood
+for (i in 1:n_ind) {
+    z[i, fc[i]] <- 1
+for (t in (fc[i] + 1):n_occasions) {
+    z[i,t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+    y[i,t] ~ dcat(po[z[i,t], i, t - 1, ])
+    }
+}
+    
+# Transition and observation matrices
+for (i in 1:n_ind){
+  for (t in 1:(n_occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 0              
+      ps[1,i,t,2] <- phiP[i,t]        #pup to yearling
+      ps[1,i,t,3] <- 0            
+      ps[1,i,t,4] <- 0              
+      ps[1,i,t,5] <- 0
+      ps[1,i,t,6] <- 0
+      ps[1,i,t,7] <- 0
+      ps[1,i,t,8] <- 0
+      ps[1,i,t,9] <- 0
+      ps[1,i,t,10]<- 0
+      ps[1,i,t,11]<- 0
+      ps[1,i,t,12]<- 1-phiP[i,t]      #pup dies
+      ps[2,i,t,1] <- 0              
+      ps[2,i,t,2] <- 0              
+      ps[2,i,t,3] <- phi1[i,t]        #yearling to 2yr
+      ps[2,i,t,4] <- 0              
+      ps[2,i,t,5] <- 0
+      ps[2,i,t,6] <- 0
+      ps[2,i,t,7] <- 0
+      ps[2,i,t,8] <- 0
+      ps[2,i,t,9] <- 0
+      ps[2,i,t,10]<- 0
+      ps[2,i,t,11]<- 0
+      ps[2,i,t,12]<- 1-phi1[i,t]      #yearling dies
+      ps[3,i,t,1] <- 0              
+      ps[3,i,t,2] <- 0              
+      ps[3,i,t,3] <- 0            
+      ps[3,i,t,4] <- phi2[i,t]        #2-3yr
+      ps[3,i,t,5] <- 0
+      ps[3,i,t,6] <- 0
+      ps[3,i,t,7] <- 0
+      ps[3,i,t,8] <- 0
+      ps[3,i,t,9] <- 0
+      ps[3,i,t,10]<- 0
+      ps[3,i,t,11]<- 0
+      ps[3,i,t,12]<- 1-phi2[i,t]    #2yr dies
+      ps[4,i,t,1] <- 0              
+      ps[4,i,t,2] <- 0              
+      ps[4,i,t,3] <- 0            
+      ps[4,i,t,4] <- 0              
+      ps[4,i,t,5] <- phi3[i,t]*(1-psi3[i,t])   #3yr becomes 4yr prebreeder
+      ps[4,i,t,6] <- 0
+      ps[4,i,t,7] <- phi3[i,t]*psi3[i,t]       #3yr becomes 4yr breeder
+      ps[4,i,t,8] <- 0
+      ps[4,i,t,9] <- 0
+      ps[4,i,t,10]<- 0
+      ps[4,i,t,11]<- 0
+      ps[4,i,t,12]<- 1-phi3[i,t]      #3yr dies
+      ps[5,i,t,1] <- 0              
+      ps[5,i,t,2] <- 0              
+      ps[5,i,t,3] <- 0            
+      ps[5,i,t,4] <- 0              
+      ps[5,i,t,5] <- 0
+      ps[5,i,t,6] <- phi4[i,t]*(1-psi4[i,t])     #4yr prebreeder becomes 5yr prebreeder
+      ps[5,i,t,7] <- 0
+      ps[5,i,t,8] <- phi4[i,t]*psi4[i,t]         #4yr prebreeder becomes 5yr breeder
+      ps[5,i,t,9] <- 0
+      ps[5,i,t,10]<- 0
+      ps[5,i,t,11]<- 0
+      ps[5,i,t,12]<- 1-phi4[i,t]            #4yr dies
+      ps[6,i,t,1] <- 0              
+      ps[6,i,t,2] <- 0              
+      ps[6,i,t,3] <- 0            
+      ps[6,i,t,4] <- 0              
+      ps[6,i,t,5] <- 0
+      ps[6,i,t,6] <- 0
+      ps[6,i,t,7] <- 0
+      ps[6,i,t,8] <- 0
+      ps[6,i,t,9] <- phi5[i,t]*psi5[i,t]  #5yr becomes 6yr breeder, psi5 no longer fixed to 1.0
+      ps[6,i,t,10]<- 0
+      ps[6,i,t,11]<- phi5[i,t]*(1-psi5[i,t]) #5yr becomes 6yr n.b.
+      ps[6,i,t,12]<- 1-phi5[i,t]    #5yr dies
+      ps[7,i,t,1] <- 0              
+      ps[7,i,t,2] <- 0              
+      ps[7,i,t,3] <- 0            
+      ps[7,i,t,4] <- 0              
+      ps[7,i,t,5] <- 0
+      ps[7,i,t,6] <- 0
+      ps[7,i,t,7] <- 0
+      ps[7,i,t,8] <- phi4[i,t]*(psiB[i,t])   #4yr breeder becomes 5yr breeder 
+      ps[7,i,t,9] <- 0
+      ps[7,i,t,10]<- phi4[i,t]*(1-psiB[i,t])  #4yr breeder becomes 5yr skipper
+      ps[7,i,t,11]<- 0
+      ps[7,i,t,12]<- 1-phi4[i,t] #4yr dies
+      ps[8,i,t,1] <- 0              
+      ps[8,i,t,2] <- 0              
+      ps[8,i,t,3] <- 0            
+      ps[8,i,t,4] <- 0              
+      ps[8,i,t,5] <- 0
+      ps[8,i,t,6] <- 0
+      ps[8,i,t,7] <- 0
+      ps[8,i,t,8] <- 0
+      ps[8,i,t,9] <- phi5[i,t]*(psiB[i,t])  #5yr breeder becomes 6+yr breeder 
+      ps[8,i,t,10]<- 0
+      ps[8,i,t,11]<- phi5[i,t]*(1-psiB[i,t])  #5yr breeder becomes 6+ NB
+      ps[8,i,t,12]<- 1-phi5[i,t]  #5yr dies
+      ps[9,i,t,1] <- 0              
+      ps[9,i,t,2] <- 0              
+      ps[9,i,t,3] <- 0            
+      ps[9,i,t,4] <- 0              
+      ps[9,i,t,5] <- 0
+      ps[9,i,t,6] <- 0
+      ps[9,i,t,7] <- 0
+      ps[9,i,t,8] <- 0
+      ps[9,i,t,9] <- phiB[i,t]*(psiB[i,t])  #6+ breeder stays a breeder
+      ps[9,i,t,10]<- 0
+      ps[9,i,t,11]<- phiB[i,t]*(1-psiB[i,t])  #6+ breeder becomes a skipper
+      ps[9,i,t,12]<- 1-phiB[i,t]  #breeder dies
+      ps[10,i,t,1] <- 0              
+      ps[10,i,t,2] <- 0              
+      ps[10,i,t,3] <- 0            
+      ps[10,i,t,4] <- 0              
+      ps[10,i,t,5] <- 0
+      ps[10,i,t,6] <- 0
+      ps[10,i,t,7] <- 0
+      ps[10,i,t,8] <- 0
+      ps[10,i,t,9] <- phiSk[i,t]*psiSk[i,t]   #5yr NB becomes a breeder
+      ps[10,i,t,10]<- 0  
+      ps[10,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t]) #5yr NB stays NB by not becoming breeder
+      ps[10,i,t,12]<- 1-phiSk[i,t]  #NB dies
+      ps[11,i,t,1] <- 0              
+      ps[11,i,t,2] <- 0              
+      ps[11,i,t,3] <- 0            
+      ps[11,i,t,4] <- 0              
+      ps[11,i,t,5] <- 0
+      ps[11,i,t,6] <- 0
+      ps[11,i,t,7] <- 0
+      ps[11,i,t,8] <- 0
+      ps[11,i,t,9] <- phiSk[i,t]*psiSk[i,t]  #6yr NB becomes a breeder
+      ps[11,i,t,10]<- 0
+      ps[11,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t])  #6yr NB stays NB by not becoming breeder
+      ps[11,i,t,12]<- 1-phiSk[i,t]
+      ps[12,i,t,1] <- 0              
+      ps[12,i,t,2] <- 0              
+      ps[12,i,t,3] <- 0            
+      ps[12,i,t,4] <- 0              
+      ps[12,i,t,5] <- 0
+      ps[12,i,t,6] <- 0
+      ps[12,i,t,7] <- 0
+      ps[12,i,t,8] <- 0
+      ps[12,i,t,9] <- 0
+      ps[12,i,t,10]<- 0
+      ps[12,i,t,11]<- 0
+      ps[12,i,t,12]<- 1  #stays dead
+      
+     # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 1        #pups always observed as a pup      
+      po[1,i,t,2] <- 0        
+      po[1,i,t,3] <- 0            
+      po[1,i,t,4] <- 0              
+      po[1,i,t,5] <- 0
+      po[1,i,t,6] <- 0
+      po[1,i,t,7] <- 0
+      po[1,i,t,8] <- 0
+      po[1,i,t,9] <- 0
+      po[1,i,t,10]<- 0
+      po[1,i,t,11]<- 0
+      po[2,i,t,1] <- 0              
+      po[2,i,t,2] <- p1[i,t]  #detection of yearlings              
+      po[2,i,t,3] <- 0        
+      po[2,i,t,4] <- 0              
+      po[2,i,t,5] <- 0
+      po[2,i,t,6] <- 0
+      po[2,i,t,7] <- 0
+      po[2,i,t,8] <- 0
+      po[2,i,t,9] <- 0
+      po[2,i,t,10]<- 0
+      po[2,i,t,11]<- 1-p1[i,t]      #yearling ND
+      po[3,i,t,1] <- 0              
+      po[3,i,t,2] <- 0              
+      po[3,i,t,3] <- p2[i,t]         #detection of 2yr            
+      po[3,i,t,4] <- 0
+      po[3,i,t,5] <- 0
+      po[3,i,t,6] <- 0
+      po[3,i,t,7] <- 0
+      po[3,i,t,8] <- 0
+      po[3,i,t,9] <- 0
+      po[3,i,t,10]<- 0
+      po[3,i,t,11]<- 1-p2[i,t]    #2yr ND
+      po[4,i,t,1] <- 0              
+      po[4,i,t,2] <- 0              
+      po[4,i,t,3] <- 0            
+      po[4,i,t,4] <- p3[i,t]       #detection of 3yr              
+      po[4,i,t,5] <- 0
+      po[4,i,t,6] <- 0
+      po[4,i,t,7] <- 0
+      po[4,i,t,8] <- 0
+      po[4,i,t,9] <- 0
+      po[4,i,t,10]<- 0
+      po[4,i,t,11]<- 1-p3[i,t]      #3yr ND
+      po[5,i,t,1] <- 0              
+      po[5,i,t,2] <- 0              
+      po[5,i,t,3] <- 0            
+      po[5,i,t,4] <- 0              
+      po[5,i,t,5] <- p4[i,t]#*delPB[i,t]    #4yr prebreeder seen and correctly ascertained w/o pup 
+      po[5,i,t,6] <- 0
+      #po[5,i,t,6] <- p4[i,t]*(1-delPB[i,t])  #4yr prebreeder seen and incorrectly ascertained as breeder (false +), removed
+      po[5,i,t,7] <- 0
+      po[5,i,t,8] <- 0
+      po[5,i,t,9] <- 0
+      po[5,i,t,10]<- 0
+      po[5,i,t,11]<- 1-p4[i,t]            #4yr ND
+      po[6,i,t,1] <- 0              
+      po[6,i,t,2] <- 0              
+      po[6,i,t,3] <- 0            
+      po[6,i,t,4] <- 0 
+      po[6,i,t,5] <- 0
+      po[6,i,t,6] <- 0
+      po[6,i,t,7] <- p5[i,t]#*delPB[i,t]        #5yr prebreeder seen and correctly ascertained w/o pup
+      po[6,i,t,8] <- 0
+      #po[6,i,t,8] <- p5[i,t]*(1-delPB[i,t])   #5yr prebreeder seen and incorrectly ascertained as breeder
+      po[6,i,t,9] <- 0
+      po[6,i,t,10]<- 0
+      po[6,i,t,11]<- 1-p5[i,t]    #5yr ND
+      po[7,i,t,1] <- 0              
+      po[7,i,t,2] <- 0              
+      po[7,i,t,3] <- 0            
+      po[7,i,t,4] <- 0              
+      po[7,i,t,5] <- pB[i,t]*(1-delB[i,t])  #4yr breeder incorrectly ascertained w/o pup (false -)
+      po[7,i,t,6] <- pB[i,t]*delB[i,t]      #4yr breeder correctly ascertained w pup
+      po[7,i,t,7] <- 0
+      po[7,i,t,8] <- 0
+      po[7,i,t,9] <- 0
+      po[7,i,t,10]<- 0
+      po[7,i,t,11]<- 1-pB[i,t] #4yr ND
+      po[8,i,t,1] <- 0              
+      po[8,i,t,2] <- 0              
+      po[8,i,t,3] <- 0            
+      po[8,i,t,4] <- 0              
+      po[8,i,t,5] <- 0
+      po[8,i,t,6] <- 0
+      po[8,i,t,7] <- pB[i,t]*(1-delB[i,t])   #5yr breeder incorrectly ascertained w/o pup
+      po[8,i,t,8] <- pB[i,t]*delB[i,t]     #5yr breeder correctly ascertained w pup
+      po[8,i,t,9] <- 0
+      po[8,i,t,10]<- 0
+      po[8,i,t,11]<- 1-pB[i,t]  #5yr ND
+      po[9,i,t,1] <- 0              
+      po[9,i,t,2] <- 0              
+      po[9,i,t,3] <- 0            
+      po[9,i,t,4] <- 0              
+      po[9,i,t,5] <- 0
+      po[9,i,t,6] <- 0
+      po[9,i,t,7] <- 0
+      po[9,i,t,8] <- 0
+      po[9,i,t,9] <- pB[i,t]*(1-delB[i,t])  #6+ breeder incorrectly ascertained w/o pup as skipper
+      po[9,i,t,10]<- pB[i,t]*delB[i,t]  #6+ breeder correctly ascertained as breeder
+      po[9,i,t,11]<- 1-pB[i,t]  #breeder ND
+      po[10,i,t,1] <- 0              
+      po[10,i,t,2] <- 0              
+      po[10,i,t,3] <- 0            
+      po[10,i,t,4] <- 0              
+      po[10,i,t,5] <- 0
+      po[10,i,t,6] <- 0
+      po[10,i,t,7] <- pSk[i,t]#*delSk[i,t]     #5yr skipper correctly ascertained w/o pup
+      #po[10,i,t,8] <- pSk[i,t]*(1-delSk[i,t])  #5yr skipper incorrectly ascertained w pup
+      po[10,i,t,8] <- 0
+      po[10,i,t,9] <- 0
+      po[10,i,t,10]<- 0
+      po[10,i,t,11]<- 1-pSk[i,t]  #5yr skipper ND
+      po[11,i,t,1] <- 0              
+      po[11,i,t,2] <- 0              
+      po[11,i,t,3] <- 0            
+      po[11,i,t,4] <- 0              
+      po[11,i,t,5] <- 0
+      po[11,i,t,6] <- 0
+      po[11,i,t,7] <- 0
+      po[11,i,t,8] <- 0
+      po[11,i,t,9] <- pSk[i,t]#*delSk[i,t] 
+      po[11,i,t,10]<- 0
+      #po[11,i,t,10]<- pSk[i,t]*(1-delSk[i,t]) 
+      po[11,i,t,11]<- 1-pSk[i,t]  #6+ yr skipper not seen
+      po[12,i,t,1] <- 0              
+      po[12,i,t,2] <- 0              
+      po[12,i,t,3] <- 0            
+      po[12,i,t,4] <- 0              
+      po[12,i,t,5] <- 0
+      po[12,i,t,6] <- 0
+      po[12,i,t,7] <- 0
+      po[12,i,t,8] <- 0
+      po[12,i,t,9] <- 0  
+      po[12,i,t,10]<- 0  
+      po[12,i,t,11]<- 1  #dead not seen 
+    } #t 
+  }#i
+}
+  
+write.model(CJS_null, "CJS_null.txt")
+model.file = paste(getwd(),"CJS_null.txt", sep="/") 
+
+
+```
+
+```{r RE run}
+
+# Bundle data
+jags.data <- list(y = y, fc = fc, z = z.st, resights = res_mat, eff = eff,
+                  n_occasions = n_occasions, n_ind = dim(ch)[1])
+
+inits <- function(){list(
+  z = z.init,
+  mean.psi = runif(1, 0, 1),
+  mean.p = runif(7, 0, 1)
+  )}    
+ 
+# params
+parameters <- c('mean.p1', 'mean.p2', 'mean.p3', 'mean.p4', 'mean.p5', 'mean.pB', 'mean.pSk',
+                "mean.psi3", 'mean.psi4', 'mean.psi5', 'mean.psiB', 'mean.psiSk', 
+                'int.phiP', 'int.phi1', 'int.phi2', 'int.phi3', 'int.phi4', 'int.phi5', 
+                'int.phiB', 'int.phiSk', 'int.psi3', 'int.psi4', 'int.psi5', 'int.psiB', 'int.psiSk',
+                'eps.psi3', 'eps.psi4', 'eps.psi5', 'eps.psiB', 'eps.psiSk',
+                'epsP', 'eps1', 'eps2', 'epsPB', 'epsB', 'epsSk',
+                'b.delB', 'p.delB', 'b.eff',
+                'mu.p', 'mu.1', 'mu.2', 'mu.3', 'mu.4', 'mu.5', 'mu.B', 'mu.Sk')
+
+# MCMC settings
+#ni <- 2; nb <- 1; nc <- 1; 
+ni <- 15000; nb <- 4000; nc <- 3; 
+nt <- 1
+
+out_RE <- jags(jags.data, inits, parameters, 
+            model.file = model.file,
+            n.chains = nc, n.thin = nt, 
+            n.iter = ni, n.burnin = nb, parallel = T)
+
+# Save object
+saveRDS(out_RE, file = "out_RE.rds")
+
+out_RE_up <- update(out_RE, n.iter = 8000)
+saveRDS(out_RE_up, file = 'out_RE_up.rds')
+
+```
+
+
+```{r reg}
+
+# Specify model
+IPM_reg <- function () {
+  
+# Priors and constraints
+for (i in 1:n_fem) { #females
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiP[i,t]) <- mu.p + b.regP[region_f[i]] + b.bmi.p*bmi_f[i]
+            logit(phi1[i,t]) <- mu.1 + b.reg1[region_f[i]]
+            logit(phi2[i,t]) <- mu.2 + b.reg2[region_f[i]]
+            logit(phi3[i,t]) <- mu.3 + b.regPB[region_f[i]]
+            logit(phi4[i,t]) <- mu.4 + b.regPB[region_f[i]]
+            logit(phi5[i,t]) <- mu.5 + b.regPB[region_f[i]]
+            logit(phiB[i,t]) <- mu.B + b.regB[region_f[i]]
+            logit(phiSk[i,t]) <- mu.Sk + b.regSk[region_f[i]]
+            logit(delB[i,t]) <- b.delB[resights[i,t]]
+            p1[i,t] <- mean.p1 + b.eff[eff[t]]
+            p2[i,t] <- mean.p2 + b.eff[eff[t]]
+            p3[i,t] <- mean.p3 + b.eff[eff[t]]
+            p4[i,t] <- mean.p4 + b.eff[eff[t]]
+            p5[i,t] <- mean.p5 + b.eff[eff[t]]
+            pB[i,t] <- mean.pB + b.eff[eff[t]]
+            pSk[i,t] <- mean.pSk + b.eff[eff[t]]
+            psi3[i,t] <- mean.psi3 + b.reg.psi3[region_f[i]] + b.bmi.psi3*bmi_f[i]
+            psi4[i,t] <- mean.psi4 + b.reg.psi4[region_f[i]]
+            psi5[i,t] <- mean.psi5 + b.reg.psi5[region_f[i]]
+            psiB[i,t] <- mean.psiB + b.reg.psiB[region_f[i]]
+            psiSk[i,t] <- mean.psiSk + b.reg.psiSk[region_f[i]]
+        }
+}
+  for (i in 1:n_m) { #males
+        for (t in 1:(n_occasions - 1)) {
+            logit(phiPM[i,t]) <- mu.pM + b.regPM[region_m[i]] + b.bmi.pm*bmi_f[i]
+            logit(phi1M[i,t]) <- mu.1M + b.reg1M[region_m[i]]
+            logit(phi2M[i,t]) <- mu.2M + b.reg2M[region_m[i]]
+            logit(phi3M[i,t]) <- mu.3M + b.reg3M[region_m[i]]
+            logit(phi4M[i,t]) <- mu.4M + b.reg4M[region_m[i]]
+            logit(phi5M[i,t]) <- mu.5M + b.reg5M[region_m[i]]
+            p1M[i,t] <- mean.p1M + b.eff[eff[t]]
+            p2M[i,t] <- mean.p2M + b.eff[eff[t]]
+            p3M[i,t] <- mean.p3M + b.eff[eff[t]]
+            p4M[i,t] <- mean.p4M + b.eff[eff[t]]
+            p5M[i,t] <- mean.p5M + b.eff[eff[t]]
+        }
+}
+  
+    mean.psi3 <- log(int.psi3/(1 - int.psi3))
+    mean.psi4 <- log(int.psi4/(1 - int.psi4))
+    mean.psi5 <- log(int.psi5/(1 - int.psi5))
+    mean.psiB <- log(int.psiB/(1 - int.psiB))
+    mean.psiSk <- log(int.psiSk/(1 - int.psiSk))
+    int.psi3 ~ dunif(0,1)
+    int.psi4 ~ dunif(0,1)
+    int.psi5 ~ dunif(0,1)
+    int.psiB ~ dunif(0,1)
+    int.psiSk ~ dunif(0,1)
+    
+    mean.p1 ~ dunif(0,1)
+    mean.p2 ~ dunif(0,1)
+    mean.p3 ~ dunif(0,1)
+    mean.p4 ~ dunif(0,1)
+    mean.p5 ~ dunif(0,1)
+    mean.pB ~ dunif(0,1)
+    mean.pSk ~ dunif(0,1)
+    mean.p1M ~ dunif(0,1)
+    mean.p2M ~ dunif(0,1)
+    mean.p3M ~ dunif(0,1)
+    mean.p4M ~ dunif(0,1)
+    mean.p5M ~ dunif(0,1)
+    
+    mu.p <- log(int.phiP/(1 - int.phiP))
+    mu.1 <- log(int.phi1/(1 - int.phi1))
+    mu.2 <- log(int.phi2/(1 - int.phi2))
+    mu.3 <- log(int.phi3/(1 - int.phi3))
+    mu.4 <- log(int.phi4/(1 - int.phi4))
+    mu.5 <- log(int.phi5/(1 - int.phi5))
+    mu.B <- log(int.phiB/(1 - int.phiB))
+    mu.Sk <- log(int.phiSk/(1 - int.phiSk))
+    mu.pM <- log(int.phiPM/(1 - int.phiPM))
+    mu.1M <- log(int.phi1M/(1 - int.phi1M))
+    mu.2M <- log(int.phi2M/(1 - int.phi2M))
+    mu.3M <- log(int.phi3M/(1 - int.phi3M))
+    mu.4M <- log(int.phi4M/(1 - int.phi4M))
+    mu.5M <- log(int.phi5M/(1 - int.phi5M))
+    int.phiP ~ dunif(0,1)
+    int.phi1 ~ dunif(0,1)
+    int.phi2 ~ dunif(0,1)
+    int.phi3 ~ dunif(0,1)
+    int.phi4 ~ dunif(0,1)
+    int.phi5 ~ dunif(0,1)
+    int.phiB ~ dunif(0,1)
+    int.phiSk ~ dunif(0,1)
+    int.phiPM ~ dunif(0,1)
+    int.phi1M ~ dunif(0,1)
+    int.phi2M ~ dunif(0,1)
+    int.phi3M ~ dunif(0,1)
+    int.phi4M ~ dunif(0,1)
+    int.phi5M ~ dunif(0,1)
+    
+    p.delB[1] ~ dunif(0,1)
+    b.delB[1] <- log(p.delB[1]/(1-p.delB[1]))
+    p.delB[2] ~ dunif(0,1)
+    b.delB[2] <- log(p.delB[2]/(1-p.delB[2]))
+    p.delB[3] ~ dunif(0,1)
+    b.delB[3] <- log(p.delB[3]/(1-p.delB[3]))
+    b.delB[4] <- -2 #0 on probability scale
+    
+    b.eff[1] <- 0
+    b.eff[2] ~ dnorm(0, 0.001)
+    
+    b.reg.psi3[1] ~ dnorm(0, pow(s.psi3.reg,-2))
+    s.psi3.reg ~ dexp(1)
+    b.reg.psi4[1] ~ dnorm(0, pow(s.psi4.reg,-2))
+    s.psi4.reg ~ dexp(1)
+    b.reg.psi5[1] ~ dnorm(0, pow(s.psi5.reg,-2))
+    s.psi5.reg ~ dexp(1)
+    b.reg.psiB[1] ~ dnorm(0, pow(s.psiB.reg,-2))
+    s.psiB.reg ~ dexp(1)
+    b.reg.psiSk[1] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    s.psiSk.reg ~ dexp(1)
+    b.reg.psi3[2] ~ dnorm(0, pow(s.psi3.reg,-2))
+    b.reg.psi4[2] ~ dnorm(0, pow(s.psi4.reg,-2))
+    b.reg.psi5[2] ~ dnorm(0, pow(s.psi5.reg,-2))
+    b.reg.psiB[2] ~ dnorm(0, pow(s.psiB.reg,-2))
+    b.reg.psiSk[2] ~ dnorm(0, pow(s.psiSk.reg,-2))
+    b.reg.psi3[3] <- 0  #third region beta is mu
+    b.reg.psi4[3] <- 0
+    b.reg.psi5[3] <- 0
+    b.reg.psiB[3] <- 0
+    b.reg.psiSk[3] <- 0
+    
+    b.regP[1] ~ dnorm(0, pow(s.regP,-2))
+    s.regP ~ dexp(1)
+    b.reg1[1] ~ dnorm(0, pow(s.reg1,-2))
+    s.reg1 ~ dexp(1)
+    b.reg2[1] ~ dnorm(0, pow(s.reg2,-2))
+    s.reg2 ~ dexp(1)
+    b.regPB[1] ~ dnorm(0, pow(s.regPB,-2))
+    s.regPB ~ dexp(1)
+    b.regB[1] ~ dnorm(0, pow(s.regB,-2))
+    s.regB ~ dexp(1)
+    b.regSk[1] ~ dnorm(0, pow(s.regSk,-2))
+    s.regSk ~ dexp(1)
+    b.regP[2] ~ dnorm(0, pow(s.regP,-2))
+    b.reg1[2] ~ dnorm(0, pow(s.reg1,-2))
+    b.reg2[2] ~ dnorm(0, pow(s.reg2,-2))
+    b.regPB[2] ~ dnorm(0, pow(s.regPB,-2))
+    b.regB[2] ~ dnorm(0, pow(s.regB,-2))
+    b.regSk[2] ~ dnorm(0, pow(s.regSk,-2))
+    b.regP[3] <- 0  #third region beta is mu
+    b.reg1[3] <- 0
+    b.reg2[3] <- 0
+    b.regPB[3] <- 0
+    b.regB[3] <- 0
+    b.regSk[3] <- 0
+    
+    b.bmi.psi3 ~ dnorm(0, pow(s.bmi.psi3, -2))
+    s.bmi.psi3 ~ dexp(1)
+    b.bmi.p ~ dnorm(0, pow(s.bmi.p, -2))
+    s.bmi.p ~ dexp(1)
+    # b.bmi.1 ~ dnorm(0, pow(s.bmi.1,-2))
+    s.bmi.1 ~ dexp(1)
+    b.bmi.pm ~ dnorm(0, pow(s.bmi.pm, -2))
+    s.bmi.pm ~ dexp(1)
+
+    #likelihood
+for (i in 1:n_fem) { #females
+    z[i, fc[i]] <- 1
+for (t in (fc[i] + 1):n_occasions) {
+    z[i,t] ~ dcat(ps[z[i, t - 1], i, t - 1, ])
+    y[i,t] ~ dcat(po[z[i,t], i, t - 1, ])
+    }
+}
+   for (i in 1:n_m) { #males
+    zm[i, fc_m[i]] <- 1
+for (t in (fc_m[i] + 1):n_occasions) {
+    zm[i,t] ~ dcat(ps_m[zm[i, t - 1], i, t - 1, ])
+    ym[i,t] ~ dcat(po_m[zm[i,t], i, t - 1, ])
+    }
+   }
+    
+# Transition and observation matrices
+    ###FEMALE
+for (i in 1:n_fem){
+  for (t in 1:(n_occasions-1)) {
+      # Define probabilities of state S(t+1) given S(t)   
+      ps[1,i,t,1] <- 0              
+      ps[1,i,t,2] <- phiP[i,t]        #pup to yearling
+      ps[1,i,t,3] <- 0            
+      ps[1,i,t,4] <- 0              
+      ps[1,i,t,5] <- 0
+      ps[1,i,t,6] <- 0
+      ps[1,i,t,7] <- 0
+      ps[1,i,t,8] <- 0
+      ps[1,i,t,9] <- 0
+      ps[1,i,t,10]<- 0
+      ps[1,i,t,11]<- 0
+      ps[1,i,t,12]<- 1-phiP[i,t]      #pup dies
+      ps[2,i,t,1] <- 0              
+      ps[2,i,t,2] <- 0              
+      ps[2,i,t,3] <- phi1[i,t]        #yearling to 2yr
+      ps[2,i,t,4] <- 0              
+      ps[2,i,t,5] <- 0
+      ps[2,i,t,6] <- 0
+      ps[2,i,t,7] <- 0
+      ps[2,i,t,8] <- 0
+      ps[2,i,t,9] <- 0
+      ps[2,i,t,10]<- 0
+      ps[2,i,t,11]<- 0
+      ps[2,i,t,12]<- 1-phi1[i,t]      #yearling dies
+      ps[3,i,t,1] <- 0              
+      ps[3,i,t,2] <- 0              
+      ps[3,i,t,3] <- 0            
+      ps[3,i,t,4] <- phi2[i,t]        #2-3yr
+      ps[3,i,t,5] <- 0
+      ps[3,i,t,6] <- 0
+      ps[3,i,t,7] <- 0
+      ps[3,i,t,8] <- 0
+      ps[3,i,t,9] <- 0
+      ps[3,i,t,10]<- 0
+      ps[3,i,t,11]<- 0
+      ps[3,i,t,12]<- 1-phi2[i,t]    #2yr dies
+      ps[4,i,t,1] <- 0              
+      ps[4,i,t,2] <- 0              
+      ps[4,i,t,3] <- 0            
+      ps[4,i,t,4] <- 0              
+      ps[4,i,t,5] <- phi3[i,t]*(1-psi3[i,t])   #3yr becomes 4yr prebreeder
+      ps[4,i,t,6] <- 0
+      ps[4,i,t,7] <- phi3[i,t]*psi3[i,t]       #3yr becomes 4yr breeder
+      ps[4,i,t,8] <- 0
+      ps[4,i,t,9] <- 0
+      ps[4,i,t,10]<- 0
+      ps[4,i,t,11]<- 0
+      ps[4,i,t,12]<- 1-phi3[i,t]      #3yr dies
+      ps[5,i,t,1] <- 0              
+      ps[5,i,t,2] <- 0              
+      ps[5,i,t,3] <- 0            
+      ps[5,i,t,4] <- 0              
+      ps[5,i,t,5] <- 0
+      ps[5,i,t,6] <- phi4[i,t]*(1-psi4[i,t])     #4yr prebreeder becomes 5yr prebreeder
+      ps[5,i,t,7] <- 0
+      ps[5,i,t,8] <- phi4[i,t]*psi4[i,t]         #4yr prebreeder becomes 5yr breeder
+      ps[5,i,t,9] <- 0
+      ps[5,i,t,10]<- 0
+      ps[5,i,t,11]<- 0
+      ps[5,i,t,12]<- 1-phi4[i,t]            #4yr dies
+      ps[6,i,t,1] <- 0              
+      ps[6,i,t,2] <- 0              
+      ps[6,i,t,3] <- 0            
+      ps[6,i,t,4] <- 0              
+      ps[6,i,t,5] <- 0
+      ps[6,i,t,6] <- 0
+      ps[6,i,t,7] <- 0
+      ps[6,i,t,8] <- 0
+      ps[6,i,t,9] <- phi5[i,t]*psi5[i,t]  #5yr becomes 6yr breeder, psi5 no longer fixed to 1.0
+      ps[6,i,t,10]<- 0
+      ps[6,i,t,11]<- phi5[i,t]*(1-psi5[i,t]) #5yr becomes 6yr n.b.
+      ps[6,i,t,12]<- 1-phi5[i,t]    #5yr dies
+      ps[7,i,t,1] <- 0              
+      ps[7,i,t,2] <- 0              
+      ps[7,i,t,3] <- 0            
+      ps[7,i,t,4] <- 0              
+      ps[7,i,t,5] <- 0
+      ps[7,i,t,6] <- 0
+      ps[7,i,t,7] <- 0
+      ps[7,i,t,8] <- phi4[i,t]*(psiB[i,t])   #4yr breeder becomes 5yr breeder 
+      ps[7,i,t,9] <- 0
+      ps[7,i,t,10]<- phi4[i,t]*(1-psiB[i,t])  #4yr breeder becomes 5yr skipper
+      ps[7,i,t,11]<- 0
+      ps[7,i,t,12]<- 1-phi4[i,t] #4yr dies
+      ps[8,i,t,1] <- 0              
+      ps[8,i,t,2] <- 0              
+      ps[8,i,t,3] <- 0            
+      ps[8,i,t,4] <- 0              
+      ps[8,i,t,5] <- 0
+      ps[8,i,t,6] <- 0
+      ps[8,i,t,7] <- 0
+      ps[8,i,t,8] <- 0
+      ps[8,i,t,9] <- phi5[i,t]*(psiB[i,t])  #5yr breeder becomes 6+yr breeder 
+      ps[8,i,t,10]<- 0
+      ps[8,i,t,11]<- phi5[i,t]*(1-psiB[i,t])  #5yr breeder becomes 6+ NB
+      ps[8,i,t,12]<- 1-phi5[i,t]  #5yr dies
+      ps[9,i,t,1] <- 0              
+      ps[9,i,t,2] <- 0              
+      ps[9,i,t,3] <- 0            
+      ps[9,i,t,4] <- 0              
+      ps[9,i,t,5] <- 0
+      ps[9,i,t,6] <- 0
+      ps[9,i,t,7] <- 0
+      ps[9,i,t,8] <- 0
+      ps[9,i,t,9] <- phiB[i,t]*(psiB[i,t])  #6+ breeder stays a breeder
+      ps[9,i,t,10]<- 0
+      ps[9,i,t,11]<- phiB[i,t]*(1-psiB[i,t])  #6+ breeder becomes a skipper
+      ps[9,i,t,12]<- 1-phiB[i,t]  #breeder dies
+      ps[10,i,t,1] <- 0              
+      ps[10,i,t,2] <- 0              
+      ps[10,i,t,3] <- 0            
+      ps[10,i,t,4] <- 0              
+      ps[10,i,t,5] <- 0
+      ps[10,i,t,6] <- 0
+      ps[10,i,t,7] <- 0
+      ps[10,i,t,8] <- 0
+      ps[10,i,t,9] <- phiSk[i,t]*psiSk[i,t]   #5yr NB becomes a breeder
+      ps[10,i,t,10]<- 0  
+      ps[10,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t]) #5yr NB stays NB by not becoming breeder
+      ps[10,i,t,12]<- 1-phiSk[i,t]  #NB dies
+      ps[11,i,t,1] <- 0              
+      ps[11,i,t,2] <- 0              
+      ps[11,i,t,3] <- 0            
+      ps[11,i,t,4] <- 0              
+      ps[11,i,t,5] <- 0
+      ps[11,i,t,6] <- 0
+      ps[11,i,t,7] <- 0
+      ps[11,i,t,8] <- 0
+      ps[11,i,t,9] <- phiSk[i,t]*psiSk[i,t]  #6yr NB becomes a breeder
+      ps[11,i,t,10]<- 0
+      ps[11,i,t,11]<- phiSk[i,t]*(1-psiSk[i,t])  #6yr NB stays NB by not becoming breeder
+      ps[11,i,t,12]<- 1-phiSk[i,t]
+      ps[12,i,t,1] <- 0              
+      ps[12,i,t,2] <- 0              
+      ps[12,i,t,3] <- 0            
+      ps[12,i,t,4] <- 0              
+      ps[12,i,t,5] <- 0
+      ps[12,i,t,6] <- 0
+      ps[12,i,t,7] <- 0
+      ps[12,i,t,8] <- 0
+      ps[12,i,t,9] <- 0
+      ps[12,i,t,10]<- 0
+      ps[12,i,t,11]<- 0
+      ps[12,i,t,12]<- 1  #stays dead
+      
+     # Define probabilities of O(t) given S(t)
+      po[1,i,t,1] <- 1        #pups always observed as a pup      
+      po[1,i,t,2] <- 0        
+      po[1,i,t,3] <- 0            
+      po[1,i,t,4] <- 0              
+      po[1,i,t,5] <- 0
+      po[1,i,t,6] <- 0
+      po[1,i,t,7] <- 0
+      po[1,i,t,8] <- 0
+      po[1,i,t,9] <- 0
+      po[1,i,t,10]<- 0
+      po[1,i,t,11]<- 0
+      po[2,i,t,1] <- 0              
+      po[2,i,t,2] <- p1[i,t]  #detection of yearlings              
+      po[2,i,t,3] <- 0        
+      po[2,i,t,4] <- 0              
+      po[2,i,t,5] <- 0
+      po[2,i,t,6] <- 0
+      po[2,i,t,7] <- 0
+      po[2,i,t,8] <- 0
+      po[2,i,t,9] <- 0
+      po[2,i,t,10]<- 0
+      po[2,i,t,11]<- 1-p1[i,t]      #yearling ND
+      po[3,i,t,1] <- 0              
+      po[3,i,t,2] <- 0              
+      po[3,i,t,3] <- p2[i,t]         #detection of 2yr            
+      po[3,i,t,4] <- 0
+      po[3,i,t,5] <- 0
+      po[3,i,t,6] <- 0
+      po[3,i,t,7] <- 0
+      po[3,i,t,8] <- 0
+      po[3,i,t,9] <- 0
+      po[3,i,t,10]<- 0
+      po[3,i,t,11]<- 1-p2[i,t]    #2yr ND
+      po[4,i,t,1] <- 0              
+      po[4,i,t,2] <- 0              
+      po[4,i,t,3] <- 0            
+      po[4,i,t,4] <- p3[i,t]       #detection of 3yr              
+      po[4,i,t,5] <- 0
+      po[4,i,t,6] <- 0
+      po[4,i,t,7] <- 0
+      po[4,i,t,8] <- 0
+      po[4,i,t,9] <- 0
+      po[4,i,t,10]<- 0
+      po[4,i,t,11]<- 1-p3[i,t]      #3yr ND
+      po[5,i,t,1] <- 0              
+      po[5,i,t,2] <- 0              
+      po[5,i,t,3] <- 0            
+      po[5,i,t,4] <- 0              
+      po[5,i,t,5] <- p4[i,t]#*delPB[i,t]    #4yr prebreeder seen and correctly ascertained w/o pup 
+      po[5,i,t,6] <- 0
+      po[5,i,t,7] <- 0
+      po[5,i,t,8] <- 0
+      po[5,i,t,9] <- 0
+      po[5,i,t,10]<- 0
+      po[5,i,t,11]<- 1-p4[i,t]            #4yr ND
+      po[6,i,t,1] <- 0              
+      po[6,i,t,2] <- 0              
+      po[6,i,t,3] <- 0            
+      po[6,i,t,4] <- 0 
+      po[6,i,t,5] <- 0
+      po[6,i,t,6] <- 0
+      po[6,i,t,7] <- p5[i,t]#*delPB[i,t]        #5yr prebreeder seen and correctly ascertained w/o pup
+      po[6,i,t,8] <- 0
+      po[6,i,t,9] <- 0
+      po[6,i,t,10]<- 0
+      po[6,i,t,11]<- 1-p5[i,t]    #5yr ND
+      po[7,i,t,1] <- 0              
+      po[7,i,t,2] <- 0              
+      po[7,i,t,3] <- 0            
+      po[7,i,t,4] <- 0              
+      po[7,i,t,5] <- pB[i,t]*(1-delB[i,t])  #4yr breeder incorrectly ascertained w/o pup (false -)
+      po[7,i,t,6] <- pB[i,t]*delB[i,t]      #4yr breeder correctly ascertained w pup
+      po[7,i,t,7] <- 0
+      po[7,i,t,8] <- 0
+      po[7,i,t,9] <- 0
+      po[7,i,t,10]<- 0
+      po[7,i,t,11]<- 1-pB[i,t] #4yr ND
+      po[8,i,t,1] <- 0              
+      po[8,i,t,2] <- 0              
+      po[8,i,t,3] <- 0            
+      po[8,i,t,4] <- 0              
+      po[8,i,t,5] <- 0
+      po[8,i,t,6] <- 0
+      po[8,i,t,7] <- pB[i,t]*(1-delB[i,t])   #5yr breeder incorrectly ascertained w/o pup
+      po[8,i,t,8] <- pB[i,t]*delB[i,t]     #5yr breeder correctly ascertained w pup
+      po[8,i,t,9] <- 0
+      po[8,i,t,10]<- 0
+      po[8,i,t,11]<- 1-pB[i,t]  #5yr ND
+      po[9,i,t,1] <- 0              
+      po[9,i,t,2] <- 0              
+      po[9,i,t,3] <- 0            
+      po[9,i,t,4] <- 0              
+      po[9,i,t,5] <- 0
+      po[9,i,t,6] <- 0
+      po[9,i,t,7] <- 0
+      po[9,i,t,8] <- 0
+      po[9,i,t,9] <- pB[i,t]*(1-delB[i,t])  #6+ breeder incorrectly ascertained w/o pup as skipper
+      po[9,i,t,10]<- pB[i,t]*delB[i,t]  #6+ breeder correctly ascertained as breeder
+      po[9,i,t,11]<- 1-pB[i,t]  #breeder ND
+      po[10,i,t,1] <- 0              
+      po[10,i,t,2] <- 0              
+      po[10,i,t,3] <- 0            
+      po[10,i,t,4] <- 0              
+      po[10,i,t,5] <- 0
+      po[10,i,t,6] <- 0
+      po[10,i,t,7] <- pSk[i,t]#*delSk[i,t]     #5yr skipper correctly ascertained w/o pup
+      #po[10,i,t,8] <- pSk[i,t]*(1-delSk[i,t])  #5yr skipper incorrectly ascertained w pup
+      po[10,i,t,8] <- 0
+      po[10,i,t,9] <- 0
+      po[10,i,t,10]<- 0
+      po[10,i,t,11]<- 1-pSk[i,t]  #5yr skipper ND
+      po[11,i,t,1] <- 0              
+      po[11,i,t,2] <- 0              
+      po[11,i,t,3] <- 0            
+      po[11,i,t,4] <- 0              
+      po[11,i,t,5] <- 0
+      po[11,i,t,6] <- 0
+      po[11,i,t,7] <- 0
+      po[11,i,t,8] <- 0
+      po[11,i,t,9] <- pSk[i,t]#*delSk[i,t] 
+      po[11,i,t,10]<- 0
+      #po[11,i,t,10]<- pSk[i,t]*(1-delSk[i,t]) 
+      po[11,i,t,11]<- 1-pSk[i,t]  #6+ yr skipper not seen
+      po[12,i,t,1] <- 0              
+      po[12,i,t,2] <- 0              
+      po[12,i,t,3] <- 0            
+      po[12,i,t,4] <- 0              
+      po[12,i,t,5] <- 0
+      po[12,i,t,6] <- 0
+      po[12,i,t,7] <- 0
+      po[12,i,t,8] <- 0
+      po[12,i,t,9] <- 0  
+      po[12,i,t,10]<- 0  
+      po[12,i,t,11]<- 1  #dead not seen 
+  }
+}
+  for (i in 1:n_m){
+    for (t in 1:(n_occasions-1)) {
+      ###MALE 
+      ps_m[1,i,t,1] <- 0              
+      ps_m[1,i,t,2] <- phiPM[i,t]        #pup to yearling
+      ps_m[1,i,t,3] <- 0            
+      ps_m[1,i,t,4] <- 0              
+      ps_m[1,i,t,5] <- 0
+      ps_m[1,i,t,6] <- 0
+      ps_m[1,i,t,7] <- 1-phiPM[i,t]      #pup dies
+      ps_m[2,i,t,1] <- 0              
+      ps_m[2,i,t,2] <- 0              
+      ps_m[2,i,t,3] <- phi1M[i,t]        #yearling to 2yr
+      ps_m[2,i,t,4] <- 0              
+      ps_m[2,i,t,5] <- 0
+      ps_m[2,i,t,6] <- 0
+      ps_m[2,i,t,7] <- 1-phi1M[i,t]      #yearling dies
+      ps_m[3,i,t,1] <- 0              
+      ps_m[3,i,t,2] <- 0              
+      ps_m[3,i,t,3] <- 0            
+      ps_m[3,i,t,4] <- phi2M[i,t]        #2-3yr
+      ps_m[3,i,t,5] <- 0
+      ps_m[3,i,t,6] <- 0
+      ps_m[3,i,t,7] <- 1-phi2M[i,t]    #2yr dies
+      ps_m[4,i,t,1] <- 0              
+      ps_m[4,i,t,2] <- 0              
+      ps_m[4,i,t,3] <- 0            
+      ps_m[4,i,t,4] <- 0              
+      ps_m[4,i,t,5] <- phi3M[i,t]   #3yr becomes 4yr 
+      ps_m[4,i,t,6] <- 0
+      ps_m[4,i,t,7] <- 1-phi3M[i,t]      #3yr dies
+      ps_m[5,i,t,1] <- 0              
+      ps_m[5,i,t,2] <- 0              
+      ps_m[5,i,t,3] <- 0            
+      ps_m[5,i,t,4] <- 0              
+      ps_m[5,i,t,5] <- 0
+      ps_m[5,i,t,6] <- phi4M[i,t]    #4yr becomes 5yr 
+      ps_m[5,i,t,7] <- 1-phi4M[i,t]            #4yr dies
+      ps_m[6,i,t,1] <- 0              
+      ps_m[6,i,t,2] <- 0              
+      ps_m[6,i,t,3] <- 0            
+      ps_m[6,i,t,4] <- 0              
+      ps_m[6,i,t,5] <- 0
+      ps_m[6,i,t,6] <- phi5M[i,t]  #5yr becomes 6yr
+      ps_m[6,i,t,7] <- 1-phi5M[i,t]    #5yr dies
+      ps_m[7,i,t,1] <- 0              
+      ps_m[7,i,t,2] <- 0              
+      ps_m[7,i,t,3] <- 0            
+      ps_m[7,i,t,4] <- 0              
+      ps_m[7,i,t,5] <- 0
+      ps_m[7,i,t,6] <- 0
+      ps_m[7,i,t,7] <- 1
+      
+      po_m[1,i,t,1] <- 1        #pups always observed as a pup      
+      po_m[1,i,t,2] <- 0        
+      po_m[1,i,t,3] <- 0            
+      po_m[1,i,t,4] <- 0              
+      po_m[1,i,t,5] <- 0
+      po_m[1,i,t,6] <- 0
+      po_m[1,i,t,7] <- 0
+      po_m[2,i,t,1] <- 0              
+      po_m[2,i,t,2] <- p1M[i,t]  #detection of yearlings              
+      po_m[2,i,t,3] <- 0        
+      po_m[2,i,t,4] <- 0              
+      po_m[2,i,t,5] <- 0
+      po_m[2,i,t,6] <- 0
+      po_m[2,i,t,7] <- 1-p1M[i,t]      #yearling ND
+      po_m[3,i,t,1] <- 0              
+      po_m[3,i,t,2] <- 0              
+      po_m[3,i,t,3] <- p2M[i,t]         #detection of 2yr            
+      po_m[3,i,t,4] <- 0
+      po_m[3,i,t,5] <- 0
+      po_m[3,i,t,6] <- 0
+      po_m[3,i,t,7] <- 1-p2M[i,t]    #2yr ND
+      po_m[4,i,t,1] <- 0              
+      po_m[4,i,t,2] <- 0              
+      po_m[4,i,t,3] <- 0            
+      po_m[4,i,t,4] <- p3M[i,t]       #detection of 3yr              
+      po_m[4,i,t,5] <- 0
+      po_m[4,i,t,6] <- 0
+      po_m[4,i,t,7] <- 1-p3M[i,t]      #3yr ND
+      po_m[5,i,t,1] <- 0              
+      po_m[5,i,t,2] <- 0              
+      po_m[5,i,t,3] <- 0            
+      po_m[5,i,t,4] <- 0              
+      po_m[5,i,t,5] <- p4M[i,t]
+      po_m[5,i,t,6] <- 0
+      po_m[5,i,t,7] <- 1-p4M[i,t]            #4yr ND
+      po_m[6,i,t,1] <- 0              
+      po_m[6,i,t,2] <- 0              
+      po_m[6,i,t,3] <- 0            
+      po_m[6,i,t,4] <- 0 
+      po_m[6,i,t,5] <- 0
+      po_m[6,i,t,6] <- p5M[i,t]
+      po_m[6,i,t,7] <- 1-p5M[i,t]    #5yr ND
+      po_m[7,i,t,1] <- 0              
+      po_m[7,i,t,2] <- 0              
+      po_m[7,i,t,3] <- 0            
+      po_m[7,i,t,4] <- 0              
+      po_m[7,i,t,5] <- 0
+      po_m[7,i,t,6] <- 0
+      po_m[7,i,t,7] <- 1  #dead not seen 
+      } #t 
+  }#i
+    
+  #population model
+  #    for (t in 1:n_occasions) {
+  #     #     Np[t] <- Npup[t]
+  #     #     N1[t] <- Npup[t-1]*phiP
+  #     #     N2[t] <- sum(z[1:n_ind,t] == 3)
+  #     #     N3[t] <- sum(z[1:n_ind,t] == 4)
+  #     #     N4[t] <- sum(z[1:n_ind,t] == 5)
+  #     #     N5[t] <- sum(z[1:n_ind,t] == 6)
+  #     #     Nb[t] <- sum(z[1:n_ind,t] == 7) + sum(z[1:n_ind,t] == 8) + sum(z[1:n_ind,t] == 9)
+  #     #     Nnb[t] <- sum(z[1:n_ind,t] == 10) + sum(z[1:n_ind,t] == 11)
+  # } #t
+} #mod
+
+    
+write.model(IPM_reg, "IPM_reg.txt")
+model.file = paste(getwd(),"IPM_reg.txt", sep="/")
+
+```
+
+```{r reg run}
+
+# Bundle data
+jags.data <- list(y = y, fc = fc, z = z.st, resights = res_mat, eff = eff, 
+                  bmi = bmi, NOI = NOI, NPGO = NPGO, AOI = AOI, 
+                  region = region_f,
+                  n_occasions = n_occasions, n_ind = dim(ch)[1])
+
+inits <- function(){list(
+  # mean.psi = runif(1, 0, 1),
+  # mean.del = runif(1, 0, 1),
+  # mean.p = runif(1, 0, 1),
+  #eps = runif(17, 0, 1),
+  #sigma = runif(1, 0, 1),
+  z = z.init)}    
+
+# params
+parameters <- c('int.phiP', 'int.phi1', 'int.phi2', 'int.phi3', 'int.phi4', 'int.phi5', 'int.phiB', 'int.phiSk',
+                'mean.p1', 'mean.p2', 'mean.p3', 'mean.p4', 'mean.p5', 'mean.pB', 'mean.pSk', 'p.delB', 'b.eff',
+                "mean.psi3", 'mean.psi4', 'mean.psi5', 'mean.psiB', 'mean.psiSk', #mean psi
+                'b.bmi.psi3',  'b.bmi.p', 'b.bmi.1',           #bmi on psi3-5 and P/1 phi
+                # 'b.bmi.psi4', 'b.bmi.psi5',
+                'b.psi3.reg', 'b.psi4.reg', 'b.psi5.reg', 'b.psiB.reg', 'b.psiSk.reg', #region on psi
+                'b.MEI.psi3', 'b.MEI.psi4', 'b.MEI.psi5', 'b.MEI.psiB', 'b.MEI.psiSk', #MEI on psi
+                'mu.p', 'mu.1', 'mu.2', 'mu.3', 'mu.4', 'mu.5', 'mu.B', 'mu.Sk', #mean phi
+                'b.regP', 'b.reg1', 'b.reg2', 'b.regPB', 'b.regB', 'b.regSk',  #region on phi
+                'eps.psi3', 'eps.psi4', 'eps.psi5', 'eps.psiB', 'eps.psiSk',
+                'epsP', 'sigma2.P', 'eps1', 'sigma2.1', 'eps2', 'sigma2.2', 'epsPB', 'sigma2.PB',  #RE year on phi
+                'epsB', 'sigma2.B', 'epsSk', 'sigma2.Sk')
+
+# MCMC settings
+ni <- 20000; nb <- 10000; nc <- 3
+#nt <- 2
+
+out_reg <- jags(jags.data, inits, parameters, 
+            model.file = model.file,
+            n.chains = nc, 
+            #n.thin = nt, 
+            n.iter = ni, n.burnin = nb, parallel = T)
+
+# Save object
+saveRDS(out_reg, file = "out_reg.rds")
+
+out_reg_up <- update(out_reg, n.iter = 20000)
+saveRDS(out_reg_up, file = 'out_reg_up.rds')
+# # Restore the object
+saved_full <- readRDS(file = "out_mod_sprup5.rds")
+
+```
